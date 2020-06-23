@@ -55,8 +55,8 @@ namespace Task_1
             // <Snippet7>
             Console.WriteLine("Method"+mainDeclaration.Identifier+" returns "+"mainDeclaration.ReturnType");
             foreach (ParameterSyntax item in mainDeclaration.ParameterList.Parameters)
-                Console.WriteLine("\tParameter "+item.Identifier+" of type "+item.Type);
-            Console.WriteLine("Body: "+ mainDeclaration.Body.ToFullString());
+                Console.WriteLine("  Parameter "+item.Identifier+" of type "+item.Type);
+            Console.WriteLine("\tBody: "+ mainDeclaration.Body.ToFullString());
         }
     }
 }
