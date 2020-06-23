@@ -1,5 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.IO;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,53 +10,63 @@ namespace Task_1
     {
         static void Main(string[] args)
         {
-            //Sample Program
-            string ProgramCode=@"using System;
-            namespace Task_1
+            string curDir=Directory.GetCurrentDirectory()+"\\Examples";
+            Console.WriteLine(curDir);
+            string[] fileNames = Directory.GetFiles(curDir);
+
+            foreach(string fileName in fileNames)
             {
-                class Program
+                Console.WriteLine(fileName);
+                string programLines = File.ReadAllText(fileName);
+                //Console.WriteLine(programLines);
+                //Forming Syntax Tree
+                SyntaxTree syntaxTree= CSharpSyntaxTree.ParseText(programLines);
+                CompilationUnitSyntax root= syntaxTree.GetCompilationUnitRoot();
+
+                //Printing Members in Program
+                Console.WriteLine("Kind : "+root.Kind().ToString());
+                Console.WriteLine("Members : "+root.Members.Count);
+                Console.WriteLine("Usings :"+root.Usings.Count);
+                foreach (UsingDirectiveSyntax usingDirective in root.Usings)
+                    Console.WriteLine(usingDirective.Name);
+
+                MemberDeclarationSyntax firstMember = root.Members[0];
+                Console.WriteLine("Kind : "+firstMember.Kind());
+                var helloWorldDeclaration = (NamespaceDeclarationSyntax)firstMember;
+
+                Console.WriteLine(helloWorldDeclaration.Members.Count+" members declared in this namespace.");
+                foreach (var classes in helloWorldDeclaration.Members)
                 {
-                    static void Main(string[] args)
+                    Console.WriteLine( (classes as ClassDeclarationSyntax).Identifier +":" +classes.Kind());
+                    if(classes.Kind()== SyntaxKind.ClassDeclaration)
                     {
-                        Console.WriteLine(""Hello World!"");
+                        ClassDeclarationSyntax classDeclarationSyntax=(ClassDeclarationSyntax)classes;
+                        foreach (var classMember in classDeclarationSyntax.Members)
+                        {
+                            switch(classMember.Kind())
+                            {
+                                case SyntaxKind.MethodDeclaration :
+                                    MethodDeclarationSyntax method= classMember as MethodDeclarationSyntax;
+                                    Console.WriteLine("Method "+method.Identifier+" ,returns "+method.ReturnType);
+                                    foreach (ParameterSyntax item in method.ParameterList.Parameters)
+                                        Console.WriteLine("Parameter '"+item.Identifier+"' of type '"+item.Type+"'");
+                                    //Console.WriteLine("\tBody: "+ mainDeclaration.Body.ToFullString());
+                                break;
+                                case SyntaxKind.FieldDeclaration:
+                                    FieldDeclarationSyntax field = classMember as FieldDeclarationSyntax;
+                                    foreach (VariableDeclaratorSyntax item in field.Declaration.Variables)
+                                    {
+                                    Console.WriteLine("Field : "+item.Identifier+" " +field.Declaration.Type);                                
+                                        
+                                    }
+                                break;
+                            
+                        }
                     }
                 }
-            }";
-
-            Console.WriteLine(ProgramCode);
-            //Forming Syntax Tree
-            SyntaxTree syntaxTree= CSharpSyntaxTree.ParseText(ProgramCode);
-            CompilationUnitSyntax root= syntaxTree.GetCompilationUnitRoot();
-
-            //Printing Members in Program
-            Console.WriteLine("Kind : "+root.Kind().ToString());
-            Console.WriteLine("Members : "+root.Members.Count);
-            Console.WriteLine("Usings :"+root.Usings.Count);
-            foreach (UsingDirectiveSyntax usingDirective in root.Usings)
-                Console.WriteLine(usingDirective.Name);
-
-            MemberDeclarationSyntax firstMember = root.Members[0];
-            Console.WriteLine($"The first member is a {firstMember.Kind()}.");
-            var helloWorldDeclaration = (NamespaceDeclarationSyntax)firstMember;
-            // </Snippet4>
-
-            // <Snippet5>
-            Console.WriteLine($"There are {helloWorldDeclaration.Members.Count} members declared in this namespace.");
-            Console.WriteLine($"The first member is a {helloWorldDeclaration.Members[0].Kind()}.");
-            // </Snippet5>
-
-            // <Snippet6>
-            var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
-            Console.WriteLine($"There are {programDeclaration.Members.Count} members declared in the {programDeclaration.Identifier} class.");
-            Console.WriteLine($"The first member is a {programDeclaration.Members[0].Kind()}.");
-            var mainDeclaration = (MethodDeclarationSyntax)programDeclaration.Members[0];
-            // </Snippet6>
-
-            // <Snippet7>
-            Console.WriteLine("Method"+mainDeclaration.Identifier+" returns "+"mainDeclaration.ReturnType");
-            foreach (ParameterSyntax item in mainDeclaration.ParameterList.Parameters)
-                Console.WriteLine("  Parameter "+item.Identifier+" of type "+item.Type);
-            Console.WriteLine("\tBody: "+ mainDeclaration.Body.ToFullString());
+                    Console.WriteLine();
+            }
         }
     }
+}
 }
