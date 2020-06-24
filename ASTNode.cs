@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Task_1
+namespace ASTTask
 {
 [Serializable]
     public class ASTNode

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Task_1
+namespace ASTTask
 {
     class Program
     {
@@ -23,9 +23,20 @@ namespace Task_1
                     string programLines = File.ReadAllText(fileName);
                     //Forming Syntax Tree
                     SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
-                    ASTNode root= CreateSyntaxTree(syntaxNode);
-                    //Serialize & Print
-                    Console.WriteLine(JsonConvert.SerializeObject(root));
+
+                    //Forming Properties into AST object and printing them as JSON string
+                    // ASTNode root = CreateSyntaxTree(syntaxNode);
+                    // Console.WriteLine(JsonConvert.SerializeObject(root));
+
+                    //FInding empty catch blocks
+                    List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
+                    if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
+                    {
+                        foreach (var item in emptyCatchStatements)
+                        {
+                        Console.WriteLine(item.FullSpan+"\n"+item.ToFullString());
+                        }
+                    }
                 }
             }
             catch (System.Exception ex)
