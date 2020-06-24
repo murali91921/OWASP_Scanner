@@ -29,5 +29,4 @@ namespace Sample2
         string getDesign();
 
     }
-
 }
