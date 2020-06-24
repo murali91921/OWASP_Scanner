@@ -13,7 +13,14 @@ namespace Sample2
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Exception occured");
+                try
+                {
+                    Console.WriteLine("Exception occured");
+                }
+                catch
+                {
+                //nested catch
+                /*nesting catch comment*/}
             }
         }
     }
@@ -32,13 +39,14 @@ namespace Sample2
             }
             catch(Exception ex)
             {}
+
             try
             {
                 Console.WriteLine("Hello World!");
             }
             catch(Exception ex)
             {
-                //empty comment block.
+            //empty comment block.
             }
     	}
     }
@@ -47,6 +55,5 @@ namespace Sample2
         string textboxValue { get; set; };
         void setDesign(string param);
         string getDesign();
-
     }
 }
