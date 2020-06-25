@@ -28,13 +28,14 @@ namespace ASTTask
                     // ASTNode root = CreateSyntaxTree(syntaxNode);
                     // Console.WriteLine(JsonConvert.SerializeObject(root));
 
-                    //FInding empty catch blocks
+                    //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
                     List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
                     if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                     {
+                        Console.WriteLine(fileName);
                         foreach (var item in emptyCatchStatements)
                         {
-                        Console.WriteLine(item.FullSpan+"\n"+item.ToFullString());
+                            Console.WriteLine("Line : "+item.FullSpan.Start+"\n "+item.ToFullString());
                         }
                     }
                 }
