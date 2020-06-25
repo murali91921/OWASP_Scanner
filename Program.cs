@@ -36,7 +36,7 @@ namespace ASTTask
                     {
                         foreach (var item in emptyCatchStatements)
                         {
-                            Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
+                            Console.WriteLine("Line 0: "+GetLineNumber(item)+"\n "+item.ToFullString());
                         }
                     }
                     //finding hard-coded keys/passwords
@@ -46,9 +46,9 @@ namespace ASTTask
                         foreach (var item in hardcodeStatements)
                         {
                             if(item.Kind()==SyntaxKind.VariableDeclarator)
-                                Console.WriteLine("Line : " +GetLineNumber(item)+" : "+ ((VariableDeclaratorSyntax)item).Identifier);
+                                Console.WriteLine("Line 1: " +GetLineNumber(item)+" : "+ ((VariableDeclaratorSyntax)item).Identifier);
                             else if(item.Kind()==SyntaxKind.StringLiteralExpression)
-                                Console.WriteLine("Line : " +GetLineNumber(item)+" : "+ ((LiteralExpressionSyntax)item).ToString());
+                                Console.WriteLine("Line 2: " +GetLineNumber(item)+" : "+ ((LiteralExpressionSyntax)item).ToString());
                         }
                     }
                 }
