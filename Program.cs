@@ -2,6 +2,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -29,21 +30,37 @@ namespace ASTTask
                     // Console.WriteLine(JsonConvert.SerializeObject(root));
 
                     //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
+                    Console.WriteLine(fileName);
                     List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
                     if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                     {
-                        Console.WriteLine(fileName);
                         foreach (var item in emptyCatchStatements)
                         {
-                            Console.WriteLine("Line : "+item.FullSpan.Start+"\n "+item.ToFullString());
+                            Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
+                        }
+                    }
+                    //finding hard-coded keys/passwords
+                    List<SyntaxNodeOrToken> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
+                    if(hardcodeStatements !=null && hardcodeStatements.Count>0)
+                    {
+                        foreach (var item in hardcodeStatements)
+                        {
+                            if(item.Kind()==SyntaxKind.VariableDeclarator)
+                                Console.WriteLine("Line : " +GetLineNumber(item)+" : "+ ((VariableDeclaratorSyntax)item).Identifier);
+                            else if(item.Kind()==SyntaxKind.StringLiteralExpression)
+                                Console.WriteLine("Line : " +GetLineNumber(item)+" : "+ ((LiteralExpressionSyntax)item).ToString());
                         }
                     }
                 }
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine("\nError Occurred : \n"+ex.StackTrace);
+                Console.WriteLine(ex.Message +"\n"+ex.StackTrace);
             }
+        }
+        private static int GetLineNumber(SyntaxNodeOrToken item)
+        {
+        return item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
         }
         private static ASTNode CreateSyntaxTree(SyntaxNodeOrToken nodeOrToken)
         {
