@@ -1,16 +1,21 @@
+using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System;
-using System.Text.RegularExpressions;
 
 namespace ASTTask
 {
     internal class CredsFinder
     {
-        static string[] SecretKeywords=new string[] {@".*(password|passwd|pwd|)$",@"\w*secret\w*",@"\w*key\w*",
-                            @".*(api|gitlab|github|slack|google|client)_?(key|token|secret)$"};
+        static string[] SecretKeywords=new string[] {
+            @"\w*(password|passwd|pwd|pass)\w*",
+            @"\w*secret\w*",
+            @"\w*key\w*",
+            @".*(api|gitlab|github|slack|google|client)_?(key|token|secret)$"};
         // https://github.com/dxa4481/truffleHogRegexes/blob/master/truffleHogRegexes/regexes.json
         // https://github.com/l4yton/RegHex
         static Dictionary<string,string> secretPatterns = new Dictionary<string, string>{
@@ -61,70 +66,121 @@ namespace ASTTask
             {"Twitter Secret Key","(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}"},
         };
 
-        public static List<SyntaxNodeOrToken> FindHardcodeCredentials(SyntaxNodeOrToken nodeOrToken)
+        public static Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> FindHardcodeCredentials(SyntaxNode rootNode)
         {
-            //Calling method to find all hardcode strings
             List<SyntaxNodeOrToken> secretStrings=new List<SyntaxNodeOrToken>();
-            List<SyntaxNodeOrToken> hardcoreStringNodes= FindHardcodeStrings(nodeOrToken);
+            List<SyntaxTrivia> secretComments = new List<SyntaxTrivia>();
 
+            List<SyntaxNodeOrToken> hardcoreStringNodes= FindHardcodeStrings(rootNode);
+            List<SyntaxTrivia> commentNodes = FindComments(rootNode);
             //Checking strings are Passwords, secret keys or not.
             foreach (var item in hardcoreStringNodes)
             {
                 VariableDeclarationSyntax variableDeclarationSyntax= (VariableDeclarationSyntax)item;
                 foreach (var varItem in variableDeclarationSyntax.Variables)
                 {
-                    // Calling method  to find identifier is password/secret or not.
-                    if(IsPasswordIdentifier(varItem.Identifier.ToString()))
-                        secretStrings.Add(varItem);
+                    // Finding sensitive variable names
+                    // Variable name should matches with keywords, and variable value is not empty,and expression  should have Literal("").
+                    if( varItem.DescendantNodes().Count()<=2 && varItem.DescendantNodes().OfType<LiteralExpressionSyntax>().Count()>0
+                        && !(varItem.DescendantNodes().ToList()[1] as LiteralExpressionSyntax).ToString().Trim('"',' ').Equals(string.Empty))
+                        if(IsSecretVariable(varItem.Identifier.ToString()))
+                        {
+                            //Console.WriteLine((varItem.DescendantNodes().ToList()[1] as LiteralExpressionSyntax).ToString());
+                            secretStrings.Add(varItem);
+                        }
 
-                    // Calling method to find value is matching with secret patterns.
-                    if(varItem.ChildNodesAndTokens().Count>1)
-                        if(IsPasswordValue(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1].ToString()))
-                            secretStrings.Add(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1]);
+                    // Finding sensitive stored values
+                    if(IsSecretValue(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1].ToString()))
+                        secretStrings.Add(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1]);
                 }
             }
-            return secretStrings;
+            //Finding Sensitive comments
+            foreach (var item in commentNodes)
+            {
+                string commentText = "";
+                switch (item.Kind())
+                {
+                    case SyntaxKind.SingleLineCommentTrivia:
+                        commentText = item.ToString().TrimStart('/');
+                        break;
+                    case SyntaxKind.MultiLineCommentTrivia:
+                        commentText = item.ToString();
+                        commentText = commentText.Substring(2, commentText.Length-4);
+                        break;
+                }
+                if(IsSecretValue(commentText))
+                    secretComments.Add(item);
+            }
+            return Tuple.Create(secretStrings,secretComments);
         }
 
-        //Method to check identifier is matches with secret keywords patterns
-        public static bool IsPasswordIdentifier(string stringIdentifier)
+        //Check string variable name matches with secret keywords patterns
+        public static bool IsSecretVariable(string variable)
         {
             foreach (var SecretKeywordItem in SecretKeywords)
             {
-                if(Regex.IsMatch(stringIdentifier,SecretKeywordItem))
+                if(Regex.IsMatch(variable,SecretKeywordItem,RegexOptions.IgnoreCase))
+                {
                     return true;
+                }
             }
             return false;
         }
 
-        //Method to check value is matches with secret patterns
-        public static bool IsPasswordValue(string stringValue)
+        //Check string value is matches with secret patterns
+        public static bool IsSecretValue(string stringValue)
         {
             foreach (var pattern in secretPatterns)
             {
                 if(Regex.IsMatch(stringValue,pattern.Value))
                 {
-                    //Console.WriteLine(pattern.Key,pattern.Value);
+                    //Console.WriteLine("{0} : {1}",stringValue,pattern.Value);
                     return true;
                 }
             }
             return false;
         }
 
-        private static List<SyntaxNodeOrToken> FindHardcodeStrings(SyntaxNodeOrToken nodeOrToken)
+        //Finding non-empty single/multi line comments in source code
+        private static List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
+        {
+            List<SyntaxTrivia> hardcodeComments=new List<SyntaxTrivia>();
+            var commentNodes = from commentNode in rootNode.DescendantTrivia()
+            where commentNode.IsKind(SyntaxKind.MultiLineCommentTrivia) || commentNode.IsKind(SyntaxKind.SingleLineCommentTrivia)
+            select commentNode;
+            foreach (var commentNode in commentNodes)
+            {
+                string commentText = "";
+                switch (commentNode.Kind())
+                {
+                    case SyntaxKind.SingleLineCommentTrivia:
+                        commentText = commentNode.ToString().TrimStart('/');
+                        break;
+                    case SyntaxKind.MultiLineCommentTrivia:
+                        commentText = commentNode.ToString();
+                        commentText = commentText.Substring(2, commentText.Length-4);
+                        break;
+                }
+                if(!commentText.Trim().Equals(string.Empty))
+                    hardcodeComments.Add(commentNode);
+            }
+            return hardcodeComments;
+        }
+        private static List<SyntaxNodeOrToken> FindHardcodeStrings(SyntaxNode rootNode)
         {
             //Finding all hardcode strings
             List<SyntaxNodeOrToken> result=new List<SyntaxNodeOrToken>();
-            foreach (SyntaxNodeOrToken child in nodeOrToken.ChildNodesAndTokens())
+            var stringNodes = from stringNode in ((SyntaxNode)rootNode).DescendantNodes()
+                                where stringNode.IsKind(SyntaxKind.VariableDeclaration)
+                                select stringNode;
+            foreach (SyntaxNode child in stringNodes)
             {
                 //Finding string variable declarations
-                if(child.Kind() == SyntaxKind.VariableDeclaration &&
-                (((VariableDeclarationSyntax)child).Type.ToString() == "string"||
-                ((VariableDeclarationSyntax)child).Type.ToString() == "String") &&
-                child.ChildNodesAndTokens().Count>2)
+                if((((VariableDeclarationSyntax)child).Type.ToString() == "string"|| ((VariableDeclarationSyntax)child).Type.ToString() == "String")
+                && child.ChildNodesAndTokens()[1].ChildNodesAndTokens().Count>1)
+                {
                     result.Add(child);
-                else
-                    result.AddRange(FindHardcodeStrings(child));
+                }
             }
             return result;
         }

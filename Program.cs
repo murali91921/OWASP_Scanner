@@ -1,5 +1,6 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +18,7 @@ namespace ASTTask
             try
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
-                string[] fileNames = Directory.GetFiles(curDir);
+                string[] fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Credential")).ToArray();
 
                 foreach(string fileName in fileNames)
                 {
@@ -36,21 +37,28 @@ namespace ASTTask
                     {
                         foreach (var item in emptyCatchStatements)
                         {
-                            Console.WriteLine("Line 0: "+GetLineNumber(item)+"\n "+item.ToFullString());
+                            Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
                         }
                     }
                     //finding hard-coded keys/passwords
-                    List<SyntaxNodeOrToken> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
-                    if(hardcodeStatements !=null && hardcodeStatements.Count>0)
+                    Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
+                    if(hardcodeStatements !=null)
                     {
-                        foreach (var item in hardcodeStatements)
+                        foreach (var item in hardcodeStatements.Item1)
                         {
                             if(item.Kind()==SyntaxKind.VariableDeclarator)
-                                Console.WriteLine("Line 1: " +GetLineNumber(item)+" : "+ ((VariableDeclaratorSyntax)item).Identifier);
+                                Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
                             else if(item.Kind()==SyntaxKind.StringLiteralExpression)
-                                Console.WriteLine("Line 2: " +GetLineNumber(item)+" : "+ ((LiteralExpressionSyntax)item).ToString());
+                                Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((LiteralExpressionSyntax)item).ToString());
+                        }
+                        foreach (var item in hardcodeStatements.Item2)
+                        {
+                                Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
                         }
                     }
+
+                    //Finding Missing secure cookie flags
+                    //List<SyntaxNodeOrToken> insecureCookieSyntax=CookieFlagScanner.FindInsecureCookies(syntaxNode);
                 }
             }
             catch (System.Exception ex)
@@ -58,10 +66,8 @@ namespace ASTTask
                 Console.WriteLine(ex.Message +"\n"+ex.StackTrace);
             }
         }
-        private static int GetLineNumber(SyntaxNodeOrToken item)
-        {
-        return item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
-        }
+        private static int GetLineNumber(SyntaxNodeOrToken item)=>item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
+        private static int GetLineNumber(SyntaxTrivia item)=>item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
         private static ASTNode CreateSyntaxTree(SyntaxNodeOrToken nodeOrToken)
         {
             var root = new ASTNode(GetSyntaxNodeOrTokenInfo(nodeOrToken));
