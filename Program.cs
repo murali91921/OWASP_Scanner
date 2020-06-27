@@ -18,7 +18,7 @@ namespace ASTTask
             try
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
-                string[] fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Credential")).ToArray();
+                string[] fileNames = Directory.GetFiles(curDir);
 
                 foreach(string fileName in fileNames)
                 {
