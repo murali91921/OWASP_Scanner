@@ -1,17 +1,22 @@
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Web;
 
-namespace Sample2
+namespace CFSNSExample2
 {
-    class Credentials2
+    class CFSClassExample2
     {
+        /*
         //Snippet 1
-        public HttpResponseMessage Snippet1( )
+        public HttpResponseMessage Snippet1()
         {
             var resp = new HttpResponseMessage();
-            var cookie = new CookieHeaderValue("TestCookie", "12345");
+            CookieHeaderValue cookie = new CookieHeaderValue("TestCookie", "12345");
+            CookieHeaderValue cookie1 = new CookieHeaderValue("TestCookie", "12345");
             cookie.Expires = DateTimeOffset.Now.AddDays(1);
-            cookie.Domain = Request.RequestUri.Host;
+
             cookie.Path = "/";
             cookie.Secure = true;
             resp.Headers.AddCookies(new CookieHeaderValue[] { cookie });
@@ -19,23 +24,33 @@ namespace Sample2
         }
 
         //Snippet 2
-        public void Snippet2
+        public void Snippet2(HttpResponse Response)
         {
             Response.Cookies.Add(
-                new HttpCookie("key2", "value2")
+                new System.Web.HttpCookie("key2", "value2")
+                {
+                    Secure = true,
+                });
+        }
+
+        //Snippet 21
+        public void Snippet2(HttpResponse Response)
+        {
+            Response.Cookies.Add(
+                new HttpCookie("key21", "value21")
                 {
                     Secure = true,
                 });
         }
 
         //Snippet 3
-        public void Snippet3(HttpResponse Response)
+        public void Snippet3(System.Web.HttpResponse Response)
         {
             if (Response.Cookies.Count > 0)
             {
                 foreach (string s in Response.Cookies.AllKeys)
                 {
-                    if (!Response.Cookies[s].Secure))
+                    if (!Response.Cookies[s].Secure)
                     {
                         Response.Cookies[s].Secure = true;
                     }
@@ -44,7 +59,7 @@ namespace Sample2
         }
 
         //Snippet4
-        public void Snippet4()
+        /*public void Snippet4()
         {
             var validationCookie = new CookieHeaderValue("cookieName_Snippet4", "cookieValue_Snippet4")
             {
@@ -52,18 +67,18 @@ namespace Sample2
                 HttpOnly = true,
                 Secure = true
             };
-        }
+        }*/
 
         //Snippet5
         public void Snippet5()
         {
-            CookieHeaderValue validationCookie;
-            validationCookie = new CookieHeaderValue("cookieName_Snippet5", "cookieValue_Snippet5")
+            HttpCookie httpCookie;
+            httpCookie = new HttpCookie("cookieName_Snippet5", "cookieValue_Snippet5")
             {
                 Path = "/",
                 HttpOnly = true,
                 Secure = true
             };
-        }
+        }*/
     }
 }

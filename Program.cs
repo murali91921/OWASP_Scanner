@@ -18,20 +18,21 @@ namespace ASTTask
             try
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
-                string[] fileNames = Directory.GetFiles(curDir);
+                 string[] fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan")).ToArray();
+                // string[] fileNames = Directory.GetFiles(curDir);
 
                 foreach(string fileName in fileNames)
                 {
                     string programLines = File.ReadAllText(fileName);
-                    //Forming Syntax Tree
+                    //Forming syntax Tree
                     SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
 
-                    //Forming Properties into AST object and printing them as JSON string
+                    // Forming properties into AST object and printing them as JSON string
                     // ASTNode root = CreateSyntaxTree(syntaxNode);
                     // Console.WriteLine(JsonConvert.SerializeObject(root));
 
                     //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
-                    Console.WriteLine(fileName);
+                    Console.WriteLine("Analysing {0}",fileName);
                     List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
                     if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                     {
@@ -58,7 +59,13 @@ namespace ASTTask
                     }
 
                     //Finding Missing secure cookie flags
-                    //List<SyntaxNodeOrToken> insecureCookieSyntax=CookieFlagScanner.FindInsecureCookies(syntaxNode);
+                    List<SyntaxNode> inSecureCookies = CookieFlagScanner.GetAllSymbols(fileName,syntaxNode);
+                    if(inSecureCookies !=null)
+                        foreach (var item in inSecureCookies)
+                        {
+                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
+                        }
+                    Console.WriteLine("Analysing completed.\n");
                 }
             }
             catch (System.Exception ex)
