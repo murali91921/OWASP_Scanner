@@ -51,7 +51,7 @@ namespace CFSNSExample1
         {
             var objHttpCookie5 = new HttpCookie("key5", "value5");
             objHttpCookie5.Secure = true;
-            objHttpCookie5.HttpOnly = false,
+            objHttpCookie5.HttpOnly = false;
         }
 
         //Snippet 6
@@ -59,7 +59,7 @@ namespace CFSNSExample1
         {
             HttpCookie objHttpCookie6 = new HttpCookie("key6", "value6");
             objHttpCookie6.Secure = false;
-            objHttpCookie6.HttpOnly = true,
+            objHttpCookie6.HttpOnly = true;
         }
     }
 }

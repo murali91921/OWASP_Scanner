@@ -1,84 +1,83 @@
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 using System.Web;
 
 namespace CFSNSExample2
 {
-    class CFSClassExample2
-    {
         /*
         //Snippet 1
         public HttpResponseMessage Snippet1()
         {
             var resp = new HttpResponseMessage();
-            CookieHeaderValue cookie = new CookieHeaderValue("TestCookie", "12345");
-            CookieHeaderValue cookie1 = new CookieHeaderValue("TestCookie", "12345");
+            Microsoft.Net.Http.Headers.CookieHeaderValue cookie = new Microsoft.Net.Http.Headers.CookieHeaderValue("CookieName11", "CookieVal11");
+            CookieHeaderValue cookie1 = new CookieHeaderValue("CookieName12", "CookieVal12");
             cookie.Expires = DateTimeOffset.Now.AddDays(1);
-
             cookie.Path = "/";
             cookie.Secure = true;
-            resp.Headers.AddCookies(new CookieHeaderValue[] { cookie });
+            cookie.HttpOnly = true;
+            cookie1.Secure = true;
+            cookie1.HttpOnly = true;
+            resp.Headers.AddCookies(new CookieHeaderValue[] { cookie,cookie1 });
             return resp;
         }
 
         //Snippet 2
-        public void Snippet2(HttpResponse Response)
+        public void Snippet2()
         {
-            Response.Cookies.Add(
-                new System.Web.HttpCookie("key2", "value2")
-                {
-                    Secure = true,
-                });
-        }
-
-        //Snippet 21
-        public void Snippet2(HttpResponse Response)
-        {
-            Response.Cookies.Add(
-                new HttpCookie("key21", "value21")
-                {
-                    Secure = true,
-                });
+            CookieHeaderValue objCookieHeaderValue2 = new CookieHeaderValue("CookieName2", "CookieVal2")
+            {
+                Path = "/",
+            };
+            objCookieHeaderValue2.Secure = true;
+            objCookieHeaderValue2.HttpOnly = true;
         }
 
         //Snippet 3
-        public void Snippet3(System.Web.HttpResponse Response)
+        public void Snippet3()
         {
-            if (Response.Cookies.Count > 0)
+            CookieHeaderValue objCookieHeaderValue3 = new CookieHeaderValue("CookieName3", "CookieVal3")
             {
-                foreach (string s in Response.Cookies.AllKeys)
-                {
-                    if (!Response.Cookies[s].Secure)
-                    {
-                        Response.Cookies[s].Secure = true;
-                    }
-                }
-            }
+                Path = "/",
+                HttpOnly = true,
+            };
+            objCookieHeaderValue3.Secure = true;
         }
 
-        //Snippet4
-        /*public void Snippet4()
+        //Snippet 4
+        public void Snippet4()
         {
-            var validationCookie = new CookieHeaderValue("cookieName_Snippet4", "cookieValue_Snippet4")
+            var objCookieHeaderValue4 = new CookieHeaderValue("CookieName4", "CookieVal4")
             {
                 Path = "/",
                 HttpOnly = true,
-                Secure = true
             };
-        }*/
-
-        //Snippet5
+            objCookieHeaderValue4.Secure = true;
+        }
+        //Snippet 5
         public void Snippet5()
         {
-            HttpCookie httpCookie;
-            httpCookie = new HttpCookie("cookieName_Snippet5", "cookieValue_Snippet5")
-            {
-                Path = "/",
-                HttpOnly = true,
-                Secure = true
-            };
+            var objCookieHeaderValue5 = new CookieHeaderValue("CookieName5", "CookieVal5");
+            objCookieHeaderValue5.Secure = true;
+            objCookieHeaderValue5.HttpOnly = true;
+        }
+
+        //Snippet 6
+        public void Snippet6()
+        {
+            CookieHeaderValue objCookieHeaderValue6 = new CookieHeaderValue("CookieName6", "CookieVal6");
+            objCookieHeaderValue6.Secure = true;
+            objCookieHeaderValue6.HttpOnly = true;
         }*/
+
+        //Snippet7
+        public HttpResponse MakeCookieSecure(HttpResponse Response)
+        {
+            foreach (string s in Response.Cookies.AllKeys)
+            {
+                Response.Cookies[s].Secure = true;
+            }
+        }
     }
 }

@@ -23,13 +23,13 @@ namespace ASTTask
             //Create new solution
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             //Create new project
-            var project = workspace.AddProject("Sample", "C#");
+            var project = workspace.AddProject("CookieScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             project = project.AddMetadataReferences(LoadMetadata(root));
             //Add project to workspace
             workspace.TryApplyChanges(project.Solution);
             //Add document to workspace
-            var document = workspace.AddDocument(project.Id, "NewDoc",SourceText.From(root.ToString()));
+            var document = workspace.AddDocument(project.Id, "CookieScanner",SourceText.From(root.ToString()));
             //Get the semantic model
             var model = document.GetSemanticModelAsync().Result;
             root = document.GetSyntaxRootAsync().Result;
@@ -37,9 +37,10 @@ namespace ASTTask
             var objectCreations = root.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
-                // Console.WriteLine("ObCreation {0} {1}",item.Kind(),item);
                 ISymbol symbolQualifiedName = model.GetSymbolInfo((item as ObjectCreationExpressionSyntax).Type).Symbol;
-                if(symbolQualifiedName.ToString() == "System.Web.HttpCookie")
+                //Console.WriteLine("ObCreation {0} {1} {2}",item.Kind(),symbolQualifiedName,item);
+                if( symbolQualifiedName!=null && (symbolQualifiedName.ToString() == "System.Web.HttpCookie"
+                    || symbolQualifiedName.ToString() == "Microsoft.Net.Http.Headers.CookieHeaderValue"))
                 {
                     bool isSecure = false;
                     bool isHttpOnly = false;
@@ -85,17 +86,16 @@ namespace ASTTask
 
                 foreach (var location in references.First().Locations)
                 {
-                        var expression = root.FindNode(location.Location.SourceSpan).Parent.Parent;
-
-                        if(expression.Kind()== SyntaxKind.SimpleAssignmentExpression)
-                        {
-                            if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
-                            .ToString()=="Secure")
-                                isSecure = PropertyMatch(expression as AssignmentExpressionSyntax,"Secure");
-                            else if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
-                            .ToString()=="HttpOnly")
-                                isHttpOnly = PropertyMatch(expression as AssignmentExpressionSyntax,"HttpOnly");
-                        }
+                    var expression = root.FindNode(location.Location.SourceSpan).Parent.Parent;
+                    if(expression.Kind()== SyntaxKind.SimpleAssignmentExpression)
+                    {
+                        if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
+                        .ToString()=="Secure")
+                            isSecure = PropertyMatch(expression as AssignmentExpressionSyntax,"Secure");
+                        else if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
+                        .ToString()=="HttpOnly")
+                            isHttpOnly = PropertyMatch(expression as AssignmentExpressionSyntax,"HttpOnly");
+                    }
                 }
                 if(!isSecure || !isHttpOnly)
                     missingCookieStatements.Add(item.cookieStatement);
@@ -128,7 +128,6 @@ namespace ASTTask
                     (assignment.Left as MemberAccessExpressionSyntax).Name.ToString()==propertyName &&
                     assignment.Right.IsKind(SyntaxKind.TrueLiteralExpression))
                     propertyValue =true;
-
                 else if(assignment.Left.ToString()==propertyName && assignment.Right.IsKind(SyntaxKind.TrueLiteralExpression))
                         propertyValue =true;
             }

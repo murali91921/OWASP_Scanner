@@ -18,8 +18,8 @@ namespace ASTTask
             try
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
-                //string[] fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan")).ToArray();
                 string[] fileNames = Directory.GetFiles(curDir);
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan1")).ToArray();
 
                 foreach(string fileName in fileNames)
                 {
