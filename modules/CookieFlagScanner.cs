@@ -12,7 +12,12 @@ namespace ASTTask
 {
     internal class CookieFlagScanner
     {
-        public static List<SyntaxNode> GetAllSymbols(string filePath,SyntaxNode root)
+        public static XMLCookie GetXMLMissingCookieStatements(string filePath)
+        {
+            XMLCookie xMLCookie = new XMLCookie();
+            return xMLCookie;
+        }
+        public static List<SyntaxNode> GetMissingCookieStatements(string filePath,SyntaxNode root)
         {
             //Variable Declaraions;
             List<Cookie> pendingCookieStatements = new List<Cookie>();
@@ -33,14 +38,16 @@ namespace ASTTask
             //Get the semantic model
             var model = document.GetSemanticModelAsync().Result;
             root = document.GetSyntaxRootAsync().Result;
-
             var objectCreations = root.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
                 ISymbol symbolQualifiedName = model.GetSymbolInfo((item as ObjectCreationExpressionSyntax).Type).Symbol;
                 //Console.WriteLine("ObCreation {0} {1} {2}",item.Kind(),symbolQualifiedName,item);
-                if( symbolQualifiedName!=null && (symbolQualifiedName.ToString() == "System.Web.HttpCookie"
-                    || symbolQualifiedName.ToString() == "Microsoft.Net.Http.Headers.CookieHeaderValue"))
+                if( symbolQualifiedName!=null &&
+                    (symbolQualifiedName.ToString() == "System.Web.HttpCookie"
+                    || symbolQualifiedName.ToString() == "System.Net.Http.Headers.CookieHeaderValue"
+                    || symbolQualifiedName.ToString() == "Microsoft.Net.Http.Headers.CookieHeaderValue"
+                    || symbolQualifiedName.ToString() == "Microsoft.AspNetCore.Http.CookieOptions"))
                 {
                     bool isSecure = false;
                     bool isHttpOnly = false;
@@ -104,6 +111,33 @@ namespace ASTTask
             // {
             //     Console.WriteLine("Miss {0} {1}",item.Kind(),item);
             // }
+            // var PageIdentifierList = root.DescendantNodes().OfType<IdentifierNameSyntax>();
+            // if(PageIdentifierList.Count()>0)
+            // {
+            //     ISymbol pageResponse = null;
+            //     foreach (var item in PageIdentifierList)
+            //     {
+            //         if(model.GetSymbolInfo(item).Symbol!=null &&
+            //             model.GetSymbolInfo(item).Symbol.ToString()=="System.Web.UI.Page.Response")
+            //         {
+            //             pageResponse = model.GetSymbolInfo(item).Symbol;
+            //             break;
+            //         }
+            //     }
+            //     if(pageResponse !=null)
+            //     {
+            //         var pageResponseReferences = SymbolFinder.FindReferencesAsync(pageResponse,  document.Project.Solution).Result;
+            //         foreach (var reference in pageResponseReferences)
+            //         {
+            //             foreach (var location in reference.Locations)
+            //             {
+            //                 Console.WriteLine(model.GetSymbolInfo(root.FindNode(location.Location.SourceSpan).Parent.Parent).Symbol);
+            //             }
+            //         }
+            //         model.GetSymbolInfo(root.FindNode(pageResponseReferences.First().Locations.ToList()[2].Location.SourceSpan).Parent.Parent.Parent);
+            //     }
+            //}
+
             return missingCookieStatements;
         }
         public static MetadataReference[] LoadMetadata(SyntaxNode root)
@@ -137,6 +171,11 @@ namespace ASTTask
     internal class Cookie
     {
         internal SyntaxNode cookieStatement{set;get;}
+        internal bool IsSecure{set;get;}
+        internal bool IsHttpOnly{set;get;}
+    }
+    internal class XMLCookie
+    {
         internal bool IsSecure{set;get;}
         internal bool IsHttpOnly{set;get;}
     }

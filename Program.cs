@@ -19,52 +19,62 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan1")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan")).ToArray();
 
                 foreach(string fileName in fileNames)
                 {
-                    string programLines = File.ReadAllText(fileName);
-                    //Forming syntax Tree
-                    SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
-
-                    // Forming properties into AST object and printing them as JSON string
-                    // ASTNode root = CreateSyntaxTree(syntaxNode);
-                    // Console.WriteLine(JsonConvert.SerializeObject(root));
-
-                    //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
-                    Console.WriteLine("Analysing {0}",fileName);
-                    List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
-                    if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
+                    //Web.Config file
+                    if(fileName.EndsWith(".xml",StringComparison.InvariantCultureIgnoreCase) || fileName.EndsWith(".xml",StringComparison.InvariantCultureIgnoreCase))
                     {
-                        foreach (var item in emptyCatchStatements)
-                        {
-                            Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
-                        }
+                        CookieFlagScanner.GetXMLMissingCookieStatements(fileName);
                     }
-                    //finding hard-coded keys/passwords
-                    Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
-                    if(hardcodeStatements !=null)
+                    else
                     {
-                        foreach (var item in hardcodeStatements.Item1)
+                        string programLines = File.ReadAllText(fileName);
+                        //Forming syntax Tree
+                        SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
+
+                        // Forming properties into AST object and printing them as JSON string
+                        // ASTNode root = CreateSyntaxTree(syntaxNode);
+                        // Console.WriteLine(JsonConvert.SerializeObject(root));
+
+                        //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
+                        Console.WriteLine("Analysing {0}",fileName);
+                        Console.WriteLine("---------------------------------------------------------");
+                        List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
+                        if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                         {
-                            if(item.Kind()==SyntaxKind.VariableDeclarator)
-                                Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
-                            else if(item.Kind()==SyntaxKind.StringLiteralExpression)
-                                Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((LiteralExpressionSyntax)item).ToString());
+                            foreach (var item in emptyCatchStatements)
+                            {
+                                Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
+                            }
                         }
-                        foreach (var item in hardcodeStatements.Item2)
+                        //finding hard-coded keys/passwords
+                        Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
+                        if(hardcodeStatements !=null)
                         {
+                            foreach (var item in hardcodeStatements.Item1)
+                            {
+                                if(item.Kind()==SyntaxKind.VariableDeclarator)
+                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
+                                else if(item.Kind()==SyntaxKind.StringLiteralExpression)
+                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((LiteralExpressionSyntax)item).ToString());
+                            }
+                            foreach (var item in hardcodeStatements.Item2)
+                            {
+                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
+                            }
+                        }
+
+                        //Finding Missing secure cookie flags
+                        List<SyntaxNode> inSecureCookies = CookieFlagScanner.GetMissingCookieStatements(fileName,syntaxNode);
+                        if(inSecureCookies !=null)
+                            foreach (var item in inSecureCookies)
+                            {
                                 Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                        }
+                            }
                     }
-
-                    //Finding Missing secure cookie flags
-                    List<SyntaxNode> inSecureCookies = CookieFlagScanner.GetAllSymbols(fileName,syntaxNode);
-                    if(inSecureCookies !=null)
-                        foreach (var item in inSecureCookies)
-                        {
-                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                        }
+                    Console.WriteLine("---------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
                 }
             }
