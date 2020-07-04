@@ -28,12 +28,11 @@ namespace ASTTask
                     {
                         XMLCookie xMLCookie= CookieFlagScanner.GetXMLMissingCookieStatements(fileName);
                         if(!xMLCookie.IsSecure || !xMLCookie.IsHttpOnly)
-                            Console.WriteLine("Cookies are not Secure/Http.\nVulnerability found.");
+                            Console.WriteLine("Cookies are not Secure/Http only.\nVulnerability found.");
                     }
                     else
                     {
                         string programLines = File.ReadAllText(fileName);
-                        //Forming syntax Tree
                         SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
 
                         // Forming properties into AST object and printing them as JSON string
