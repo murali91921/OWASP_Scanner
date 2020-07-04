@@ -19,14 +19,16 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan")).ToArray();
+                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan1")).ToArray();
 
                 foreach(string fileName in fileNames)
                 {
                     //Web.Config file
-                    if(fileName.EndsWith(".xml",StringComparison.InvariantCultureIgnoreCase) || fileName.EndsWith(".xml",StringComparison.InvariantCultureIgnoreCase))
+                    if(fileName.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
-                        CookieFlagScanner.GetXMLMissingCookieStatements(fileName);
+                        XMLCookie xMLCookie= CookieFlagScanner.GetXMLMissingCookieStatements(fileName);
+                        if(!xMLCookie.IsSecure || !xMLCookie.IsHttpOnly)
+                            Console.WriteLine("Cookies are not Secure/Http.\nVulnerability found.");
                     }
                     else
                     {
