@@ -19,30 +19,30 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan1")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Crede")).ToArray();
 
-                foreach(string fileName in fileNames)
+                foreach(string filePath in fileNames)
                 {
                     //Web.Config file
-                    if(fileName.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
+                    if(filePath.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
-                        XMLCookie xMLCookie= CookieFlagScanner.GetXMLMissingCookieStatements(fileName);
+                        XMLCookie xMLCookie= CookieFlagScanner.GetXMLMissingCookieStatements(filePath);
                         if(!xMLCookie.IsSecure || !xMLCookie.IsHttpOnly)
                             Console.WriteLine("Cookies are not Secure/Http only.\nVulnerability found.");
                     }
                     else
                     {
-                        string programLines = File.ReadAllText(fileName);
-                        SyntaxNode syntaxNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                        string programLines = File.ReadAllText(filePath);
+                        SyntaxNode rootNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
 
                         // Forming properties into AST object and printing them as JSON string
                         // ASTNode root = CreateSyntaxTree(syntaxNode);
                         // Console.WriteLine(JsonConvert.SerializeObject(root));
 
                         //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
-                        Console.WriteLine("Analysing {0}",fileName);
+                        Console.WriteLine("Analysing {0}",filePath);
                         Console.WriteLine("---------------------------------------------------------");
-                        List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(syntaxNode);
+                        List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(rootNode);
                         if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                         {
                             foreach (var item in emptyCatchStatements)
@@ -51,15 +51,15 @@ namespace ASTTask
                             }
                         }
                         //finding hard-coded keys/passwords
-                        Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(syntaxNode);
+                        Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(filePath,rootNode);
                         if(hardcodeStatements !=null)
                         {
                             foreach (var item in hardcodeStatements.Item1)
                             {
-                                if(item.Kind()==SyntaxKind.VariableDeclarator)
-                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
-                                else if(item.Kind()==SyntaxKind.StringLiteralExpression)
-                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((LiteralExpressionSyntax)item).ToString());
+                                // if(item.Kind()==SyntaxKind.VariableDeclarator)
+                                //     Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
+                                // else if(item.Kind()==SyntaxKind.StringLiteralExpression)
+                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + (item).ToString());
                             }
                             foreach (var item in hardcodeStatements.Item2)
                             {
@@ -68,7 +68,7 @@ namespace ASTTask
                         }
 
                         //Finding Missing secure cookie flags
-                        List<SyntaxNode> inSecureCookies = CookieFlagScanner.GetMissingCookieStatements(fileName,syntaxNode);
+                        List<SyntaxNode> inSecureCookies = CookieFlagScanner.GetMissingCookieStatements(filePath,rootNode);
                         if(inSecureCookies !=null)
                             foreach (var item in inSecureCookies)
                             {
