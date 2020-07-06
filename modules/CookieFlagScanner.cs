@@ -37,26 +37,59 @@ namespace ASTTask
             List<ASTCookie> pendingCookieStatements = new List<ASTCookie>();
             List<SyntaxNode> missingCookieStatements=new List<SyntaxNode>();
 
-            //Create new AdhocWorkspace
+            //Adhoc Workspace creation
             var workspace = new AdhocWorkspace();
-            //Create new solution
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
-            //Create new project
             var project = workspace.AddProject("CookieScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             project = project.AddMetadataReferences(LoadMetadata(root));
-            //Add project to workspace
             workspace.TryApplyChanges(project.Solution);
-            //Add document to workspace
             var document = workspace.AddDocument(project.Id, "CookieScanner",SourceText.From(root.ToString()));
-            //Get the semantic model
             var model = document.GetSemanticModelAsync().Result;
             root = document.GetSyntaxRootAsync().Result;
-            var objectCreations = root.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
-            var objectDeclaration = root.DescendantNodes().OfType<VariableDeclarationSyntax>().ToList();
-            objectDeclaration = objectDeclaration.FindAll(item=>!item.Variables[0].Initializer.Value.IsKind(SyntaxKind.ObjectCreationExpression));
-            pendingCookieStatements.AddRange(objectDeclaration.ConvertAll<ASTCookie>(
-                    obj=>new ASTCookie(){cookieStatement= obj}));
+
+            // Values are modifying in Response Object itself.
+            foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+            {
+                Tuple<HashSet<SyntaxNode>,bool,bool> respStatements = FindResponseStatements(method, model,document.Project);
+                if(respStatements!=null && !respStatements.Item2 && !respStatements.Item2 && respStatements.Item1.Count>0)
+                {
+                    // Console.WriteLine("Secure flag unset {0}",respStatements.Item2);
+                    // Console.WriteLine("HttpOnly flag unset {0}",respStatements.Item3);
+                    foreach (var item in respStatements.Item1)
+                    {
+                        // Console.WriteLine("---- {0}",item.ToString());
+                        missingCookieStatements.Add(item);
+                    }
+                }
+            }
+
+            //Finding all declarations which are not having ObjectCreations and making them as pending statements
+            var variableDecl = root.DescendantNodes(). OfType<VariableDeclarationSyntax>();
+            foreach (var item in variableDecl)
+            {
+                ISymbol symbolQualifiedName = model.GetSymbolInfo(item.Type).Symbol;
+                if( symbolQualifiedName!=null &&
+                    (symbolQualifiedName.ToString() == "System.Web.HttpCookie"
+                    || symbolQualifiedName.ToString() == "System.Net.Http.Headers.CookieHeaderValue"
+                    || symbolQualifiedName.ToString() == "Microsoft.Net.Http.Headers.CookieHeaderValue"
+                    || symbolQualifiedName.ToString() == "Microsoft.AspNetCore.Http.CookieOptions"))
+                {
+                    foreach (var variable in item.Variables)
+                    {
+                        if(variable.Initializer!=null && variable.Initializer.IsKind(SyntaxKind.EqualsValueClause) &&
+                        !(variable.Initializer as EqualsValueClauseSyntax).Value.IsKind(SyntaxKind.ObjectCreationExpression))
+                        {
+                            pendingCookieStatements.Add(new ASTCookie() { cookieStatement = variable } );
+                            //Console.WriteLine("variableDecl {0} {1} {2}",variable.Initializer.Kind(),symbolQualifiedName,item);
+                        }
+                    }
+                    //Console.WriteLine("variableDecl {0} {1} {2}",item.Kind(),symbolQualifiedName,item);
+                }
+            }
+
+            // Cookie Object Declarations
+            var objectCreations = root.DescendantNodes(). OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
                 ISymbol symbolQualifiedName = model.GetSymbolInfo((item as ObjectCreationExpressionSyntax).Type).Symbol;
@@ -103,9 +136,8 @@ namespace ASTTask
                 bool isHttpOnly = item.IsHttpOnly;
                 var declaredSymbol = item.cookieStatement.IsKind(SyntaxKind.ObjectCreationExpression)
                 ? model.GetDeclaredSymbol(item.cookieStatement.Parent.Parent)
-                : model.GetDeclaredSymbol((item.cookieStatement as VariableDeclarationSyntax).Variables[0]);
+                : model.GetDeclaredSymbol((item.cookieStatement as VariableDeclaratorSyntax));
                 var references = SymbolFinder.FindReferencesAsync(declaredSymbol,  document.Project.Solution).Result;
-
                 foreach (var location in references.First().Locations)
                 {
                     var expression = root.FindNode(location.Location.SourceSpan).Parent.Parent;
@@ -113,7 +145,9 @@ namespace ASTTask
                     {
                         if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
                         .ToString()=="Secure")
-                            isSecure = PropertyMatch(expression as AssignmentExpressionSyntax,"Secure");
+                            {
+                                isSecure = PropertyMatch(expression as AssignmentExpressionSyntax,"Secure");
+                            }
                         else if(((expression as AssignmentExpressionSyntax).Left as MemberAccessExpressionSyntax).Name
                         .ToString()=="HttpOnly")
                             isHttpOnly = PropertyMatch(expression as AssignmentExpressionSyntax,"HttpOnly");
@@ -150,6 +184,63 @@ namespace ASTTask
                         propertyValue =true;
             }
             return propertyValue;
+        }
+        private static Tuple<HashSet<SyntaxNode>,bool,bool> FindResponseStatements(SyntaxNode root,SemanticModel model,Project project)
+        {
+            bool isSecure = false;
+            bool isHttpOnly = false;
+            HashSet<SyntaxNode> allCookieNodes=new HashSet<SyntaxNode>();
+            HashSet<SyntaxNode> InSecurenodes = new HashSet<SyntaxNode>();
+            HashSet<ISymbol> respSYmbols = new  HashSet<ISymbol>();
+            var compilation = project.GetCompilationAsync().Result;
+            var assignmentExpr = root.DescendantNodes().Where(obj=>obj.IsKind(SyntaxKind.SimpleAssignmentExpression)).Cast<AssignmentExpressionSyntax>();
+            foreach (var assignment in assignmentExpr)
+            {
+                // var assignment = expr.Expression as AssignmentExpressionSyntax;
+                //Console.WriteLine(assignment.Left);
+                if(assignment.Left.IsKind(SyntaxKind.SimpleMemberAccessExpression))
+                {
+                    if((assignment.Left as MemberAccessExpressionSyntax).Expression is IdentifierNameSyntax)
+                        continue;
+                    ISymbol symbol = model.GetSymbolInfo(assignment.Left).Symbol;
+                    if(symbol != null && symbol.ToString().StartsWith("System.Web.HttpCookie."))
+                    {
+                        allCookieNodes.Add(assignment);
+                        if(symbol.ToString() == "System.Web.HttpCookie.Secure")
+                        {
+                            isSecure = assignment.Right.Kind()==SyntaxKind.TrueLiteralExpression;
+                            if(!isSecure)
+                                InSecurenodes.Add(assignment);
+                        }
+                        else if(symbol.ToString() == "System.Web.HttpCookie.HttpOnly")
+                        {
+                            isHttpOnly = assignment.Right.Kind()==SyntaxKind.TrueLiteralExpression;
+                            if(!isHttpOnly)
+                                InSecurenodes.Add(assignment);
+                        }
+                    }
+                }
+                    // foreach (var usage in assignment.ChildNodes())
+                    // {
+                    // ISymbol symbol = model.GetSymbolInfo(usage).Symbol;
+                    // ISymbol parentSymbol = model.GetSymbolInfo(usage.Parent).Symbol;
+                    // if(symbol!=null  && parentSymbol!=null
+                    //     &&/* symbol.ToString()==baseResponseFullName && */parentSymbol.ToString()=="System.Web.HttpResponse.Cookies")
+                    //     {
+                    //         var loop = usage;
+                    //         while(loop.IsKind(SyntaxKind.ExpressionStatement))
+                    //         {
+                    //             loop = loop.Parent;
+                    //             Console.WriteLine("Element Accessed {0} {1}",usage.Parent.Parent.Parent,usage.Parent.Parent.Kind());
+                    //         }
+                    //         Console.WriteLine("{0} {1} {2}",usage,usage.Parent,usage.Parent.Kind());
+                    //     }
+                    // }
+            }
+            // If no secure/Httponly assignment statements found, display all response assignment statements as vulnerable
+            if((!isSecure || !isHttpOnly) && InSecurenodes.Count == 0)
+                InSecurenodes = new HashSet<SyntaxNode>(allCookieNodes);
+            return new Tuple<HashSet<SyntaxNode>, bool, bool>(InSecurenodes,isSecure,isHttpOnly);
         }
     }
     internal class ASTCookie

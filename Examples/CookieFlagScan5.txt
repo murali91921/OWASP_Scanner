@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web;
 using System.Web.UI;
+using resp = System.Web.HttpResponse;
 
 namespace CFSNSExample5
 {
@@ -33,6 +34,7 @@ namespace CFSNSExample5
             foreach (string s in Response.Cookies.AllKeys)
             {
                 Response.Cookies[s].Secure = true;
+                Response.Cookies[s].HttpOnly = false;
             }
         }
     }

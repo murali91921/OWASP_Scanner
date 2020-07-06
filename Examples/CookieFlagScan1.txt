@@ -10,8 +10,17 @@ namespace CFSNSExample1
         public void Snippet1(HttpResponse Response)
         {
             HttpCookie cookieResponse = Response.Cookies[0];
-            cookieResponse.Secure = true;
+            cookieResponse.Secure = false;
             cookieResponse.HttpOnly = true;
+
+            foreach (string s in Response.Cookies.AllKeys)
+            {
+                Response.Cookies[s].Value = DateTime.Now>date? DateTime.Now.ToString():DateTime.Now.AddHours(1).ToString();
+                bool secu = Response.Cookies[s].Secure;
+                Response.Cookies[s].Secure = false;
+                Response.Cookies[s].HttpOnly = true;
+                Console.WriteLine(secu);
+            }
             Response.Cookies.Add(
                 new System.Web.HttpCookie("key1", "value1")
                 {
