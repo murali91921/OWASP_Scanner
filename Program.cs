@@ -19,10 +19,12 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Scan1")).ToArray();
+                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Redire")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
+                    Console.WriteLine("Analysing {0}",filePath);
+                    Console.WriteLine("---------------------------------------------------------");
                     //Web.Config file
                     if(filePath.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -40,8 +42,6 @@ namespace ASTTask
                         // Console.WriteLine(JsonConvert.SerializeObject(root));
 
                         //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
-                        Console.WriteLine("Analysing {0}",filePath);
-                        Console.WriteLine("---------------------------------------------------------");
                         List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(rootNode);
                         if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                         {
@@ -82,6 +82,9 @@ namespace ASTTask
                                 missing += " Flag(s) missing ";
                                 Console.WriteLine(missing +"\nLine : " + GetLineNumber(item.CookieStatement) + " : " + item.CookieStatement.ToString()+"\n");
                             }
+
+                        //Finding OpenRedirect Vulnerabilities
+                        OpenRedirect.FindOpenRedirect(filePath,rootNode);
                     }
                     Console.WriteLine("---------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
