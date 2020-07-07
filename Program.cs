@@ -19,16 +19,16 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Crede")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("config")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
                     //Web.Config file
                     if(filePath.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
-                        XMLCookie xMLCookie= CookieFlagScanner.GetXMLMissingCookieStatements(filePath);
-                        if(!xMLCookie.IsSecure || !xMLCookie.IsHttpOnly)
-                            Console.WriteLine("Cookies are not Secure/Http only.\nVulnerability found.");
+                        string print = CookieFlagScanner.GetXMLMissingCookieStatements(filePath);
+                        if(!string.IsNullOrEmpty(print))
+                            Console.WriteLine(print);
                     }
                     else
                     {
@@ -54,6 +54,7 @@ namespace ASTTask
                         Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(filePath,rootNode);
                         if(hardcodeStatements !=null)
                         {
+                            //SyntaxNodes for hardcode statements
                             foreach (var item in hardcodeStatements.Item1)
                             {
                                 // if(item.Kind()==SyntaxKind.VariableDeclarator)
@@ -61,6 +62,7 @@ namespace ASTTask
                                 // else if(item.Kind()==SyntaxKind.StringLiteralExpression)
                                     Console.WriteLine("Line : " +GetLineNumber(item) + " : " + (item).ToString());
                             }
+                            //SyntaxTrivias for hardcode comments
                             foreach (var item in hardcodeStatements.Item2)
                             {
                                     Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());

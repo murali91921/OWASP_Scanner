@@ -8,28 +8,39 @@ using System.Linq;
 using System;
 using System.IO;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace ASTTask
 {
     internal class CookieFlagScanner
     {
-        public static XMLCookie GetXMLMissingCookieStatements(string filePath)
+        public static string GetXMLMissingCookieStatements(string filePath)
         {
-            XMLCookie xMLCookie = new XMLCookie();
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(filePath);
-            XmlNode httpCookieNode = xmlDoc.DocumentElement.SelectSingleNode("system.web/httpCookies");
-            if(httpCookieNode!=null)
+            bool isSecure = false, isHttpOnly = false;
+            string returnStatement = string.Empty;
+            XPathDocument doc = new XPathDocument(filePath);
+            XPathNavigator element = doc.CreateNavigator().SelectSingleNode("configuration/system.web/httpCookies");
+            if(element != null)
             {
-                foreach(XmlAttribute attribute in httpCookieNode.Attributes)
+                // element.MoveToNext();
+                returnStatement= string.Format("Line : "+((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)+" \n"+element.OuterXml.Trim());
+                if(element.HasAttributes)
                 {
-                    if(attribute.Name.Equals("httpOnlyCookies"))
-                        xMLCookie.IsHttpOnly=bool.Parse(attribute.Value);
-                    else if(attribute.Name.Equals("requireSSL"))
-                        xMLCookie.IsSecure=bool.Parse(attribute.Value);
+                    element.MoveToFirstAttribute();
+                    do
+                    {
+                        if(element.Name.Equals("httpOnlyCookies",StringComparison.InvariantCultureIgnoreCase))
+                            isHttpOnly = bool.Parse(element.Value);
+                        else if(element.Name.Equals("requireSSL",StringComparison.InvariantCultureIgnoreCase))
+                            isSecure = bool.Parse(element.Value);
+                    }
+                    while(element.MoveToNextAttribute());
                 }
+                if(isHttpOnly && isSecure)
+                    returnStatement = string.Empty;
             }
-            return xMLCookie;
+            Console.WriteLine(isHttpOnly +""+ isSecure);
+            return returnStatement;
         }
         public static List<SyntaxNode> GetMissingCookieStatements(string filePath,SyntaxNode root)
         {
@@ -251,7 +262,8 @@ namespace ASTTask
     }
     internal class XMLCookie
     {
-        internal bool IsSecure{set;get;}
-        internal bool IsHttpOnly{set;get;}
+        // internal bool IsSecure {set;get;}
+        // internal bool IsHttpOnly {set;get;}
+        internal bool LineNumber {set;get;}
     }
 }
