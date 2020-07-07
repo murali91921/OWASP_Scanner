@@ -38,15 +38,25 @@ namespace ASTTask
                 }
                 if(isHttpOnly && isSecure)
                     returnStatement = string.Empty;
+                else
+                {
+                    string missing = "";
+                    if(!isHttpOnly)
+                        missing = "HttpOnly";
+                    if(!isSecure)
+                        missing = string.IsNullOrEmpty(missing)?"Secure": (missing+", Secure");
+                    missing += " Flag(s) missing ";
+                    returnStatement = missing + "\n" + returnStatement;
+                }
             }
-            Console.WriteLine(isHttpOnly +""+ isSecure);
+            //Console.WriteLine(isHttpOnly +""+ isSecure);
             return returnStatement;
         }
-        public static List<SyntaxNode> GetMissingCookieStatements(string filePath,SyntaxNode root)
+        public static List<ASTCookie> GetMissingCookieStatements(string filePath,SyntaxNode root)
         {
             //Variable Declaraions;
             List<ASTCookie> pendingCookieStatements = new List<ASTCookie>();
-            List<SyntaxNode> missingCookieStatements=new List<SyntaxNode>();
+            List<ASTCookie> missingCookieStatements=new List<ASTCookie>();
 
             //Adhoc Workspace creation
             var workspace = new AdhocWorkspace();
@@ -70,7 +80,11 @@ namespace ASTTask
                     foreach (var item in respStatements.Item1)
                     {
                         // Console.WriteLine("---- {0}",item.ToString());
-                        missingCookieStatements.Add(item);
+                        missingCookieStatements.Add(new ASTCookie{
+                            CookieStatement = item,
+                            IsSecure = respStatements.Item2,
+                            IsHttpOnly = respStatements.Item3
+                        });
                     }
                 }
             }
@@ -91,7 +105,7 @@ namespace ASTTask
                         if(variable.Initializer!=null && variable.Initializer.IsKind(SyntaxKind.EqualsValueClause) &&
                         !(variable.Initializer as EqualsValueClauseSyntax).Value.IsKind(SyntaxKind.ObjectCreationExpression))
                         {
-                            pendingCookieStatements.Add(new ASTCookie() { cookieStatement = variable } );
+                            pendingCookieStatements.Add(new ASTCookie() { CookieStatement = variable } );
                             //Console.WriteLine("variableDecl {0} {1} {2}",variable.Initializer.Kind(),symbolQualifiedName,item);
                         }
                     }
@@ -131,11 +145,15 @@ namespace ASTTask
                     if(item.Parent.Kind()==SyntaxKind.Argument)
                     {
                         if(!isSecure || !isHttpOnly)
-                            missingCookieStatements.Add(item);
+                            missingCookieStatements.Add(new ASTCookie(){
+                                CookieStatement = item,
+                                IsSecure = isSecure,
+                                IsHttpOnly = isHttpOnly
+                            });
                     }
                     else if(item.Parent.Kind()==SyntaxKind.EqualsValueClause)
                         pendingCookieStatements.Add(new ASTCookie(){
-                            cookieStatement = item,
+                            CookieStatement = item,
                             IsSecure = isSecure,
                             IsHttpOnly = isHttpOnly
                             });
@@ -145,9 +163,9 @@ namespace ASTTask
             {
                 bool isSecure = item.IsSecure;
                 bool isHttpOnly = item.IsHttpOnly;
-                var declaredSymbol = item.cookieStatement.IsKind(SyntaxKind.ObjectCreationExpression)
-                ? model.GetDeclaredSymbol(item.cookieStatement.Parent.Parent)
-                : model.GetDeclaredSymbol((item.cookieStatement as VariableDeclaratorSyntax));
+                var declaredSymbol = item.CookieStatement.IsKind(SyntaxKind.ObjectCreationExpression)
+                ? model.GetDeclaredSymbol(item.CookieStatement.Parent.Parent)
+                : model.GetDeclaredSymbol((item.CookieStatement as VariableDeclaratorSyntax));
                 var references = SymbolFinder.FindReferencesAsync(declaredSymbol,  document.Project.Solution).Result;
                 foreach (var location in references.First().Locations)
                 {
@@ -165,7 +183,11 @@ namespace ASTTask
                     }
                 }
                 if(!isSecure || !isHttpOnly)
-                    missingCookieStatements.Add(item.cookieStatement);
+                    missingCookieStatements.Add(new ASTCookie(){
+                        CookieStatement = item.CookieStatement,
+                        IsHttpOnly = isHttpOnly,
+                        IsSecure = isSecure
+                        });
             }
             return missingCookieStatements;
         }
@@ -256,9 +278,9 @@ namespace ASTTask
     }
     internal class ASTCookie
     {
-        internal SyntaxNode cookieStatement{set;get;}
-        internal bool IsSecure{set;get;}
-        internal bool IsHttpOnly{set;get;}
+        internal SyntaxNode CookieStatement {set;get;}
+        internal bool IsSecure {set;get;}
+        internal bool IsHttpOnly {set;get;}
     }
     internal class XMLCookie
     {

@@ -24,7 +24,7 @@ namespace CFSNSExample1
             Response.Cookies.Add(
                 new System.Web.HttpCookie("key1", "value1")
                 {
-                    Secure = true,
+                    Secure = false,
                 });
         }
 
