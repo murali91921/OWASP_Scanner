@@ -61,11 +61,11 @@ namespace ASTTask
             //Adhoc Workspace creation
             var workspace = new AdhocWorkspace();
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
-            var project = workspace.AddProject("CookieScanner", "C#");
+            var project = workspace.AddProject("CookieFlagScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             project = project.AddMetadataReferences(LoadMetadata(root));
             workspace.TryApplyChanges(project.Solution);
-            var document = workspace.AddDocument(project.Id, "CookieScanner",SourceText.From(root.ToString()));
+            var document = workspace.AddDocument(project.Id, "CookieFlagScanner",SourceText.From(root.ToString()));
             var model = document.GetSemanticModelAsync().Result;
             root = document.GetSyntaxRootAsync().Result;
 
@@ -152,11 +152,14 @@ namespace ASTTask
                             });
                     }
                     else if(item.Parent.Kind()==SyntaxKind.EqualsValueClause)
-                        pendingCookieStatements.Add(new ASTCookie(){
-                            CookieStatement = item,
+                        {
+                            Console.WriteLine("{0} S{1} H{2}",item,isSecure,isHttpOnly);
+                            pendingCookieStatements.Add(new ASTCookie(){
+                            CookieStatement = item.Parent.Parent,
                             IsSecure = isSecure,
                             IsHttpOnly = isHttpOnly
                             });
+                        }
                 }
             }
             foreach (var item in pendingCookieStatements)

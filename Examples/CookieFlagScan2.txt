@@ -19,7 +19,7 @@ public class CFSClassExample2 : Page
             cookie.Expires = DateTimeOffset.Now.AddDays(1);
             cookie.Path = "/";
             cookie.Secure = false;
-            cookie.HttpOnly = true;
+            //cookie.HttpOnly = true;
             cookie1.Secure = true;
             cookie1.HttpOnly = false;
             resp.Headers.AddCookies(new CookieHeaderValue[] { cookie,cookie1 });
