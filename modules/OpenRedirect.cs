@@ -40,8 +40,7 @@ namespace ASTTask
                 var symbols= SymbolFinder.FindReferencesAsync(restype,document.Project.Solution).Result;
                 foreach (var symbol in symbols)
                 {
-                Console.WriteLine("{0} {1}",symbol.Definition.ToString(),symbol.Locations.Count());
-                    
+                    Console.WriteLine("{0} {1}",symbol.Definition.ToString(),symbol.Locations.Count());
                 }
                 Console.WriteLine("{0} {1}",item.ToString(),item.Kind());
             }

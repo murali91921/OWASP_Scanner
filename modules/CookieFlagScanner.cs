@@ -153,7 +153,7 @@ namespace ASTTask
                     }
                     else if(item.Parent.Kind()==SyntaxKind.EqualsValueClause)
                         {
-                            Console.WriteLine("{0} S{1} H{2}",item,isSecure,isHttpOnly);
+                            //Console.WriteLine("{0} S{1} H{2}",item,isSecure,isHttpOnly);
                             pendingCookieStatements.Add(new ASTCookie(){
                             CookieStatement = item.Parent.Parent,
                             IsSecure = isSecure,
