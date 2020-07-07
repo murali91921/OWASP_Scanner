@@ -1,14 +1,14 @@
 using System;
 using System.Web;
 
-public partial class MyForm : UI.Page
+public partial class MyForm : System.Web.UI.Page
 {
-    protected void Page_Load(object sender, EventArgs e)
+    protected void Page_Load(object sender, EventArgs e,HttpResponse response)
     {
         string input = Request.Form["in"];
-        if (String.IsNullOrWhiteSpace(input))
+        if (string.IsNullOrWhiteSpace(input))
         {
-            this.Response.Redirect("https://example.org/login.html");
+            response.Redirect("https://example.org/login.html");
         }
     }
     protected void Button_Click(object sender, EventArgs e)

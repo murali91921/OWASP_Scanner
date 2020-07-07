@@ -73,10 +73,10 @@ namespace ASTTask
             // Creating Adhoc Workspace
             var workspace = new AdhocWorkspace();
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
-            var project = workspace.AddProject("CookieScanner", "C#");
+            var project = workspace.AddProject("CredsFinder", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             workspace.TryApplyChanges(project.Solution);
-            var document = workspace.AddDocument(project.Id, "CookieScanner",SourceText.From(rootNode.ToString()));
+            var document = workspace.AddDocument(project.Id, "CredsFinder",SourceText.From(rootNode.ToString()));
             var model = document.GetSemanticModelAsync().Result;
             rootNode = document.GetSyntaxRootAsync().Result;
 

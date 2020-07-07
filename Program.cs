@@ -19,7 +19,7 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Redire")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Redire")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
@@ -84,7 +84,7 @@ namespace ASTTask
                             }
 
                         //Finding OpenRedirect Vulnerabilities
-                        OpenRedirect.FindOpenRedirect(filePath,rootNode);
+                        //OpenRedirect.FindOpenRedirect(filePath,rootNode);
                     }
                     Console.WriteLine("---------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
