@@ -125,7 +125,7 @@ namespace ASTTask
                                         if(!string.IsNullOrEmpty(stringValue.Trim('"',' ')))
                                             secretStrings.Add(presentStatement);
                                     }
-                                    else if(presentStatement is BinaryExpressionSyntax)
+                                    else if(presentStatement is BinaryExpressionSyntax && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
                                     {
                                         BinaryExpressionSyntax condition = presentStatement as BinaryExpressionSyntax;
                                         if(((condition.Right is LiteralExpressionSyntax && condition.Left is IdentifierNameSyntax)

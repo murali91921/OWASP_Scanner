@@ -24,13 +24,16 @@ namespace ASTTask
                 foreach(string filePath in fileNames)
                 {
                     Console.WriteLine("Analysing {0}",filePath);
-                    Console.WriteLine("---------------------------------------------------------");
+                    Console.WriteLine("---------------------------------------------------------------------------------------------------");
                     //Web.Config file
                     if(filePath.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
+                        Console.WriteLine("--------------------- Cookie flag scanning started ---------------------");
                         string print = CookieFlagScanner.GetXMLMissingCookieStatements(filePath);
                         if(!string.IsNullOrEmpty(print))
                             Console.WriteLine(print);
+                        // Console.WriteLine("--------------------- Cookie flag scanning finished ---------------------");
+
                     }
                     else
                     {
@@ -42,6 +45,7 @@ namespace ASTTask
                         // Console.WriteLine(JsonConvert.SerializeObject(root));
 
                         //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
+                        Console.WriteLine("--------------------- Empty catch block scanning started ---------------------\n");
                         List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(rootNode);
                         if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                         {
@@ -50,7 +54,9 @@ namespace ASTTask
                                 Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
                             }
                         }
+                        // Console.WriteLine("--------------------- Empty catch block scanning finished ---------------------\n");
                         //finding hard-coded keys/passwords
+                        Console.WriteLine("--------------------- Hard-coded credentials scanning started ---------------------\n");
                         Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(filePath,rootNode);
                         if(hardcodeStatements !=null)
                         {
@@ -68,8 +74,9 @@ namespace ASTTask
                                     Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
                             }
                         }
-
+                        // Console.WriteLine("--------------------- Hard-coded credentials scanning finished ---------------------\n");
                         //Finding Missing secure cookie flags
+                        Console.WriteLine("--------------------- Cookie flag scanning started ---------------------\n");
                         List<ASTCookie> inSecureCookies = CookieFlagScanner.GetMissingCookieStatements(filePath,rootNode);
                         if(inSecureCookies !=null)
                             foreach (var item in inSecureCookies)
@@ -82,11 +89,19 @@ namespace ASTTask
                                 missing += " Flag(s) missing ";
                                 Console.WriteLine(missing +"\nLine : " + GetLineNumber(item.CookieStatement) + " : " + item.CookieStatement.ToString()+"\n");
                             }
+                        // Console.WriteLine("--------------------- Cookie flag scanning finished ---------------------\n");
 
+                        Console.WriteLine("--------------------- Open Redirect scanning started ---------------------\n");
                         //Finding OpenRedirect Vulnerabilities
-                        //OpenRedirect.FindOpenRedirect(filePath,rootNode);
+                        OpenRedirect openRedirect = new OpenRedirect();
+                        var openRedirectStatements = openRedirect.FindOpenRedirect(filePath,rootNode);
+                        foreach (var item in openRedirectStatements)
+                        {
+                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
+                        }
+                        // Console.WriteLine("--------------------- Open Redirect scanning finished ---------------------\n");
                     }
-                    Console.WriteLine("---------------------------------------------------------");
+                    Console.WriteLine("---------------------------------------------------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
                 }
             }

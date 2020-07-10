@@ -18,7 +18,6 @@ namespace Sample2
                 {
                     int Salary=1000;
                     decimal=20M;
-                    string name="John Williams";
                     Console.WriteLine("Hello World!");
                 }
             }
