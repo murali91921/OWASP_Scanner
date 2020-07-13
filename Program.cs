@@ -19,7 +19,7 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("word3")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Empty")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
@@ -99,9 +99,9 @@ namespace ASTTask
                         {
                             Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
                         }
-                        // Console.WriteLine("--------------------- Open Redirect scanning finished ---------------------\n");
                         Console.WriteLine("--------------------- Weak Password scanning started ---------------------\n");
-                        //Finding WekaPassword Vulnerabilities
+
+                        //Finding WeakPassword Vulnerabilities
                         WeakPasswordValidator weakPasswordValidator  = new WeakPasswordValidator();
                         var weakPasswordStatements  = weakPasswordValidator.FindWeakPasswords(filePath,rootNode);
                         foreach (var item in weakPasswordStatements)
@@ -109,6 +109,14 @@ namespace ASTTask
                             Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
                         }
 
+                        //Finding Empty try block Vulnerabilities
+                        Console.WriteLine("--------------------- Empty Try block scanning started ---------------------\n");
+                        EmptyTryScanner emptyTryScanner  = new EmptyTryScanner();
+                        var emptyTryStatements  = emptyTryScanner.FindEmptyTryStatements(rootNode);
+                        foreach (var item in emptyTryStatements)
+                        {
+                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
+                        }
                     }
                     Console.WriteLine("---------------------------------------------------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
