@@ -30,6 +30,8 @@ namespace ASTTask
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             var project = workspace.AddProject("OpenRedirect", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
+            // bool isNetCore = false;
+            // bool isNetCore = filePath.Contains("OpenRedirect_Core");
             project = project.AddMetadataReferences(LoadMetadata(rootNode));
             workspace.TryApplyChanges(project.Solution);
             var document = workspace.AddDocument(project.Id, "OpenRedirect",SourceText.From(rootNode.ToString()));
@@ -44,13 +46,17 @@ namespace ASTTask
                 //Get the symbol Info from Semanticmodel
                 IMethodSymbol symbol = null;
                 var symbolInfo = model.GetSymbolInfo(item);
-                if(symbolInfo.Symbol==null && symbolInfo.CandidateReason==CandidateReason.OverloadResolutionFailure)
+                if(symbolInfo.Symbol==null && symbolInfo.CandidateReason == CandidateReason.OverloadResolutionFailure)
                     symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
                 else
                     symbol = symbolInfo.Symbol as IMethodSymbol;
+                Console.WriteLine(symbol);
 
                 if(symbol != null && (symbol.Name == "Redirect" || symbol?.Name == "RedirectPermanent")
-                    && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"))
+                    && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"
+                     || symbol.ReceiverType.ToString() == "System.Web.Mvc.Controller" || symbol.ReceiverType.ToString() == "System.Web.HttpResponseBase"
+                     || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.Controller"
+                     || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.ControllerBase"))
                 {
                     //Console.WriteLine("{0} {1}",symbol.ToString(),item.Kind());
                     if(item.ArgumentList.Arguments.Count>0)
@@ -177,6 +183,13 @@ namespace ASTTask
         private static MetadataReference[] LoadMetadata(SyntaxNode root)
         {
             List<MetadataReference> allMetadataReference = new List<MetadataReference>();
+            // if(isNetCore)
+            // {
+            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.ViewFeatures.dll"));
+            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.Core.dll"));
+            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Http.Abstractions.dll"));
+            //     return allMetadataReference.ToArray();
+            // }
             List<UsingDirectiveSyntax> allNamespaces = root.DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
             foreach (var item in allNamespaces)
             {
@@ -184,6 +197,9 @@ namespace ASTTask
                 if(File.Exists(assemblyFile))
                     allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
             }
+            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.ViewFeatures.dll"));
+            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.Core.dll"));
+            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Http.Abstractions.dll"));
             return allMetadataReference.ToArray();
         }
     }
