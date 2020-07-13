@@ -50,7 +50,7 @@ namespace ASTTask
                     symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
                 else
                     symbol = symbolInfo.Symbol as IMethodSymbol;
-                Console.WriteLine(symbol);
+                //Console.WriteLine(symbol);
 
                 if(symbol != null && (symbol.Name == "Redirect" || symbol?.Name == "RedirectPermanent")
                     && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"
