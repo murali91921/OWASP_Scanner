@@ -19,8 +19,9 @@ namespace Sample2
                 }
                 catch
                 {
-                //nested catch
-                /*nesting catch comment*/}
+                    //nested catch
+                    /*nesting catch comment*/
+                }
             }
         }
     }

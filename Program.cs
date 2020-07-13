@@ -19,7 +19,7 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Empty")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Sample6")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
@@ -46,7 +46,8 @@ namespace ASTTask
 
                         //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
                         Console.WriteLine("--------------------- Empty catch block scanning started ---------------------\n");
-                        List<SyntaxNodeOrToken> emptyCatchStatements = EmptyCatch.FindEmptyCatch(rootNode);
+                        EmptyCatch emptyCatch = new EmptyCatch();
+                        List<SyntaxNode> emptyCatchStatements = emptyCatch.FindEmptyCatch(rootNode);
                         if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
                         {
                             foreach (var item in emptyCatchStatements)
