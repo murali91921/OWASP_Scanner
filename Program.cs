@@ -19,7 +19,7 @@ namespace ASTTask
             {
                 string curDir=Directory.GetCurrentDirectory()+"\\Examples";
                 string[] fileNames = Directory.GetFiles(curDir);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("word2")).ToArray();
+                fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Cookie")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {

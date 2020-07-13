@@ -200,7 +200,7 @@ namespace ASTTask
             List<UsingDirectiveSyntax> allNamespaces = root.DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
             foreach (var item in allNamespaces)
             {
-                string assemblyFile=Directory.GetCurrentDirectory()+"\\Examples\\References\\"+item.Name.ToString()+".dll";
+                string assemblyFile = Directory.GetCurrentDirectory()+"\\Examples\\References\\"+item.Name.ToString()+".dll";
                 if(File.Exists(assemblyFile))
                     allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
             }
