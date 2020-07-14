@@ -63,7 +63,7 @@ namespace ASTTask
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             var project = workspace.AddProject("CookieFlagScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
-            project = project.AddMetadataReferences(LoadMetadata(root));
+            project = project.AddMetadataReferences(Utils.LoadMetadata(root));
             workspace.TryApplyChanges(project.Solution);
             var document = workspace.AddDocument(project.Id, "CookieFlagScanner",SourceText.From(root.ToString()));
             var model = document.GetSemanticModelAsync().Result;
@@ -193,18 +193,6 @@ namespace ASTTask
                         });
             }
             return missingCookieStatements;
-        }
-        public static MetadataReference[] LoadMetadata(SyntaxNode root)
-        {
-            List<MetadataReference> allMetadataReference = new List<MetadataReference>();
-            List<UsingDirectiveSyntax> allNamespaces = root.DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
-            foreach (var item in allNamespaces)
-            {
-                string assemblyFile = Directory.GetCurrentDirectory()+"\\Examples\\References\\"+item.Name.ToString()+".dll";
-                if(File.Exists(assemblyFile))
-                    allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
-            }
-            return allMetadataReference.ToArray();
         }
         public static bool PropertyMatch(ExpressionSyntax expression,string propertyName)
         {

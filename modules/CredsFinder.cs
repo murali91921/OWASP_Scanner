@@ -68,7 +68,7 @@ namespace ASTTask
             {"Twitter Secret Key","(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}"},
         };
 
-        public static Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> FindHardcodeCredentials(string filePath, SyntaxNode rootNode)
+        public static Tuple<List<SyntaxNode>,List<SyntaxTrivia>> FindHardcodeCredentials(string filePath, SyntaxNode rootNode)
         {
             // Creating Adhoc Workspace
             var workspace = new AdhocWorkspace();
@@ -80,7 +80,7 @@ namespace ASTTask
             var model = document.GetSemanticModelAsync().Result;
             rootNode = document.GetSyntaxRootAsync().Result;
 
-            List<SyntaxNodeOrToken> secretStrings=new List<SyntaxNodeOrToken>();
+            List<SyntaxNode> secretStrings=new List<SyntaxNode>();
             List<SyntaxTrivia> secretComments = new List<SyntaxTrivia>();
 
             // List<SyntaxNodeOrToken> hardcoreStringNodes= FindHardcodeStrings(rootNode);

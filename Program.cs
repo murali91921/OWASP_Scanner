@@ -6,25 +6,33 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Reflection;
-using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 namespace ASTTask
 {
     class Program
     {
+        // static void GetOS()
+        // {
+        //     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        //     {
+        //         Path.Combine(Directory.GetCurrentDirectory(),"Examples");
+        //     }
+        // }
         static void Main(string[] args)
         {
             //Accessing Files under "Examples" directory
             try
             {
-                string curDir=Directory.GetCurrentDirectory()+"\\Examples";
-                string[] fileNames = Directory.GetFiles(curDir);
+                string exampleDirectory /*= Directory.GetCurrentDirectory()+"\\Examples";
+                exampleDirectory */= Path.Combine(Directory.GetCurrentDirectory(),"Examples");
+                string[] fileNames = Directory.GetFiles(exampleDirectory);
                 //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Redirect3")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
                     Console.WriteLine("Analysing {0}",filePath);
-                    Console.WriteLine("---------------------------------------------------------------------------------------------------");
+                    // Console.WriteLine("---------------------------------------------------------------------------------------------------");
                     //Web.Config file
                     if(filePath.EndsWith(".config",StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -32,50 +40,30 @@ namespace ASTTask
                         string print = CookieFlagScanner.GetXMLMissingCookieStatements(filePath);
                         if(!string.IsNullOrEmpty(print))
                             Console.WriteLine(print);
-                        // Console.WriteLine("--------------------- Cookie flag scanning finished ---------------------");
-
                     }
                     else
                     {
                         string programLines = File.ReadAllText(filePath);
                         SyntaxNode rootNode= CSharpSyntaxTree.ParseText(programLines).GetRoot();
-
-                        // Forming properties into AST object and printing them as JSON string
-                        // ASTNode root = CreateSyntaxTree(syntaxNode);
-                        // Console.WriteLine(JsonConvert.SerializeObject(root));
+                        List<SyntaxNode> vulnerabilities = null;
 
                         //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
                         Console.WriteLine("--------------------- Empty catch block scanning started ---------------------\n");
                         EmptyCatch emptyCatch = new EmptyCatch();
-                        List<SyntaxNode> emptyCatchStatements = emptyCatch.FindEmptyCatch(rootNode);
-                        if(emptyCatchStatements !=null && emptyCatchStatements.Count>0)
-                        {
-                            foreach (var item in emptyCatchStatements)
-                            {
-                                Console.WriteLine("Line : "+GetLineNumber(item)+"\n "+item.ToFullString());
-                            }
-                        }
-                        // Console.WriteLine("--------------------- Empty catch block scanning finished ---------------------\n");
+                        vulnerabilities = emptyCatch.FindEmptyCatch(rootNode);
+                        PrintNodes(vulnerabilities);
+
                         //finding hard-coded keys/passwords
                         Console.WriteLine("--------------------- Hard-coded credentials scanning started ---------------------\n");
-                        Tuple<List<SyntaxNodeOrToken>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(filePath,rootNode);
+                        Tuple<List<SyntaxNode>,List<SyntaxTrivia>> hardcodeStatements = CredsFinder.FindHardcodeCredentials(filePath,rootNode);
                         if(hardcodeStatements !=null)
                         {
                             //SyntaxNodes for hardcode statements
-                            foreach (var item in hardcodeStatements.Item1)
-                            {
-                                // if(item.Kind()==SyntaxKind.VariableDeclarator)
-                                //     Console.WriteLine("Line : " +GetLineNumber(item) + " : " + ((VariableDeclaratorSyntax)item).ToString());
-                                // else if(item.Kind()==SyntaxKind.StringLiteralExpression)
-                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + (item).ToString());
-                            }
+                            PrintNodes(hardcodeStatements.Item1);
                             //SyntaxTrivias for hardcode comments
-                            foreach (var item in hardcodeStatements.Item2)
-                            {
-                                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                            }
+                            PrintNodes(hardcodeStatements.Item2);
                         }
-                        // Console.WriteLine("--------------------- Hard-coded credentials scanning finished ---------------------\n");
+
                         //Finding Missing secure cookie flags
                         Console.WriteLine("--------------------- Cookie flag scanning started ---------------------\n");
                         List<ASTCookie> inSecureCookies = CookieFlagScanner.GetMissingCookieStatements(filePath,rootNode);
@@ -90,36 +78,26 @@ namespace ASTTask
                                 missing += " Flag(s) missing ";
                                 Console.WriteLine(missing +"\nLine : " + GetLineNumber(item.CookieStatement) + " : " + item.CookieStatement.ToString()+"\n");
                             }
-                        // Console.WriteLine("--------------------- Cookie flag scanning finished ---------------------\n");
 
-                        Console.WriteLine("--------------------- Open Redirect scanning started ---------------------\n");
                         //Finding OpenRedirect Vulnerabilities
+                        Console.WriteLine("--------------------- Open Redirect scanning started ---------------------\n");
                         OpenRedirect openRedirect = new OpenRedirect();
-                        var openRedirectStatements = openRedirect.FindOpenRedirect(filePath,rootNode);
-                        foreach (var item in openRedirectStatements)
-                        {
-                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                        }
-                        Console.WriteLine("--------------------- Weak Password scanning started ---------------------\n");
+                        vulnerabilities = openRedirect.FindOpenRedirect(filePath,rootNode);
+                        PrintNodes(vulnerabilities);
 
                         //Finding WeakPassword Vulnerabilities
+                        Console.WriteLine("--------------------- Weak Password scanning started ---------------------\n");
                         WeakPasswordValidator weakPasswordValidator  = new WeakPasswordValidator();
-                        var weakPasswordStatements  = weakPasswordValidator.FindWeakPasswords(filePath,rootNode);
-                        foreach (var item in weakPasswordStatements)
-                        {
-                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                        }
+                        vulnerabilities  = weakPasswordValidator.FindWeakPasswords(filePath,rootNode);
+                        PrintNodes(vulnerabilities);
 
                         //Finding Empty try block Vulnerabilities
                         Console.WriteLine("--------------------- Empty Try block scanning started ---------------------\n");
                         EmptyTryScanner emptyTryScanner  = new EmptyTryScanner();
                         var emptyTryStatements  = emptyTryScanner.FindEmptyTryStatements(rootNode);
-                        foreach (var item in emptyTryStatements)
-                        {
-                            Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
-                        }
+                        PrintNodes(emptyTryStatements);
                     }
-                    Console.WriteLine("---------------------------------------------------------------------------------------------------");
+                    // Console.WriteLine("---------------------------------------------------------------------------------------------------");
                     Console.WriteLine("Analysing completed.\n");
                 }
             }
@@ -127,6 +105,19 @@ namespace ASTTask
             {
                 Console.WriteLine(ex.Message +"\n"+ex.StackTrace);
             }
+        }
+        private static void PrintNodes(List<SyntaxNode> syntaxNodeList)
+        {
+            if(syntaxNodeList != null)
+                foreach (var item in syntaxNodeList)
+                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
+        }
+
+        private static void PrintNodes(List<SyntaxTrivia> syntaxTriviaList)
+        {
+            if(syntaxTriviaList != null)
+                foreach (var item in syntaxTriviaList)
+                    Console.WriteLine("Line : " +GetLineNumber(item) + " : " + item.ToString());
         }
         private static int GetLineNumber(SyntaxNodeOrToken item)=>item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
         private static int GetLineNumber(SyntaxTrivia item)=>item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.Line + 1;
@@ -149,22 +140,15 @@ namespace ASTTask
         {
             var result = new Dictionary<string, string>();
             if (syntax is SyntaxNode node)
-            {
                 result.Add("NodeKind", node.Kind().ToString());
-            }
             else if (syntax is SyntaxToken token)
-            {
                 result.Add("TokenKind", token.Kind().ToString());
-            }
             PropertyInfo[] properties = syntax.GetType().GetProperties();
             foreach (PropertyInfo info in properties)
             {
-
                 if (info.Name == "Language" || info.Name == "Parent" || info.Name == "ValueText"
                 || info.Name == "Value" || info.Name == "SyntaxTree" || info.Name == "RawKind")
-                {
                     continue;
-                }
                 result.Add(info.Name, info.GetValue(syntax)?.ToString());
             }
             return result;

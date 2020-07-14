@@ -1,15 +1,10 @@
-using System;
-using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using System.Reflection;
-using Newtonsoft.Json;
 
 namespace ASTTask
 {
@@ -32,7 +27,7 @@ namespace ASTTask
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             // bool isNetCore = false;
             // bool isNetCore = filePath.Contains("OpenRedirect_Core");
-            project = project.AddMetadataReferences(LoadMetadata(rootNode));
+            project = project.AddMetadataReferences(Utils.LoadMetadata(rootNode));
             workspace.TryApplyChanges(project.Solution);
             var document = workspace.AddDocument(project.Id, "OpenRedirect",SourceText.From(rootNode.ToString()));
             model = document.GetSemanticModelAsync().Result;
@@ -180,27 +175,5 @@ namespace ASTTask
     Microsoft.AspNetCore.Http.Response  Redirect(input)
     Microsoft.AspNetCore.Http.Response  Redirect(input, true)
     */
-        private static MetadataReference[] LoadMetadata(SyntaxNode root)
-        {
-            List<MetadataReference> allMetadataReference = new List<MetadataReference>();
-            // if(isNetCore)
-            // {
-            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.ViewFeatures.dll"));
-            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.Core.dll"));
-            //     allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Http.Abstractions.dll"));
-            //     return allMetadataReference.ToArray();
-            // }
-            List<UsingDirectiveSyntax> allNamespaces = root.DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
-            foreach (var item in allNamespaces)
-            {
-                string assemblyFile = Directory.GetCurrentDirectory() + "\\Examples\\References\\" + item.Name.ToString() + ".dll";
-                if(File.Exists(assemblyFile))
-                    allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
-            }
-            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.ViewFeatures.dll"));
-            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Mvc.Core.dll"));
-            // allMetadataReference.Add(MetadataReference.CreateFromFile(Directory.GetCurrentDirectory() + "\\Examples\\References\\Microsoft.AspNetCore.Http.Abstractions.dll"));
-            return allMetadataReference.ToArray();
-        }
     }
 }

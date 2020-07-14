@@ -20,7 +20,7 @@ namespace ASTTask
                 var tryBlock = item.DescendantNodes().OfType<BlockSyntax>().First();
                 // Console.WriteLine(tryBlock.DescendantNodes().Count());
                 if(tryBlock.DescendantNodes().Count()==0)
-                   emptyTryStatements.Add(item);
+                   emptyTryStatements.Add(tryBlock);
             }
             return emptyTryStatements;
         }
