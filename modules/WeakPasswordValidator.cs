@@ -50,7 +50,7 @@ namespace ASTTask
                                     IsPassword = true;
                             if(type !=null && type.ToString()=="System.ComponentModel.DataAnnotations.StringLengthAttribute")
                             {
-                                Console.WriteLine("Min Length");
+                                // Console.WriteLine("Min Length");
                                 if(attribute.ArgumentList !=null && attribute.ArgumentList.Arguments.Any(obj=>obj.ToString().Contains("MinimumLength")))
                                 {
                                     var minimumLengthAttrib = attribute.ArgumentList.Arguments.First(obj => obj.ToString().Contains("MinimumLength"));
