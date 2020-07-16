@@ -106,7 +106,7 @@ namespace ASTTask
                                 if((item.Initializer as EqualsValueClauseSyntax).Value is LiteralExpressionSyntax)
                                 {
                                     var literalExpression=(item.Initializer as EqualsValueClauseSyntax).Value as LiteralExpressionSyntax;
-                                    if(!string.IsNullOrEmpty(literalExpression.ToString().Trim('"',' ')))
+                                    if(!string.IsNullOrEmpty(literalExpression.ToString().Trim('"',' ')) && IsSecretVariable(symbol.Name))
                                             secretStrings.Add(item);
                                 }
                             }

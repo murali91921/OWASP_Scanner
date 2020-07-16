@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace ASTTask
 {
@@ -24,7 +25,7 @@ namespace ASTTask
                 string exampleDirectory /*= Directory.GetCurrentDirectory()+"\\Examples";
                 exampleDirectory */= Path.Combine(Directory.GetCurrentDirectory(),"Examples");
                 string[] fileNames = Directory.GetFiles(exampleDirectory);
-                //fileNames = Directory.GetFiles(curDir).Where(obj=>obj.Contains("Redirect3")).ToArray();
+                //fileNames = fileNames.Where(obj=>obj.Contains("Credenti")).ToArray();
 
                 foreach(string filePath in fileNames)
                 {
