@@ -22,8 +22,10 @@ namespace ASTTask
             XPathNavigator element = doc.CreateNavigator().SelectSingleNode("configuration/system.web/httpCookies");
             if(element != null)
             {
+                returnStatement = filePath + " : ("+((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)
+                + "," + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LinePosition : 0) + ") : {0}\n"
+                + element.OuterXml.Trim();
                 // element.MoveToNext();
-                returnStatement= string.Format("Line : "+((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)+" \n"+element.OuterXml.Trim());
                 if(element.HasAttributes)
                 {
                     element.MoveToFirstAttribute();
@@ -46,7 +48,7 @@ namespace ASTTask
                     if(!isSecure)
                         missing = string.IsNullOrEmpty(missing)?"Secure": (missing+", Secure");
                     missing += " Flag(s) missing ";
-                    returnStatement = missing + "\n" + returnStatement;
+                    returnStatement =string.Format(returnStatement,missing);
                 }
             }
             //Console.WriteLine(isHttpOnly +""+ isSecure);
