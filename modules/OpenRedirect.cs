@@ -18,9 +18,43 @@ namespace ASTTask
         SemanticModel model = null;
         AdhocWorkspace workspace = null;
         SyntaxNode rootNode = null;
+        public void FindOpenRedirect(InvocationExpressionSyntax item)
+        {
+            //Get the symbol Info from Semanticmodel
+            IMethodSymbol symbol = null;
+            var symbolInfo = model.GetSymbolInfo(item);
+            if(symbolInfo.Symbol==null && symbolInfo.CandidateReason == CandidateReason.OverloadResolutionFailure)
+                symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
+            else
+                symbol = symbolInfo.Symbol as IMethodSymbol;
+            //Console.WriteLine(symbol);
+
+            if(symbol != null && (symbol.Name == "Redirect" || symbol?.Name == "RedirectPermanent")
+                && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"
+                    || symbol.ReceiverType.ToString() == "System.Web.Mvc.Controller" || symbol.ReceiverType.ToString() == "System.Web.HttpResponseBase"
+                    || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.Controller"
+                    || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.ControllerBase"))
+            {
+                //Console.WriteLine("{0} {1}",symbol.ToString(),item.Kind());
+                if(item.ArgumentList.Arguments.Count>0)
+                {
+                    var argument = item.ArgumentList.Arguments.First();
+                    {
+                        // bool vulnerable = IsVulnerable(argument.Expression);
+                        // if(vulnerable)
+                        //     // Console.WriteLine("\nVulnerable found \t:{0} {1} {2}",vulnerable,item,argument.Expression);
+                        //     Console.WriteLine("\nVulnerable found \t:{0}",item.Parent);
+                        // else
+                        //     Console.WriteLine("\nNo vulnerable found\t\t:{0}",item.Parent);
+                        if(IsVulnerable(argument.Expression))
+                            lstVulnerableStatements.Add(item.Parent);
+                    }
+                }
+            }
+        }
+            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
         public List<SyntaxNode> FindOpenRedirect(string filePath, SyntaxNode rootNode)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             workspace = new AdhocWorkspace();
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             var project = workspace.AddProject("OpenRedirect", "C#");
@@ -38,37 +72,7 @@ namespace ASTTask
             var allRedirects = rootNode.DescendantNodes().OfType<InvocationExpressionSyntax>().Where(obj=>obj.ToString().Contains("Redirect"));
             foreach (var item in allRedirects)
             {
-                //Get the symbol Info from Semanticmodel
-                IMethodSymbol symbol = null;
-                var symbolInfo = model.GetSymbolInfo(item);
-                if(symbolInfo.Symbol==null && symbolInfo.CandidateReason == CandidateReason.OverloadResolutionFailure)
-                    symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
-                else
-                    symbol = symbolInfo.Symbol as IMethodSymbol;
-                //Console.WriteLine(symbol);
-
-                if(symbol != null && (symbol.Name == "Redirect" || symbol?.Name == "RedirectPermanent")
-                    && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"
-                     || symbol.ReceiverType.ToString() == "System.Web.Mvc.Controller" || symbol.ReceiverType.ToString() == "System.Web.HttpResponseBase"
-                     || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.Controller"
-                     || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.ControllerBase"))
-                {
-                    //Console.WriteLine("{0} {1}",symbol.ToString(),item.Kind());
-                    if(item.ArgumentList.Arguments.Count>0)
-                    {
-                        var argument = item.ArgumentList.Arguments.First();
-                        {
-                            // bool vulnerable = IsVulnerable(argument.Expression);
-                            // if(vulnerable)
-                            //     // Console.WriteLine("\nVulnerable found \t:{0} {1} {2}",vulnerable,item,argument.Expression);
-                            //     Console.WriteLine("\nVulnerable found \t:{0}",item.Parent);
-                            // else
-                            //     Console.WriteLine("\nNo vulnerable found\t\t:{0}",item.Parent);
-                            if(IsVulnerable(argument.Expression))
-                                lstVulnerableStatements.Add(item.Parent);
-                        }
-                    }
-                }
+                FindOpenRedirect(item);
             }
             return lstVulnerableStatements;
         }

@@ -13,14 +13,14 @@ namespace ASTTask
 
         public List<SyntaxNode> FindEmptyTryStatements(SyntaxNode rootNode)
         {
-            var emptyTryStatements=new List<SyntaxNode>();
-            var allTryStatements = rootNode.DescendantNodes().OfType<TryStatementSyntax>();
-            foreach (var item in allTryStatements)
+            var emptyTryStatements = new List<SyntaxNode>();
+            var allTryStatements = rootNode.DescendantNodes().OfType<TryStatementSyntax>().GetEnumerator();
+            while (allTryStatements.MoveNext())
             {
-                var tryBlock = item.DescendantNodes().OfType<BlockSyntax>().First();
+                var tryBlock = allTryStatements.Current.DescendantNodes().OfType<BlockSyntax>().First();
                 // Console.WriteLine(tryBlock.DescendantNodes().Count());
-                if(tryBlock.DescendantNodes().Count()==0)
-                   emptyTryStatements.Add(tryBlock);
+                if (tryBlock.DescendantNodes().Count() == 0)
+                    emptyTryStatements.Add(tryBlock);
             }
             return emptyTryStatements;
         }
