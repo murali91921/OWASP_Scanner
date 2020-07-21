@@ -21,8 +21,8 @@ namespace ASTTask
     {
         static IEnumerable<string> GetExamples()
         {
-            //string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Examples");
-            string exampleDirectory = Path.Combine(Directory.GetParent(".").Parent.Parent.ToString(), "Examples");
+            string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Examples");
+            //string exampleDirectory = Path.Combine(Directory.GetParent(".").Parent.Parent.ToString(), "Examples");
             IEnumerable<string> fileNames = Directory.EnumerateFiles(exampleDirectory, "*", SearchOption.AllDirectories)
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase) 
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
