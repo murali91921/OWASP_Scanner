@@ -23,18 +23,17 @@ namespace ASTTask
         {
             string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Examples");
             //string exampleDirectory = Path.Combine(Directory.GetParent(".").Parent.Parent.ToString(), "Examples");
-            IEnumerable<string> fileNames = Directory.EnumerateFiles(exampleDirectory, "*", SearchOption.AllDirectories)
-                .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase) 
+            IEnumerable<string> fileNames = Directory.EnumerateFiles(exampleDirectory, "*", SearchOption.TopDirectoryOnly)
+                .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Web")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("Open")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
         {
-            new Thread(() =>
+            Thread thread = new Thread(() =>
             {
-
                 //Accessing Files under "Examples" directory
                 try
                 {
@@ -42,7 +41,7 @@ namespace ASTTask
 
                     foreach (string filePath in fileNames)
                     {
-                        Console.WriteLine("Analysing "+ filePath);
+                        //Console.WriteLine("Analysing "+ filePath);
                         if (filePath.EndsWith(".config", StringComparison.OrdinalIgnoreCase))
                         {
                             if (scannerType == ScannerType.InsecureCookie)
@@ -55,31 +54,26 @@ namespace ASTTask
                         else
                         {
                             string programLines = File.ReadAllText(filePath);
-                            SyntaxNode rootNode = null;// CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                            SyntaxNode rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
                             List<SyntaxNode> vulnerabilities = null;
 
                             //Finding empty catch blocks & printing FileName, Line no, Vulnerable code
 
                             if (scannerType == ScannerType.EmptyCatch)
                             {
-                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
                                 EmptyCatch emptyCatch = new EmptyCatch();
                                 vulnerabilities = emptyCatch.FindEmptyCatch(rootNode);
                                 PrintNodes(filePath, vulnerabilities);
-                                rootNode = null;
                             }
                             else if (scannerType == ScannerType.EmptyTry)
                             {
-                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
                                 EmptyTryScanner emptyTryScanner = new EmptyTryScanner();
                                 vulnerabilities = emptyTryScanner.FindEmptyTryStatements(rootNode);
-                                PrintNodes(filePath, vulnerabilities);
-                                rootNode = null;
-                            }
+                                PrintNodes(filePath, vulnerabilities);                            }
                             else if (scannerType == ScannerType.HardcodePassword)
                             {
                                 CredsFinder credsFinder = new CredsFinder();
-                                Tuple<List<SyntaxNode>, List<SyntaxTrivia>> hardcodeStatements = credsFinder.FindHardcodeCredentials(filePath);
+                                Tuple<List<SyntaxNode>, List<SyntaxTrivia>> hardcodeStatements = credsFinder.FindHardcodeCredentials(filePath,rootNode);
                                 if (hardcodeStatements != null)
                                 {
                                     //Syntax Nodes for hardcode statements
@@ -91,7 +85,7 @@ namespace ASTTask
                             else if (scannerType == ScannerType.WeakPasswordConfig)
                             {
                                 WeakPasswordValidator weakPasswordValidator = new WeakPasswordValidator();
-                                vulnerabilities = weakPasswordValidator.FindWeakPasswords(filePath);
+                                vulnerabilities = weakPasswordValidator.FindWeakPasswords(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
                             else if (scannerType == ScannerType.InsecureCookie)
@@ -106,6 +100,13 @@ namespace ASTTask
                                 vulnerabilities = openRedirect.FindOpenRedirect(filePath, rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.WeakHashingConfig)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                WeakHashingValidator weakHashingValidator = new WeakHashingValidator();
+                                vulnerabilities = weakHashingValidator.FindWeakHashing(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -113,7 +114,9 @@ namespace ASTTask
                 {
                     Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
                 }
-            }).Start();
+            });
+            thread.Start();
+            thread.Join();
         }
         public enum ScannerType
         {
@@ -125,6 +128,7 @@ namespace ASTTask
             WeakPasswordConfig = 6,
             WeakHashingConfig = 7,
             None = 0,
+            Invalid = -1
         }
         static void Main(string[] args)
         {
@@ -143,8 +147,14 @@ namespace ASTTask
                 Console.WriteLine("Press 0 to exit");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
-                // int option = -1;
-                ScannerType scanner = (ScannerType)Enum.Parse(typeof(ScannerType), input);
+                ScannerType scanner = ScannerType.Invalid;
+                try
+                {
+                    scanner = (ScannerType)Enum.Parse(typeof(ScannerType), input);
+                }
+                catch
+                {
+                }
                 // int.TryParse(input,out option);
                 try
                 {
@@ -174,14 +184,16 @@ namespace ASTTask
         }
         private static void PrintNodes(string filePath, List<SyntaxNode> syntaxNodeList)
         {
-            foreach (var item in syntaxNodeList)
-                Console.WriteLine(filePath + " (" + GetLineNumber(item) + ") : " + item.ToString());
+            if(syntaxNodeList != null && filePath != null)
+                foreach (var item in syntaxNodeList)
+                    Console.WriteLine(filePath + " (" + GetLineNumber(item) + ") : " + item.ToString());
         }
 
         private static void PrintNodes(string filePath, List<SyntaxTrivia> syntaxTriviaList)
         {
-            foreach (var item in syntaxTriviaList)
-                Console.WriteLine(filePath + " (" + GetLineNumber(item) + ") : " + item.ToString());
+            if(syntaxTriviaList != null && filePath != null)
+                foreach (var item in syntaxTriviaList)
+                    Console.WriteLine(filePath + " (" + GetLineNumber(item) + ") : " + item.ToString());
         }
 
         private static void PrintNodes(string filePath, List<ASTCookie> aSTCookieList)

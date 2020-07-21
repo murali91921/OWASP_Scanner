@@ -12,18 +12,33 @@ namespace ASTTask
 {
     internal class Utils
     {
-        public static MetadataReference[] LoadMetadata(SyntaxNode root)
+        public static MetadataReference[] LoadMetadata(SyntaxNode root,bool required_mscolib = false)
         {
             List<MetadataReference> allMetadataReference = new List<MetadataReference>();
             List<UsingDirectiveSyntax> allNamespaces = root.DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
             foreach (var item in allNamespaces)
             {
-                string assemblyFile =Path.Combine(Directory.GetCurrentDirectory(),"Examples","References",item.Name.ToString() + ".dll");
+                string assemblyFile = Path.Combine(Directory.GetCurrentDirectory(),"Examples","References",item.Name.ToString() + ".dll");
                 if(File.Exists(assemblyFile))
                     allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
             }
-            //allMetadataReference.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+            if(required_mscolib)
+            {
+                string assemblyFile = Path.Combine(Directory.GetCurrentDirectory(),"Examples","References","mscorlib.dll");
+                if(File.Exists(assemblyFile))
+                    allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
+            }
             return allMetadataReference.ToArray();
+        }
+        public static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
+        {
+            while (typeSymbol != null)
+            {
+                if (baseTypes.Contains(typeSymbol.ToString()))
+                    return true;
+                typeSymbol = typeSymbol.BaseType?.ConstructedFrom;
+            }
+            return false;
         }
     }
 }

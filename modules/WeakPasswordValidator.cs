@@ -18,17 +18,16 @@ namespace ASTTask
         AdhocWorkspace workspace = null;
         SyntaxNode rootNode = null;
         static int MINIMUM_PASSWORD_LENGTH = 8;
-        public List<SyntaxNode> FindWeakPasswords(string filePath)
+        public List<SyntaxNode> FindWeakPasswords(string filePath, SyntaxNode root)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             workspace = new AdhocWorkspace();
             var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             var project = workspace.AddProject("WeakPasswordValidator", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
-            project = project.AddMetadataReferences(Utils.LoadMetadata(rootNode));
+            project = project.AddMetadataReferences(Utils.LoadMetadata(root));
             workspace.TryApplyChanges(project.Solution);
-            DocumentInfo doc = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), filePath, filePath: filePath);
-            var document = workspace.AddDocument(doc);
+            var document = workspace.AddDocument(project.Id, "WeakPasswordValidator",SourceText.From(root.ToString()));
             model = document.GetSemanticModelAsync().Result;
             var compilation = project.GetCompilationAsync().Result;
             rootNode = document.GetSyntaxRootAsync().Result;

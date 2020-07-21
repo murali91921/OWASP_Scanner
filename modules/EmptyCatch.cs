@@ -21,7 +21,7 @@ namespace ASTTask
         {
             var allCatchStatements = rootNode.DescendantNodes().OfType<CatchClauseSyntax>();
             var emptyCatchNodes = new List<SyntaxNode>();
-            Stopwatch watch = Stopwatch.StartNew();
+            // Stopwatch watch = Stopwatch.StartNew();
             IEnumerator<CatchClauseSyntax> enumerator = allCatchStatements.GetEnumerator();
             //new Thread(() =>
             //{
@@ -33,8 +33,8 @@ namespace ASTTask
                     //Console.WriteLine("Thread end" + catchBlock.Span);
                 }
             //}).Start();
-            watch.Stop();
-            Console.WriteLine(watch.ElapsedMilliseconds);
+            // watch.Stop();
+            // Console.WriteLine(watch.ElapsedMilliseconds);
             return emptyCatchNodes;
         }
     }

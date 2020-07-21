@@ -73,7 +73,7 @@ namespace ASTTask
         SemanticModel model = null;
         Document document = null;
         SyntaxNode rootNode = null;
-        public Tuple<List<SyntaxNode>, List<SyntaxTrivia>> FindHardcodeCredentials(string filePath)
+        public Tuple<List<SyntaxNode>, List<SyntaxTrivia>> FindHardcodeCredentials(string filePath, SyntaxNode root)
         {
             // Creating Adhoc Workspace
             AdhocWorkspace workspace = new AdhocWorkspace();
@@ -81,9 +81,7 @@ namespace ASTTask
             var project = workspace.AddProject("CredsFinder", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             workspace.TryApplyChanges(project.Solution);
-            DocumentInfo doc = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), filePath, filePath: filePath);
-            document = workspace.AddDocument(doc);
-            //document = workspace.AddDocument(project.Id, "CredsFinder",SourceText.From(root.ToString()));
+            document = workspace.AddDocument(project.Id, "CredsFinder",SourceText.From(root.ToString()));
             model = document.GetSemanticModelAsync().Result;
             rootNode = document.GetSyntaxRootAsync().Result;
             // Console.WriteLine("Before checking");
@@ -96,10 +94,10 @@ namespace ASTTask
             while(hardcoreStringNodes.MoveNext())
             {
                 //FindHardcodeStringNodes(item);
-                new Thread(() =>
-                {
+                // new Thread(() =>
+                // {
                     FindHardcodeStringNodes(hardcoreStringNodes.Current);
-                }).Start();
+                // }).Start();
             }
             // watch.Stop();
             // Console.WriteLine($"{filePath}: {watch.ElapsedMilliseconds} ms ");
@@ -127,8 +125,7 @@ namespace ASTTask
         public void FindHardcodeStringNodes(VariableDeclaratorSyntax item)
         {
             // Console.WriteLine(" :After checking"+item.Span.ToString());
-
-            // VariableDeclarationSyntax variableDeclarationSyntax = (VariableDeclarationSyntax)item;
+            // VariableDeclarationSyntax variableDeclarationSyntax = (VariableDeclarationSyntax)item.Parent;
             // foreach (var varItem in variableDeclarationSyntax.Variables)
             {
                 // Finding sensitive variable names
@@ -146,8 +143,11 @@ namespace ASTTask
                             if ((item.Initializer as EqualsValueClauseSyntax).Value is LiteralExpressionSyntax)
                             {
                                 var literalExpression = (item.Initializer as EqualsValueClauseSyntax).Value as LiteralExpressionSyntax;
-                                if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')) && IsSecretVariable(symbol.Name))
-                                    secretStrings.Add(item);
+                                if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')) /*&& IsSecretVariable(symbol.Name)*/)
+                                    {
+                                        if(IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
+                                            secretStrings.Add(item);
+                                    }
                             }
                         }
                         var references = SymbolFinder.FindReferencesAsync(symbol, document.Project.Solution).Result;
@@ -158,13 +158,14 @@ namespace ASTTask
                             foreach (var referenceLocation in reference.Locations)
                             {
                                 string stringValue = string.Empty;
-                                Console.WriteLine(referenceLocation.Location.SourceSpan);
+                                // Console.WriteLine(referenceLocation.Location.SourceSpan);
                                 var presentStatement = rootNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
                                 if (presentStatement is AssignmentExpressionSyntax && (presentStatement as AssignmentExpressionSyntax).Right is LiteralExpressionSyntax)
                                 {
                                     stringValue = (presentStatement as AssignmentExpressionSyntax).Right.ToString();
                                     if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                        secretStrings.Add(presentStatement);
+                                        if(IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
+                                            secretStrings.Add(presentStatement);
                                 }
                                 else if (presentStatement is BinaryExpressionSyntax && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
                                 {
@@ -174,6 +175,7 @@ namespace ASTTask
                                     {
                                         stringValue = (condition.Right is LiteralExpressionSyntax) ? condition.Right.ToString() : condition.Left.ToString();
                                         if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
+                                        if(IsSecretVariable(symbol.Name))
                                             secretStrings.Add(presentStatement);
                                     }
                                 }
@@ -215,7 +217,7 @@ namespace ASTTask
         }
 
         //Finding non-empty single/multi line comments in source code
-        private static List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
+        private List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
         {
             List<SyntaxTrivia> hardcodeComments = new List<SyntaxTrivia>();
             var commentNodes = from commentNode in rootNode.DescendantTrivia()
@@ -239,23 +241,25 @@ namespace ASTTask
             }
             return hardcodeComments;
         }
-        private static List<SyntaxNodeOrToken> FindHardcodeStrings(SyntaxNode rootNode)
-        {
-            //Finding all hardcode strings
-            List<SyntaxNodeOrToken> result = new List<SyntaxNodeOrToken>();
-            var stringNodes = from stringNode in ((SyntaxNode)rootNode).DescendantNodes()
-                              where stringNode.IsKind(SyntaxKind.VariableDeclaration)
-                              select stringNode;
-            foreach (SyntaxNode child in stringNodes)
-            {
-                //Finding string variable declarations
-                if ((((VariableDeclarationSyntax)child).Type.ToString() == "string" || ((VariableDeclarationSyntax)child).Type.ToString() == "String")
-                /*&& child.ChildNodesAndTokens()[1].ChildNodesAndTokens().Count>1*/)
-                {
-                    result.Add(child);
-                }
-            }
-            return result;
-        }
+        private void IsVulnerable()
+        {}
+        // private static List<SyntaxNodeOrToken> FindHardcodeStrings(SyntaxNode rootNode)
+        // {
+        //     //Finding all hardcode strings
+        //     List<SyntaxNodeOrToken> result = new List<SyntaxNodeOrToken>();
+        //     var stringNodes = from stringNode in ((SyntaxNode)rootNode).DescendantNodes()
+        //                       where stringNode.IsKind(SyntaxKind.VariableDeclaration)
+        //                       select stringNode;
+        //     foreach (SyntaxNode child in stringNodes)
+        //     {
+        //         //Finding string variable declarations
+        //         if ((((VariableDeclarationSyntax)child).Type.ToString() == "string" || ((VariableDeclarationSyntax)child).Type.ToString() == "String")
+        //         /*&& child.ChildNodesAndTokens()[1].ChildNodesAndTokens().Count>1*/)
+        //         {
+        //             result.Add(child);
+        //         }
+        //     }
+        //     return result;
+        // }
     }
 }
