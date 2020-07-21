@@ -27,7 +27,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Open")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("WeakHash2")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -144,7 +144,7 @@ namespace ASTTask
                 Console.WriteLine("5.Empty catch block scanner");
                 Console.WriteLine("6.Weak password configuration scanner");
                 Console.WriteLine("7.Weak hashing configuration scanner (coming soon)");
-                Console.WriteLine("Press 0 to exit");
+                Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
                 ScannerType scanner = ScannerType.Invalid;
