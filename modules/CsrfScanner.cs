@@ -24,23 +24,39 @@ namespace ASTTask
             "System.Web.Mvc.HttpPostAttribute",
             "System.Web.Mvc.HttpDeleteAttribute",
             "System.Web.Mvc.HttpPutAttribute",
-            "System.Web.Mvc.HttpPatchAttribute"
-            };
-        private static string[] ReturnTypeClasses = { "System.Web.Mvc.ActionResult" };
-        private static string CsrfTokenAttribute = "System.Web.Mvc.ValidateAntiForgeryTokenAttribute";
-        private static string AnonymousAttribute = "System.Web.Mvc.AllowAnonymousAttribute";
-        //Recursive method to check base types.
-        private bool CheckReturnType(INamedTypeSymbol typeSymbol)
-        {
-            if(typeSymbol ==null)
-                return false;
-            if(ReturnTypeClasses.Any(obj=>obj == typeSymbol.ToString()))
-                return true;
-            else if(typeSymbol.BaseType !=null)
-                CheckReturnType(typeSymbol.BaseType);
+            "System.Web.Mvc.HttpPatchAttribute",
 
-            return false;
-        }
+            "Microsoft.AspNetCore.Mvc.HttpPostAttribute",
+            "Microsoft.AspNetCore.Mvc.HttpDeleteAttribute",
+            "Microsoft.AspNetCore.Mvc.HttpPutAttribute",
+            "Microsoft.AspNetCore.Mvc.HttpPatchAttribute",
+            };
+        // private static string[] ReturnTypeClasses = {
+        //     "System.Web.Mvc.ActionResult",
+        //     "Microsoft.AspNetCore.Mvc.IActionResult"
+        //     };
+        private static string[] CsrfTokenAttributes = {
+            "System.Web.Mvc.ValidateAntiForgeryTokenAttribute",
+            "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
+            "Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute"
+            };
+        private static string[] AnonymousAttribute = {
+            "System.Web.Mvc.AllowAnonymousAttribute",
+            "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute"};
+        //Recursive method to check base types.--> Not required because different types of Return statements will come.
+        // private bool CheckReturnType(INamedTypeSymbol typeSymbol)
+        // {
+        //     // return true;
+        //     if(typeSymbol ==null)
+        //         return false;
+        //     if(ReturnTypeClasses.Any(obj=>obj == typeSymbol.ToString()))
+        //         return true;
+        //     else if(typeSymbol.BaseType !=null && typeSymbol.BaseType.ToString()!="System.Object")
+        //         return CheckReturnType(typeSymbol.BaseType);
+        //     else if(typeSymbol.AllInterfaces !=null && typeSymbol.AllInterfaces.Count()>0)
+        //         return typeSymbol.AllInterfaces.Any(baseInterface=> CheckReturnType(baseInterface));
+        //     return false;
+        // }
         private bool CheckHttbVerb(ITypeSymbol typeSymbol)
         {
             if(typeSymbol !=null )
@@ -50,13 +66,13 @@ namespace ASTTask
         private bool CheckAnonymousAttribute(ITypeSymbol typeSymbol)
         {
             if(typeSymbol != null)
-                return typeSymbol.ToString() == AnonymousAttribute;
+                return AnonymousAttribute.Any(obj => obj== typeSymbol.ToString());
             return false;
         }
         private bool CheckCsrfAttribute(ITypeSymbol typeSymbol)
         {
             if(typeSymbol !=null)
-                return typeSymbol.ToString() == CsrfTokenAttribute;
+                return CsrfTokenAttributes.Any(obj => obj == typeSymbol.ToString());
             return false;
         }
         public List<SyntaxNode> FindCsrfVulnerabilities(string filePath, SyntaxNode root)
@@ -77,20 +93,19 @@ namespace ASTTask
             foreach (var itemClass in attributeClassDeclarations)
             {
                 bool IsCsrfAttributeExistsInClass = false;
-                if(itemClass.AttributeLists != null)
-                    foreach (var attributeList in itemClass.AttributeLists)
+                foreach (var attributeList in itemClass.AttributeLists)
+                {
+                    foreach (var attribute in attributeList.Attributes)
                     {
-                        foreach (var attribute in attributeList.Attributes)
-                        {
-                            TypeInfo typeInfo = model.GetTypeInfo(attribute);
-                            if(typeInfo.Type!=null && typeInfo.Type is ITypeSymbol)
-                                IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeInfo.Type) || IsCsrfAttributeExistsInClass;
-                            if(IsCsrfAttributeExistsInClass)
-                                break;
-                        }
+                        TypeInfo typeInfo = model.GetTypeInfo(attribute);
+                        if(typeInfo.Type!=null && typeInfo.Type is ITypeSymbol)
+                            IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeInfo.Type) || IsCsrfAttributeExistsInClass;
                         if(IsCsrfAttributeExistsInClass)
                             break;
                     }
+                    if(IsCsrfAttributeExistsInClass)
+                        break;
+                }
                 // If  Csrf Attribute is not found at Class Level, check in Method level.
                 if(!IsCsrfAttributeExistsInClass)
                 {
@@ -101,33 +116,32 @@ namespace ASTTask
                         if(!method.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)))
                             break;
                         var returnTypeSymbol = model.GetSymbolInfo(method.ReturnType).Symbol;
-                        if(CheckReturnType(returnTypeSymbol as INamedTypeSymbol))
+                        //if(CheckReturnType(returnTypeSymbol as INamedTypeSymbol))
                         {
                             bool hasHttpVerb = false;
                             bool hasCsrfAttribute = false;
                             bool hasAnonymousAttribute = false;
-                            if(method.AttributeLists != null)
-                                foreach (var attributeList in method.AttributeLists)
+                            foreach (var attributeList in method.AttributeLists)
+                            {
+                                foreach (var attribute in attributeList.Attributes)
                                 {
-                                    foreach (var attribute in attributeList.Attributes)
+                                    TypeInfo typeInfo = model.GetTypeInfo(attribute);
+                                    if(typeInfo.Type != null)
                                     {
-                                        TypeInfo typeInfo = model.GetTypeInfo(attribute);
-                                        if(typeInfo.Type != null)
-                                        {
-                                            hasHttpVerb = CheckHttbVerb(typeInfo.Type) || hasHttpVerb;
-                                            hasCsrfAttribute = CheckCsrfAttribute(typeInfo.Type) || hasCsrfAttribute;
-                                            hasAnonymousAttribute = CheckAnonymousAttribute(typeInfo.Type) || hasAnonymousAttribute;
-                                        }
-                                        // else if(symbolInfo.CandidateSymbols.Count()>0)
-                                        // {
-                                        //     foreach (var candidateSymbol in symbolInfo.CandidateSymbols)
-                                        //     {
-                                        //         hasHttpVerb = CheckHttbVerb(symbolInfo.Symbol) || hasHttpVerb;
-                                        //         hasCsrftAttribute = CheckCsrfAttribute(candidateSymbol) || hasCsrftAttribute;
-                                        //     }
-                                        // }
+                                        hasHttpVerb = CheckHttbVerb(typeInfo.Type) || hasHttpVerb;
+                                        hasCsrfAttribute = CheckCsrfAttribute(typeInfo.Type) || hasCsrfAttribute;
+                                        hasAnonymousAttribute = CheckAnonymousAttribute(typeInfo.Type) || hasAnonymousAttribute;
                                     }
+                                    // else if(symbolInfo.CandidateSymbols.Count()>0)
+                                    // {
+                                    //     foreach (var candidateSymbol in symbolInfo.CandidateSymbols)
+                                    //     {
+                                    //         hasHttpVerb = CheckHttbVerb(symbolInfo.Symbol) || hasHttpVerb;
+                                    //         hasCsrftAttribute = CheckCsrfAttribute(candidateSymbol) || hasCsrftAttribute;
+                                    //     }
+                                    // }
                                 }
+                            }
                             if(hasHttpVerb && !hasCsrfAttribute & !hasAnonymousAttribute)
                             {
                                 lstVulnerableStatements.Add(method);
