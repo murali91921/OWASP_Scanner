@@ -27,7 +27,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("WeakHash2")).ToArray();
+            fileNames = fileNames.Where(obj => obj.Contains("Csrf")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -107,6 +107,13 @@ namespace ASTTask
                                 vulnerabilities = weakHashingValidator.FindWeakHashing(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.Csrf)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                CsrfScanner csrfScanner = new CsrfScanner();
+                                vulnerabilities = csrfScanner.FindCsrfVulnerabilities(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -127,6 +134,7 @@ namespace ASTTask
             EmptyCatch = 5,
             WeakPasswordConfig = 6,
             WeakHashingConfig = 7,
+            Csrf = 8,
             None = 0,
             Invalid = -1
         }
@@ -144,9 +152,11 @@ namespace ASTTask
                 Console.WriteLine("5.Empty catch block scanner");
                 Console.WriteLine("6.Weak password configuration scanner");
                 Console.WriteLine("7.Weak hashing configuration scanner");
+                Console.WriteLine("8.Csrf scanner");
                 Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
+                //string input = "8";
                 ScannerType scanner = ScannerType.Invalid;
                 try
                 {
@@ -167,6 +177,7 @@ namespace ASTTask
                         case ScannerType.EmptyCatch:
                         case ScannerType.WeakPasswordConfig:
                         case ScannerType.WeakHashingConfig:
+                        case ScannerType.Csrf:
                             Scanner(scanner);
                             break;
                         case ScannerType.None:
