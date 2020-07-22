@@ -143,7 +143,7 @@ namespace ASTTask
                 Console.WriteLine("4.Empty try block scanner");
                 Console.WriteLine("5.Empty catch block scanner");
                 Console.WriteLine("6.Weak password configuration scanner");
-                Console.WriteLine("7.Weak hashing configuration scanner (coming soon)");
+                Console.WriteLine("7.Weak hashing configuration scanner");
                 Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
