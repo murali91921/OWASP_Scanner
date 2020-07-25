@@ -27,7 +27,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            // fileNames = fileNames.Where(obj => obj.Contains("Ldap")).ToArray();
+            // fileNames = fileNames.Where(obj => obj.Contains("Random")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -121,6 +121,13 @@ namespace ASTTask
                                 vulnerabilities = ldapScanner.FindLDAPVulnerabilities(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.InsecureRandom)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                InsecureRandomScanner randomScanner = new InsecureRandomScanner();
+                                vulnerabilities = randomScanner.FindVulnerabilities(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -143,6 +150,7 @@ namespace ASTTask
             WeakHashingConfig = 7,
             Csrf = 8,
             Ldap = 9,
+            InsecureRandom = 10,
             None = 0,
             Invalid = -1
         }
@@ -162,6 +170,7 @@ namespace ASTTask
                 Console.WriteLine("7.Weak hashing configuration scanner");
                 Console.WriteLine("8.Csrf scanner");
                 Console.WriteLine("9.Ldap scanner");
+                Console.WriteLine("10.Insecure Random scanner");
                 Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
@@ -188,6 +197,7 @@ namespace ASTTask
                         case ScannerType.WeakHashingConfig:
                         case ScannerType.Csrf:
                         case ScannerType.Ldap:
+                        case ScannerType.InsecureRandom:
                             Scanner(scanner);
                             break;
                         case ScannerType.None:
