@@ -27,7 +27,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Scanner2")).ToArray();
+            fileNames = fileNames.Where(obj => obj.Contains("Ldap")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -114,6 +114,13 @@ namespace ASTTask
                                 vulnerabilities = csrfScanner.FindCsrfVulnerabilities(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.Ldap)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                LDAPScanner ldapScanner = new LDAPScanner();
+                                vulnerabilities = ldapScanner.FindLDAPVulnerabilities(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -135,6 +142,7 @@ namespace ASTTask
             WeakPasswordConfig = 6,
             WeakHashingConfig = 7,
             Csrf = 8,
+            Ldap = 9,
             None = 0,
             Invalid = -1
         }
@@ -153,6 +161,7 @@ namespace ASTTask
                 Console.WriteLine("6.Weak password configuration scanner");
                 Console.WriteLine("7.Weak hashing configuration scanner");
                 Console.WriteLine("8.Csrf scanner");
+                Console.WriteLine("9.Ldap scanner");
                 Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
@@ -178,6 +187,7 @@ namespace ASTTask
                         case ScannerType.WeakPasswordConfig:
                         case ScannerType.WeakHashingConfig:
                         case ScannerType.Csrf:
+                        case ScannerType.Ldap:
                             Scanner(scanner);
                             break;
                         case ScannerType.None:
