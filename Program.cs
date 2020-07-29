@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 using ASTTask;
+using System.Threading.Tasks;
 using System.Threading;
 
 namespace ASTTask
@@ -27,12 +28,12 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            // fileNames = fileNames.Where(obj => obj.Contains("Random")).ToArray();
+            // fileNames = fileNames.Where(obj => obj.Contains("SQLInjection")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
         {
-            Thread thread = new Thread(() =>
+            Parallel.Invoke(()=>
             {
                 //Accessing Files under "Examples" directory
                 try
@@ -128,6 +129,13 @@ namespace ASTTask
                                 vulnerabilities = randomScanner.FindVulnerabilities(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.SqlInjection)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                SqlInjectionScanner sqlInjectionScanner = new SqlInjectionScanner();
+                                vulnerabilities = sqlInjectionScanner.FindVulnerabilities(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -136,8 +144,6 @@ namespace ASTTask
                     Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
                 }
             });
-            thread.Start();
-            thread.Join();
         }
         public enum ScannerType
         {
@@ -151,6 +157,7 @@ namespace ASTTask
             Csrf = 8,
             Ldap = 9,
             InsecureRandom = 10,
+            SqlInjection = 11,
             None = 0,
             Invalid = -1
         }
@@ -171,6 +178,7 @@ namespace ASTTask
                 Console.WriteLine("8.Csrf scanner");
                 Console.WriteLine("9.Ldap scanner");
                 Console.WriteLine("10.Insecure Random scanner");
+                Console.WriteLine("11.Sql Injection scanner");
                 Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
@@ -198,6 +206,7 @@ namespace ASTTask
                         case ScannerType.Csrf:
                         case ScannerType.Ldap:
                         case ScannerType.InsecureRandom:
+                        case ScannerType.SqlInjection:
                             Scanner(scanner);
                             break;
                         case ScannerType.None:
@@ -240,8 +249,8 @@ namespace ASTTask
                 Console.WriteLine(filePath + " : (" + GetLineNumber(item.CookieStatement) + ") : " + missing + "\n" + item.CookieStatement.ToString());
             }
         }
-        private static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
-        private static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        public static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        public static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
         private static ASTNode CreateSyntaxTree(SyntaxNodeOrToken nodeOrToken)
         {
             var root = new ASTNode(GetSyntaxNodeOrTokenInfo(nodeOrToken));

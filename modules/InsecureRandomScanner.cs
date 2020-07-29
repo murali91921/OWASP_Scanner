@@ -24,7 +24,7 @@ namespace ASTTask
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();
             workspace = new AdhocWorkspace();
-            var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
+            //var solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
             var project = workspace.AddProject("InsecureRandomScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             project = project.AddMetadataReferences(Utils.LoadMetadata(root));
