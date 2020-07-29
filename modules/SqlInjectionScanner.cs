@@ -23,8 +23,33 @@ namespace ASTTask
             "System.Data.OleDb.OleDbCommand",
             "System.Data.Odbc.OdbcCommand",
             "System.Data.OracleClient.OracleCommand",
-            "System.Data.SQLite.SQLiteCommand"
+            "System.Data.SQLite.SQLiteCommand",
+            "System.Data.SqlClient.SqlDataAdapter",
+            "System.Data.IDbDataAdapter",
+            "System.Data.OleDb.OleDbDataAdapter",
+            "System.Data.Odbc.OdbcDataAdapter",
+            "System.Data.OracleClient.OracleDataAdapter",
+            "System.Data.SQLite.SQLiteDataAdapter",
+            "System.Web.UI.WebControls.SqlDataSource",
             };
+        private static string[] SqlDataSourceClass = {
+            "System.Web.UI.WebControls.SqlDataSource"
+            };
+        private static string[] CommandTextParameters = {
+            "CommandText",
+            "selectCommandText",
+            "cmdText",
+            "selectCommand"
+            };
+        private static string[] CommandExecuteMethods = {
+            "System.Data.Linq.DataContext.ExecuteCommand",
+            "System.Data.Linq.DataContext.ExecuteQuery"
+        };
+        private static string[] CommandExecuteParameters = {
+            "query",
+            "command"
+        };
+
         private static string[] CommandTextProperties = {
             "System.Data.Common.DbCommand.CommandText",
             "System.Data.IDbCommand.CommandText",
@@ -32,9 +57,16 @@ namespace ASTTask
             "System.Data.OleDb.OleDbCommand.CommandText",
             "System.Data.Odbc.OdbcCommand.CommandText",
             "System.Data.OracleClient.OracleCommand.CommandText",
-            "System.Data.SQLite.SQLiteCommand.CommandText"
-            };
-
+            "System.Data.SQLite.SQLiteCommand.CommandText",
+            "System.Web.UI.WebControls.SqlDataSource.SelectCommand",
+            "System.Web.UI.WebControls.SqlDataSource.InsertCommand",
+            "System.Web.UI.WebControls.SqlDataSource.UpdateCommand",
+            "System.Web.UI.WebControls.SqlDataSource.DeleteCommand",
+            "System.Web.UI.WebControls.SqlDataSourceView.SelectCommand",
+            "System.Web.UI.WebControls.SqlDataSourceView.InsertCommand",
+            "System.Web.UI.WebControls.SqlDataSourceView.UpdateCommand",
+            "System.Web.UI.WebControls.SqlDataSourceView.DeleteCommand"
+        };
         public List<SyntaxNode> FindVulnerabilities(string filePath, SyntaxNode root)
         {
             CSharpParseOptions options = CSharpParseOptions.Default
@@ -73,41 +105,76 @@ namespace ASTTask
                 ITypeSymbol typeSymbol = model.GetTypeInfo(objectCreation).Type as ITypeSymbol;
                 if(typeSymbol == null)
                     continue;
-                if(!CommandClasses.Any(obj=> obj == typeSymbol.ToString()))
+                if(!Utils.DerivesFromAny(typeSymbol, CommandClasses))
                     continue;
                 if(objectCreation.ArgumentList != null && objectCreation.ArgumentList.Arguments.Count>0)
                 {
-                    foreach (var item in objectCreation.ArgumentList.Arguments)
+                    // For Adapter classes, values passing to Connectionstring, Command can be string.
+                    // For Command classes, values passing to Command be string.
+                    // For SqldataSource objects, query was passing as last argument
+                    var argument = objectCreation.ArgumentList.Arguments.First();
+                    if(Utils.DerivesFromAny(typeSymbol,SqlDataSourceClass))
                     {
-                        if(model.GetTypeInfo(item.Expression).Type.ToString() == "string")
-                        {
-                            lstVulnerableCheck.Add(item.Expression);
-                            // WriteLine(item.Expression);
-                        }
+                        if(argument.NameColon == null)
+                            argument = objectCreation.ArgumentList.Arguments.Last();
                     }
-                }
+
+                    if(argument.NameColon != null)
+                        foreach (var item in objectCreation.ArgumentList.Arguments)
+                        {
+                            if(CommandTextParameters.Any(text=>text == item.NameColon.Name.ToString()))
+                            {
+                                argument = item;
+                                break;
+                            }
+                        }
+                    if(model.GetTypeInfo(argument.Expression).Type.ToString() == "string")
+                        lstVulnerableCheck.Add(argument.Expression);
+               }
                 if(objectCreation.Initializer !=null)
                 {
                     var commandTextInitializer = objectCreation.Initializer.Expressions.OfType<AssignmentExpressionSyntax>().FirstOrDefault(
                         obj=>(obj.Left as IdentifierNameSyntax).Identifier.ValueText=="CommandText");
                     if(commandTextInitializer != null)
-                    {
                         lstVulnerableCheck.Add(commandTextInitializer.Right);
-                        // WriteLine(commandTextInitializer);
+                }
+            }
+            var methods = rootNode.DescendantNodes().OfType<InvocationExpressionSyntax>().Where(method=>method.ToString().Contains("ExecuteQuery") || method.ToString().Contains("ExecuteCommand"));
+            foreach (var method in methods)
+            {
+                SymbolInfo symbolInfo = model.GetSymbolInfo(method);
+                IMethodSymbol symbol = null;
+                if(symbolInfo.Symbol != null)
+                    symbol = symbolInfo.Symbol as IMethodSymbol;
+                else if(symbolInfo.CandidateSymbols.Count()>0)
+                    symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
+                if(symbol==null)
+                    continue;
+                if(!CommandExecuteMethods.Any(obj=> obj == symbol.ReceiverType.ToString()+"."+symbol.Name.ToString()))
+                    continue;
+                foreach(var argument in method.ArgumentList.Arguments)
+                {
+                    ITypeSymbol typeSymbol = model.GetTypeInfo(argument.Expression).Type;
+                    if(typeSymbol.ToString()=="string")
+                    {
+                        if(argument.NameColon == null || CommandExecuteParameters.Any(param => param== argument.NameColon.Name.ToString()))
+                        {
+                            lstVulnerableCheck.Add(argument.Expression);
+                            break;
+                        }
                     }
                 }
             }
             // WriteLine("Assignments");
             var assignments = rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(
-                obj => obj.Left.ToString().Contains("CommandText") && !obj.IsKind(SyntaxKind.ObjectInitializerExpression)).ToList();
+                obj => !obj.Right.IsKind(SyntaxKind.ObjectCreationExpression)).ToList();
             foreach (var item in assignments)
             {
                 IPropertySymbol symbol = model.GetSymbolInfo(item.Left).Symbol as IPropertySymbol;
+                if(symbol==null)
+                    continue;
                 if(CommandTextProperties.Any(obj => obj == symbol.ToString()))
-                {
-                    // WriteLine(item.Right);
                     lstVulnerableCheck.Add((item as AssignmentExpressionSyntax).Right);
-                }
             }
             foreach (var item in lstVulnerableCheck)
             {
@@ -182,7 +249,7 @@ namespace ASTTask
                 var contents = (node as InterpolatedStringExpressionSyntax).Contents.OfType<InterpolationSyntax>();
                 foreach (var item in contents)
                 {
-                    vulnerable = vulnerable || IsVulnerable(item.Expression);
+                    vulnerable = vulnerable || IsVulnerable(item.Expression,callingSymbol);
                 }
                 return vulnerable;
             }
