@@ -32,6 +32,8 @@ namespace ASTTask
             "System.Data.SQLite.SQLiteDataAdapter",
             "System.Web.UI.WebControls.SqlDataSource",
             };
+
+        /// This property is used to find which have last parameter as command string
         private static string[] SqlDataSourceClass = {
             "System.Web.UI.WebControls.SqlDataSource"
             };
@@ -43,11 +45,17 @@ namespace ASTTask
             };
         private static string[] CommandExecuteMethods = {
             "System.Data.Linq.DataContext.ExecuteCommand",
-            "System.Data.Linq.DataContext.ExecuteQuery"
+            "System.Data.Linq.DataContext.ExecuteQuery",
+            "System.Data.SQLite.SQLiteCommand.Execute",
+            "System.Data.Entity.Database.ExecuteSqlCommand",
+            "System.Data.Entity.Database.ExecuteSqlCommandAsync",
+            "System.Data.Entity.Database.SqlQuery",
+            "System.Data.Entity.DbSet<TEntity>.SqlQuery",
         };
         private static string[] CommandExecuteParameters = {
             "query",
-            "command"
+            "command",
+            "commandText"
         };
 
         private static string[] CommandTextProperties = {
@@ -139,7 +147,7 @@ namespace ASTTask
                         lstVulnerableCheck.Add(commandTextInitializer.Right);
                 }
             }
-            var methods = rootNode.DescendantNodes().OfType<InvocationExpressionSyntax>().Where(method=>method.ToString().Contains("ExecuteQuery") || method.ToString().Contains("ExecuteCommand"));
+            var methods = rootNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
             {
                 SymbolInfo symbolInfo = model.GetSymbolInfo(method);
@@ -150,7 +158,7 @@ namespace ASTTask
                     symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
                 if(symbol==null)
                     continue;
-                if(!CommandExecuteMethods.Any(obj=> obj == symbol.ReceiverType.ToString()+"."+symbol.Name.ToString()))
+                if(!CommandExecuteMethods.Any(obj=> obj == symbol.ReceiverType.OriginalDefinition.ToString()+"."+symbol.Name.ToString()))
                     continue;
                 foreach(var argument in method.ArgumentList.Arguments)
                 {

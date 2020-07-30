@@ -28,7 +28,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Injection9")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("Injection10")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
