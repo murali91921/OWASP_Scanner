@@ -51,6 +51,16 @@ namespace ASTTask
             "System.Data.Entity.Database.ExecuteSqlCommandAsync",
             "System.Data.Entity.Database.SqlQuery",
             "System.Data.Entity.DbSet<TEntity>.SqlQuery",
+            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSqlRaw",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommand",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommandAsync",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRaw",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRawAsync",
+            "Microsoft.Practices.EnterpriseLibrary.Data.Database.GetSqlStringCommand",
+            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteScalar",
+            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteReader",
+            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteNonQuery",
+            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteDataSet",
         };
         private static string[] CommandExecuteParameters = {
             "query",

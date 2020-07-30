@@ -28,7 +28,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Injection10")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("Injection12")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -167,7 +167,7 @@ namespace ASTTask
             // return;
             while (true)
             {
-                Console.WriteLine("\nPlease choose type of scanner");
+                /*Console.WriteLine("\nPlease choose type of scanner");
                 Console.WriteLine("1.Hard coded keys/password scanner");
                 Console.WriteLine("2.Insecure cookie flag scanner");
                 Console.WriteLine("3.OpenRedirect query scanner");
@@ -179,7 +179,7 @@ namespace ASTTask
                 Console.WriteLine("9.Ldap scanner");
                 Console.WriteLine("10.Insecure Random scanner");
                 Console.WriteLine("11.Sql Injection scanner");
-                Console.WriteLine("0.Exit ");
+                Console.WriteLine("0.Exit ");*/
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
                 //string input = "8";
