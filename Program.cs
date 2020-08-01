@@ -28,7 +28,7 @@ namespace ASTTask
                 .Where(obj=>obj.EndsWith(".txt",StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("Injection12")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("XPath")).ToArray();
             return fileNames;
         }
         static void Scanner(ScannerType scannerType)
@@ -136,6 +136,13 @@ namespace ASTTask
                                 vulnerabilities = sqlInjectionScanner.FindVulnerabilities(filePath,rootNode);
                                 PrintNodes(filePath, vulnerabilities);
                             }
+                            else if (scannerType == ScannerType.XPath)
+                            {
+                                rootNode = CSharpSyntaxTree.ParseText(programLines).GetRoot();
+                                XPathScanner xPathScannerScanner = new XPathScanner();
+                                vulnerabilities = xPathScannerScanner.FindVulnerabilities(filePath,rootNode);
+                                PrintNodes(filePath, vulnerabilities);
+                            }
                         }
                     }
                 }
@@ -158,6 +165,7 @@ namespace ASTTask
             Ldap = 9,
             InsecureRandom = 10,
             SqlInjection = 11,
+            XPath=12,
             None = 0,
             Invalid = -1
         }
@@ -178,8 +186,9 @@ namespace ASTTask
                 Console.WriteLine("8.Csrf scanner");
                 Console.WriteLine("9.Ldap scanner");
                 Console.WriteLine("10.Insecure Random scanner");
-                Console.WriteLine("11.Sql Injection scanner");
-                Console.WriteLine("0.Exit ");*/
+                Console.WriteLine("11.Sql Injection scanner");*/
+                Console.WriteLine("12.XPath Injection scanner");
+                Console.WriteLine("0.Exit ");
                 Console.WriteLine("Your option : ");
                 string input = Console.ReadLine();
                 //string input = "8";
@@ -207,6 +216,7 @@ namespace ASTTask
                         case ScannerType.Ldap:
                         case ScannerType.InsecureRandom:
                         case ScannerType.SqlInjection:
+                        case ScannerType.XPath:
                             Scanner(scanner);
                             break;
                         case ScannerType.None:

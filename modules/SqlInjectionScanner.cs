@@ -87,9 +87,9 @@ namespace ASTTask
         };
         public List<SyntaxNode> FindVulnerabilities(string filePath, SyntaxNode root)
         {
-            CSharpParseOptions options = CSharpParseOptions.Default
-                .WithFeatures(new[] { new KeyValuePair<string, string>("flow-analysis", "")
-                });
+            // CSharpParseOptions options = CSharpParseOptions.Default
+            //     .WithFeatures(new[] { new KeyValuePair<string, string>("flow-analysis", "")
+            //     });
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             HashSet<SyntaxNode> lstVulnerableCheck = new HashSet<SyntaxNode>();
             workspace = new AdhocWorkspace();
@@ -97,7 +97,8 @@ namespace ASTTask
             var project = workspace.AddProject("SqlInjectionScanner", "C#");
             project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
             project = project.AddMetadataReferences(Utils.LoadMetadata(root));
-            workspace.TryApplyChanges(project.Solution.WithProjectParseOptions(project.Id,options));
+            workspace.TryApplyChanges(project.Solution);
+            //workspace.TryApplyChanges(project.Solution.WithProjectParseOptions(project.Id,options));
             var document = workspace.AddDocument(project.Id, "SqlInjectionScanner",SourceText.From(root.ToString()));
             model = document.GetSemanticModelAsync().Result;
             var compilation = project.GetCompilationAsync().Result;
@@ -113,7 +114,6 @@ namespace ASTTask
             //         {
             //         WriteLine(operation.Syntax.ToString());
             //         }
-
             //         WriteLine(block);
             //     }
             // }
