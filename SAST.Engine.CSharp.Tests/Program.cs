@@ -19,68 +19,31 @@ namespace SAST.Engine.CSharp.Tests
                 .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("config")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("XPath")).ToArray();
             return fileNames;
         }
         static void Main(string[] args)
         {
-            //IEnumerable<string> fileNames = GetExamples();
-            //foreach (string filePath in fileNames)
-            //{
-            //    //Console.WriteLine(filePath);
-            //    //Console.ReadLine();
-            //    Core.SASTApp sASTApp = new Core.SASTApp();
-            //    if (sASTApp.LoadFiles(new string[] { filePath }))
-            //    {
-            //        IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-            //        foreach (var item in vulnerabilities)
-            //        {
-            //            Console.WriteLine(item.ToString());
-            //        }
-            //    }
-            //    else
-            //        Console.WriteLine("Unable to load the files");
-            //}
-            string solutionFile;
             Program program = new Program();
+            string[] files;
 
-            //solutionFile = @"C:\Users\Ceaselez\source\repos\ConsoleCoreHashApp1\ConsoleCoreHashApp1.sln";
-            //program.LoadSolution(solutionFile);
+            files = new string[] { @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\MVCWebApplication1.sln" };
+            //program.LoadFiles(files);
 
-            //solutionFile = @"C:\Users\Ceaselez\source\repos\ConsoleHashingApp1\ConsoleHashingApp1.sln";
-            //program.LoadSolution(solutionFile);
+            //files = new string[] { @"C:\Users\Ceaselez\source\repos\CoreMVCWebApplication1\CoreMVCWebApplication1\CoreMVCWebApplication1.csproj" };
+            files = new string[] { @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\WebApplication1\WebApplication1.csproj" };
+            //program.LoadFiles(files);
 
-            solutionFile = @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\MVCWebApplication1.sln";
-            program.LoadSolution(solutionFile);
-
-            string[] projects = { @"C:\Users\Ceaselez\source\repos\CoreMVCWebApplication1\CoreMVCWebApplication1\CoreMVCWebApplication1.csproj" };
-            //program.LoadProjects(projects);
-
-            projects = new string[] { @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\WebApplication1\WebApplication1.csproj" };
-            program.LoadProjects(projects);
-
-            //projects = new string[] { @"C:\Users\Ceaselez\source\repos\WebApplication1\WebApplication1\WebApplication1.csproj" };
-            //program.LoadProjects(projects);
-
+            files = GetExamples().ToArray();
+            foreach (var item in files)
+            {
+                program.LoadFiles(new string[] { item });
+            }
         }
-        void LoadProjects(string[] projectPaths)
+        void LoadFiles(string[] projectPaths)
         {
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))
-            {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-                foreach (var item in vulnerabilities)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-            }
-            else
-                Console.WriteLine("Unable to load the files");
-        }
-        void LoadSolution(string solutionFile)
-        {
-            Core.SASTApp sASTApp = new Core.SASTApp();
-            if (sASTApp.LoadFiles(new string[] { solutionFile }))
             {
                 IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
                 foreach (var item in vulnerabilities)

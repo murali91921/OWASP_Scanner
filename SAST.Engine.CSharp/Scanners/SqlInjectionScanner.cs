@@ -139,7 +139,7 @@ namespace SAST.Engine.CSharp.Scanners
                                 break;
                             }
                         }
-                    if (model.GetTypeInfo(argument.Expression).Type.ToString() == "string")
+                    if (model.GetTypeInfo(argument.Expression).Type.ToString() == "string" || model.GetTypeInfo(argument.Expression).Type.ToString() == "System.String")
                         lstVulnerableCheck.Add(argument.Expression);
                 }
                 if (objectCreation.Initializer != null)
@@ -166,7 +166,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var argument in method.ArgumentList.Arguments)
                 {
                     ITypeSymbol typeSymbol = model.GetTypeInfo(argument.Expression).Type;
-                    if (typeSymbol.ToString() == "string")
+                    if (typeSymbol.ToString() == "string" || typeSymbol.ToString() == "System.String")
                     {
                         if (argument.NameColon == null || CommandExecuteParameters.Any(param => param == argument.NameColon.Name.ToString()))
                         {
@@ -203,7 +203,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.ToString() != "string")
+                if (type.ToString() != "string" || type.ToString() != "System.String")
                     return false;
 
                 bool vulnerable = false;

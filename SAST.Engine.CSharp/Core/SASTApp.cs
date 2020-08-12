@@ -209,7 +209,7 @@ namespace SAST.Engine.CSharp.Core
                                 //Console.WriteLine("{0} {1} {2}", "IScanner", document.FilePath, scannerType);
                                 //vulnerabilities.AddRange(new CookieFlagScanner().FindVulnerabilties(syntaxNode, Path.GetFileName(document.FilePath), model, workspace));
                             }
-                        }//);
+                        }
                     else
                         break;
                 }

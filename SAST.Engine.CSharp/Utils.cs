@@ -10,8 +10,8 @@ namespace SAST.Engine.CSharp
 {
     internal static class Utils
     {
-        internal static readonly string[] AvailableExtensions = { ".cs", ".cshtml", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
-        internal static readonly string[] SourceCodeFileExtensions = { ".cs" };
+        internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
+        internal static readonly string[] SourceCodeFileExtensions = { ".cs", ".txt" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx" };
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)

@@ -65,7 +65,7 @@ namespace SAST.Engine.CSharp.Scanners
                     ITypeSymbol typeSymbol = model.GetTypeInfo(argument.Expression).Type;
                     if (typeSymbol == null)
                         continue;
-                    if (typeSymbol.ToString() == "string")
+                    if (typeSymbol.ToString() == "string" || typeSymbol.ToString() == "System.String")
                     {
                         lstVulnerableCheck.Add(argument.Expression);
                         break;
@@ -85,7 +85,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.ToString() != "string")
+                if (type == null || type.ToString() != "string" && type.ToString() != "System.String")
                     return false;
 
                 bool vulnerable = false;

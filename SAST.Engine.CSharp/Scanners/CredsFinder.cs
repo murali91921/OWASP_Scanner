@@ -88,8 +88,10 @@ namespace SAST.Engine.CSharp.Scanners
                 //TypeInfo typeInfo = model.GetTypeInfo(item);
                 if (symbol != null)
                 {
-                    bool isString = (symbol is IFieldSymbol && (symbol as IFieldSymbol).Type.ToString().ToLower() == "string")
-                                || (symbol is ILocalSymbol && (symbol as ILocalSymbol).Type.ToString().ToLower() == "string");
+                    bool isString = false;
+                    isString = symbol is IFieldSymbol && ((symbol as IFieldSymbol).Type.ToString() == "string" || (symbol as IFieldSymbol).Type.ToString() == "System.String");
+                    if (!isString)
+                        isString = symbol is ILocalSymbol && ((symbol as ILocalSymbol).Type.ToString() == "string" || (symbol as ILocalSymbol).Type.ToString() == "System.String");
                     if (isString)
                     {
                         if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax)

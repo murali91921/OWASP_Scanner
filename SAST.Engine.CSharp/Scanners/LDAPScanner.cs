@@ -52,7 +52,7 @@ namespace SAST.Engine.CSharp.Scanners
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
                                 ITypeSymbol argumentType = model.GetTypeInfo(argument.Expression).Type;
-                                if (argumentType.ToString() == "string" || argument.Expression is BinaryExpressionSyntax)
+                                if (argumentType.ToString() == "string" || argumentType.ToString() == "System.String" || argument.Expression is BinaryExpressionSyntax)
                                 {
                                     lstVulnerableCheck.Add(argument.Expression);
                                 }
