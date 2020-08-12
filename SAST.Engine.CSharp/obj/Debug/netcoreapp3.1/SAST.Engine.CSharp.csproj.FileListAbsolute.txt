@@ -1,0 +1,41 @@
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.deps.json
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csprojAssemblyReference.cache
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfoInputs.cache
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfo.cs
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.deps.json
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csprojAssemblyReference.cache
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfoInputs.cache
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfo.cs
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csproj.CoreCompileInputs.cache
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\netcoreCsharp-master.11\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csproj.CoreCompileInputs.cache
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.deps.json
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfoInputs.cache
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfo.cs
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csproj.CoreCompileInputs.cache
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Locator.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Tasks.Core.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Utilities.Core.dll
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.xml
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.xml
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Tasks.Core.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Tasks.Core.xml
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Utilities.Core.pdb
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\bin\Debug\netcoreapp3.1\Microsoft.Build.Utilities.Core.xml
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csproj.CopyComplete
+F:\Proto Geek\Task 1\SAST.Engine.CSharp\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.csprojAssemblyReference.cache

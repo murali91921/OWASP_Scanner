@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>ASTTask</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\Debug\netcoreapp3.1\Examples\**" />
+    <Compile Remove="bin\Examples\**" />
+    <Compile Remove="Examples\**" />
+    <Compile Remove="modules\**" />
+    <EmbeddedResource Remove="bin\Debug\netcoreapp3.1\Examples\**" />
+    <EmbeddedResource Remove="bin\Examples\**" />
+    <EmbeddedResource Remove="Examples\**" />
+    <EmbeddedResource Remove="modules\**" />
+    <None Remove="bin\Debug\netcoreapp3.1\Examples\**" />
+    <None Remove="bin\Examples\**" />
+    <None Remove="Examples\**" />
+    <None Remove="modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ASTNode.cs" />
+    <Compile Remove="Rename.cs" />
+    <Compile Remove="SyntaxNodeAnalyzerFactory.cs" />
+    <Compile Remove="Utils.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SAST.Engine.CSharp\SAST.Engine.CSharp.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Release\netcoreapp3.1\SAST.Engine.CSharp.deps.json
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Release\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\bin\Release\netcoreapp3.1\SAST.Engine.CSharp.pdb
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.csprojAssemblyReference.cache
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfoInputs.cache
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.AssemblyInfo.cs
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.csproj.CoreCompileInputs.cache
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.dll
+C:\Users\shivang.mittal\Documents\GitHub\SASTBackEnd\SAST\SAST.Engine.CSharp\obj\Release\netcoreapp3.1\SAST.Engine.CSharp.pdb
