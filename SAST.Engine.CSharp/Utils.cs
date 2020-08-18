@@ -14,6 +14,8 @@ namespace SAST.Engine.CSharp
         internal static readonly string[] SourceCodeFileExtensions = { ".cs", ".txt" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx" };
+        internal static readonly string[] ProjectFileExtensions = { ".csproj" };
+
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();

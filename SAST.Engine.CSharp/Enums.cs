@@ -1,10 +1,14 @@
-﻿namespace SAST.Engine.CSharp.Enums
+﻿using System.Runtime.Serialization;
+
+namespace SAST.Engine.CSharp.Enums
 {
     /// <summary>
     /// TODO: Replace this with SAST.Core once integrate
     /// </summary>
     public enum ScannerType
     {
+        None = 0,
+        Invalid = -1,
         HardcodePassword = 1,
         InsecureCookie = 2,
         OpenRedirect = 3,
@@ -17,7 +21,13 @@
         InsecureRandom = 10,
         SqlInjection = 11,
         XPath = 12,
+        XSS = 13
+    }
+    public enum ScannerSubType
+    {
         None = 0,
-        Invalid = -1
+        StoredXSS = 1,
+        ReflectedXSS = 2,
+        DomXSS = 3,
     }
 }

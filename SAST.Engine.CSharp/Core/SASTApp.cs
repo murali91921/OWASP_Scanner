@@ -6,6 +6,8 @@ using System;
 using SAST.Engine.CSharp.Enums;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Scanners;
+using SAST.Engine.CSharp.Parser;
+using ASTTask;
 
 namespace SAST.Engine.CSharp.Core
 {
@@ -18,7 +20,6 @@ namespace SAST.Engine.CSharp.Core
             //    instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
         }
         AdhocWorkspace workspace;
-        private List<MetadataReference> metadataReferences;
         public bool LoadFiles(string[] filePaths)
         {
             if (filePaths == null || filePaths.Count() == 0)
@@ -27,8 +28,6 @@ namespace SAST.Engine.CSharp.Core
             //    return false;
             if (!filePaths.Any(file => !string.IsNullOrEmpty(file) && Utils.AvailableExtensions.Any(ext => Path.GetExtension(file).ToLower() == ext)))
                 return false;
-
-            Utils.LoadMetadata(out metadataReferences);
 
             workspace = new AdhocWorkspace();
 
@@ -67,11 +66,40 @@ namespace SAST.Engine.CSharp.Core
                 SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Default);
                 workspace.AddSolution(solutionInfo);
                 ProjectInfo projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Default, Path.GetRandomFileName(), Path.GetRandomFileName(),
-                    LanguageNames.CSharp, metadataReferences: metadataReferences);
+                    LanguageNames.CSharp);
                 workspace.AddProject(projectInfo);
                 LoadSourceFiles(projectInfo.Id, files);
                 return true;
             }
+        }
+        private void ResolveReferences()
+        {
+            if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.ProjectIds.Count() == 0)
+                return;
+            bool dependencyMayExists = workspace.CurrentSolution.ProjectIds.Count() > 1;
+            Solution solution = workspace.CurrentSolution;
+            List<MetadataReference> metadataReferences;
+            Utils.LoadMetadata(out metadataReferences);
+            foreach (var parentProject in solution.Projects)
+            {
+                solution = solution.AddMetadataReferences(parentProject.Id, metadataReferences);
+                if (!dependencyMayExists)
+                    continue;
+                if (parentProject.FilePath == null)
+                    continue;
+                IEnumerable<string> projectReferencePaths = DotnetParser.GetAttributes(parentProject.FilePath, "/Project/ItemGroup/ProjectReference", "Include", Utils.ProjectFileExtensions);
+                if (projectReferencePaths == null || projectReferencePaths.Count() == 0)
+                    continue;
+                List<ProjectReference> references = new List<ProjectReference>();
+                foreach (var item in projectReferencePaths)
+                {
+                    var childProject = solution.Projects.First(obj => obj.FilePath == item);
+                    if (childProject != null)
+                        solution = solution.AddProjectReference(parentProject.Id, new ProjectReference(childProject.Id));
+                }
+            }
+            workspace.TryApplyChanges(solution);
+            //DotnetParser.GetSourceFiles(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
         }
 
         private bool LoadSourceFiles(ProjectId projectId, IEnumerable<string> sourceFiles)
@@ -99,21 +127,23 @@ namespace SAST.Engine.CSharp.Core
 
         private bool LoadProjects(string[] projectPaths)
         {
-            bool result = false;
+            //bool result = false;
             if (projectPaths == null || projectPaths.Count() == 0 || projectPaths.Any(path => string.IsNullOrWhiteSpace(path)))
                 return false;
             foreach (var projectPath in projectPaths)
             {
-                ProjectInfo projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Default, Path.GetFileName(projectPath), Path.GetFileName(projectPath),
-                    LanguageNames.CSharp, projectPath, metadataReferences: metadataReferences);
-                workspace.AddProject(projectInfo);
+                ProjectInfo projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Default, Path.GetFileNameWithoutExtension(projectPath), Path.GetFileNameWithoutExtension(projectPath),
+                    LanguageNames.CSharp, projectPath);
+                Solution solution = workspace.CurrentSolution.AddProject(projectInfo);
                 List<string> sourceFilePaths = new List<string>();
-                sourceFilePaths.AddRange(DotnetParser.GetSourceFiles(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
-                sourceFilePaths.AddRange(DotnetParser.GetSourceFiles(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
+                sourceFilePaths.AddRange(DotnetParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
+                sourceFilePaths.AddRange(DotnetParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
                 //sourceFilePaths.AddRange(DotnetParser.GetSourceFiles(projectPath, "/Project/ItemGroup/Content", "Include", Utils.ConfigurationFileExtensions));
-                result = result || LoadSourceFiles(projectInfo.Id, sourceFilePaths);
+                workspace.TryApplyChanges(solution);
+                LoadSourceFiles(projectInfo.Id, sourceFilePaths);
             }
-            return result;
+            ResolveReferences();
+            return true;
         }
         //private Workspace AddAdditionalDocuments(Workspace workspace)
         //{
@@ -153,7 +183,9 @@ namespace SAST.Engine.CSharp.Core
         //}
         private bool LoadSolution(string solutionPath)
         {
-            IEnumerable<string> projects = DotnetParser.ParseSolution(solutionPath);
+            //if (!Microsoft.Build.Locator.MSBuildLocator.IsRegistered)
+            //    Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            var projects = DotnetParser.ParseSolution(solutionPath);
             if (projects.Count() == 0)
                 return false;
             SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Default, solutionPath);
@@ -198,6 +230,15 @@ namespace SAST.Engine.CSharp.Core
                     if (project.Documents != null)
                         foreach (var document in project.Documents)
                         {
+                            if (!document.FilePath.Contains("HomeController"))
+                                continue;
+                            //var compilation = project.GetCompilationAsync().Result;
+                            //var stream = new MemoryStream();
+                            //var emitResult = compilation.Emit(stream);
+                            //foreach (var item in emitResult.Diagnostics)
+                            //{
+                            //    Console.WriteLine(item.ToString());
+                            //}
                             var model = document.GetSemanticModelAsync().Result;
                             var syntaxNode = document.GetSyntaxRootAsync().Result;
                             foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
@@ -231,7 +272,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SqlInjection => new SqlInjectionScanner(),
                 ScannerType.WeakHashingConfig => new WeakHashingValidator(),
                 ScannerType.WeakPasswordConfig => new WeakPasswordValidator(),
-                ScannerType.XPath => new XPathScanner(),
+                //ScannerType.XPath => new XPathScanner(),
+                ScannerType.XSS => new XssScanner(),
                 _ => null,
             };
         }

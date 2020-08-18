@@ -8,17 +8,12 @@ namespace SAST.Engine.CSharp.Mapper
 {
     public static class Map
     {
-        public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType type)
+        public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType type, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             var vulnerabilityList = new List<VulnerabilityDetail>();
-
             if (syntaxList is List<SASTCookie> astCookie)
-            {
                 ConvertFromSASTCookie<T>(filePath, astCookie, vulnerabilityList);
-            }
-            else
-            if (syntaxList is List<SyntaxNode> syntaxNodeList)
-            {
+            else if (syntaxList is List<SyntaxNode> syntaxNodeList)
                 foreach (var item in syntaxNodeList)
                 {
                     vulnerabilityList.Add(new VulnerabilityDetail
@@ -27,13 +22,10 @@ namespace SAST.Engine.CSharp.Mapper
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
                         Type = type.ToString(),
-                        Vulnerability = type.ToString()
+                        Vulnerability = scannerSubType == ScannerSubType.None ? type.ToString() : scannerSubType.ToString()
                     });
                 }
-            }
-            else
-            if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)
-            {
+            else if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)
                 foreach (var item in syntaxTriviaList)
                 {
                     vulnerabilityList.Add(new VulnerabilityDetail
@@ -42,11 +34,9 @@ namespace SAST.Engine.CSharp.Mapper
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
                         Type = ScannerType.InsecureCookie.ToString(),
-                        Vulnerability = "HardCoded Sensitive information"
+                        Vulnerability = ScannerType.InsecureCookie.ToString()
                     });
                 }
-            }
-
             return vulnerabilityList;
         }
 
@@ -72,7 +62,7 @@ namespace SAST.Engine.CSharp.Mapper
             }
         }
 
-        private static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        internal static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
 
         private static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
     }

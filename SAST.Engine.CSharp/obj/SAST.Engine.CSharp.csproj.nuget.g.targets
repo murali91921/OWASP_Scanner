@@ -5,5 +5,6 @@
   </PropertyGroup>
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <Import Project="$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\3.0.0\build\Microsoft.CodeAnalysis.Analyzers.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\3.0.0\build\Microsoft.CodeAnalysis.Analyzers.targets')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.build.locator\1.2.6\build\Microsoft.Build.Locator.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.build.locator\1.2.6\build\Microsoft.Build.Locator.targets')" />
   </ImportGroup>
 </Project>

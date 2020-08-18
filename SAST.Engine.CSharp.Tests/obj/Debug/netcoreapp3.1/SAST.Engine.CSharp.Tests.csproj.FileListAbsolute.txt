@@ -103,14 +103,8 @@ F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\SAST.Engin
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.csprojAssemblyReference.cache
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.AssemblyInfoInputs.cache
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.AssemblyInfo.cs
+F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.csproj.CoreCompileInputs.cache
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.csproj.CopyComplete
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.dll
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.pdb
 F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.genruntimeconfig.cache
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\obj\Debug\netcoreapp3.1\SAST.Engine.CSharp.Tests.csproj.CoreCompileInputs.cache
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.dll
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.dll
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.pdb
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.xml
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.pdb
-F:\Proto Geek\Task 1\SAST.Engine.CSharp.Tests\bin\Debug\netcoreapp3.1\Microsoft.Build.Framework.xml

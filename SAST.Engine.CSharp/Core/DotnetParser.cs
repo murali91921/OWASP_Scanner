@@ -1,52 +1,77 @@
-﻿using Microsoft.Build.Construction;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.XPath;
+using System.Diagnostics;
+using System.Reflection;
+using System.Security.Permissions;
+using System.Text.RegularExpressions;
 
-namespace SAST.Engine.CSharp.Core
+namespace SAST.Engine.CSharp.Parser
 {
+    //internal class SASTProject
+    //{
+    //    public string Name { get; set; }
+    //    public string Path { get; set; }
+    //}
     internal class DotnetParser
     {
+        static readonly string ProjectPattern = "^Project\\(\"{(?<TypeId>[A-F0-9-]+)}\"\\) = \"(?<Name>.*?)\", \"(?<Path>.*?)\", \"{(?<Id>[A-F0-9-]+)}\""
+            + @"(?<Sections>(.|\n|\r)*?)" + @"EndProject(\n|\r)";
+        static readonly string ProjectSectionPattern = @"ProjectSection(?<Record>(.|\n|\r)*?)EndProjectSection";
         internal static IEnumerable<string> ParseSolution(string solutionFilePath)
         {
-            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
-            List<string> keyValues = new List<string>();
-            if (solutionFile.ProjectsByGuid.Count > 0)
+            if (!File.Exists(solutionFilePath))
+                new ArgumentNullException("Invalid file path", new ArgumentNullException());
+            string slnText = File.ReadAllText(solutionFilePath);
+            var matches = Regex.Matches(slnText, ProjectPattern, RegexOptions.Multiline);
+            var list = new List<string>();
+            foreach (Match match in matches)
             {
-                foreach (var pair in solutionFile.ProjectsByGuid)
-                    keyValues.Add(pair.Value.AbsolutePath);
+                if (match != null)
+                {
+                    string projectpath = match.Groups["Path"].Value;
+                    list.Add(Path.GetFullPath(projectpath, Path.GetDirectoryName(solutionFilePath)));
+                }
             }
-            return keyValues.AsEnumerable();
+            return list;
         }
-        internal static IEnumerable<string> GetSourceFiles(string projectPath, string nodePath, string attributeName, string[] extensions)
+        internal static IEnumerable<string> GetAttributes(string projectPath, string nodePath, string attributeName, string[] extensions)
         {
             List<string> sourceFiles = new List<string>();
-            XmlTextReader reader = new XmlTextReader(projectPath);
-            reader.Namespaces = false;
-            XPathDocument document = new XPathDocument(reader);
-            XPathNavigator navigator = document.CreateNavigator();
-            //XPathNodeIterator nodes = navigator.Select("//book");
-            XPathNodeIterator nodes = navigator.Select(nodePath);
-            while (nodes.MoveNext())
+            if (string.IsNullOrEmpty(projectPath) || !File.Exists(projectPath))
+                return sourceFiles;
+            try
             {
-                nodes.Current.MoveToFirstAttribute();
-                do
+                XmlTextReader reader = new XmlTextReader(projectPath);
+                reader.Namespaces = false;
+                XPathDocument document = new XPathDocument(reader);
+                XPathNavigator navigator = document.CreateNavigator();
+                //XPathNodeIterator nodes = navigator.Select("//book");
+                XPathNodeIterator nodes = navigator.Select(nodePath);
+                while (nodes.MoveNext())
                 {
-                    if (nodes.Current.Name.Equals(attributeName, System.StringComparison.OrdinalIgnoreCase)
-                        && extensions.Any(obj => obj == (Path.GetExtension(nodes.Current.Value.ToLower()))))
+                    nodes.Current.MoveToFirstAttribute();
+                    do
                     {
-                        string sourceFilePath = Path.GetDirectoryName(projectPath) + Path.DirectorySeparatorChar + nodes.Current.Value;
-                        if (File.Exists(sourceFilePath))
-                            sourceFiles.Add(sourceFilePath);
-                        break;
+                        if (nodes.Current.Name.Equals(attributeName, System.StringComparison.OrdinalIgnoreCase)
+                            && extensions.Any(obj => obj == (Path.GetExtension(nodes.Current.Value.ToLower()))))
+                        {
+                            string sourceFilePath = Path.GetFullPath(nodes.Current.Value, Path.GetDirectoryName(projectPath));
+                            if (File.Exists(sourceFilePath))
+                                sourceFiles.Add(sourceFilePath);
+                            break;
+                        }
                     }
+                    while (nodes.Current.MoveToNextAttribute());
                 }
-                while (nodes.Current.MoveToNextAttribute());
             }
-            return sourceFiles.AsEnumerable();
+            catch
+            { }
+            return sourceFiles;
         }
+
     }
 }
