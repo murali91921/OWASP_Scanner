@@ -19,38 +19,18 @@ namespace SAST.Engine.CSharp.Tests
                 .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            fileNames = fileNames.Where(obj => obj.Contains("XssExample2")).ToArray();
+            //fileNames = fileNames.Where(obj => obj.Contains("XssExample2")).ToArray();
             return fileNames;
         }
         static void Main(string[] args)
         {
             Program program = new Program();
-            string[] files;
-
-            files = new string[] { @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\MVCWebApplication1.sln" };
-
-            //while (true)
-            //{
-            program.LoadFiles(files);
-            //if (Console.ReadLine() == "123")
-            //break;
-            //}
-            //files = new string[] { @"C:\Users\Ceaselez\source\repos\WebApplication1\WebApplication1.sln" };
-
-            //program.LoadFiles(files);
-            //files = new string[] { @"C:\Users\Ceaselez\source\repos\CoreMVCWebApplication1\CoreMVCWebApplication1\CoreMVCWebApplication1.csproj" };
-            //program.LoadFiles(files);
-
-            //files = new string[] { @"C:\Users\Ceaselez\source\repos\MVCWebApplication1\WebApplication1\WebApplication1.csproj" };
-            //program.LoadFiles(files);
+            string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "MVCWebApplication1.sln") };
+            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "WebApplication1", "WebApplication1.csproJ") };
+            LoadFiles(files);
             return;
-            //files = GetExamples().ToArray();
-            //foreach (var item in files)
-            //{
-            //    program.LoadFiles(new string[] { item });
-            //}
         }
-        void LoadFiles(string[] projectPaths)
+        static void LoadFiles(string[] projectPaths)
         {
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))

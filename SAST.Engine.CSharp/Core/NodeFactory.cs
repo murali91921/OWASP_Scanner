@@ -113,7 +113,9 @@ namespace SAST.Engine.CSharp.Core
             {
                 var invocation = node as InvocationExpressionSyntax;
                 SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-                ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.First();
+                ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                if (symbol == null)
+                    return false;
                 if (symbol.Name == "ToString" && symbol.ContainingType.ToString() == "System.IO.StringWriter")
                 {
                     var identifier = (invocation.Expression as MemberAccessExpressionSyntax).Expression;

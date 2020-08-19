@@ -273,7 +273,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.WeakHashingConfig => new WeakHashingValidator(),
                 ScannerType.WeakPasswordConfig => new WeakPasswordValidator(),
                 ScannerType.XPath => new XPathScanner(),
-                //ScannerType.XSS => new XssScanner(),
+                ScannerType.XSS => new XssScanner(),
                 _ => null,
             };
         }

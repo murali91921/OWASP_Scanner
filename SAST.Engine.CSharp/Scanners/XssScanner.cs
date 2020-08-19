@@ -160,30 +160,29 @@ namespace ASTTask
                 foreach (var invocation in classItem.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>())
                 {
                     SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-                    IMethodSymbol symbol = (symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol) as IMethodSymbol;
+                    IMethodSymbol symbol = (symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault()) as IMethodSymbol;
                     // WriteLine(symbol);
                     if (symbol == null)
                         continue;
-                    if (WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
+                    if (!WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
+                        continue;
+                    foreach (var argument in invocation.ArgumentList.Arguments)
                     {
-                        foreach (var argument in invocation.ArgumentList.Arguments)
+                        var argumentType = model.GetTypeInfo(argument.Expression);
+                        if (argumentType.Type == null)
+                            continue;
+                        if (argumentType.Type.ToString() == "string" || argumentType.Type.ToString() == "System.String")
+                            lstVulnerableCheck.Add(argument.Expression);
+                        else if (argumentType.Type.ToString() == "char[]" && argument.Expression is InvocationExpressionSyntax)
                         {
-                            var argumentType = model.GetTypeInfo(argument.Expression);
-                            if (argumentType.Type == null)
-                                continue;
-                            if (argumentType.Type.ToString() == "string" || argumentType.Type.ToString() == "System.String")
-                                lstVulnerableCheck.Add(argument.Expression);
-                            else if (argumentType.Type.ToString() == "char[]" && argument.Expression is InvocationExpressionSyntax)
+                            var currentExpression = (argument.Expression as InvocationExpressionSyntax).Expression as MemberAccessExpressionSyntax;
+                            if (currentExpression != null && currentExpression.Name.ToString() == "ToCharArray")
                             {
-                                var currentExpression = (argument.Expression as InvocationExpressionSyntax).Expression as MemberAccessExpressionSyntax;
-                                if (currentExpression != null && currentExpression.Name.ToString() == "ToCharArray")
-                                {
-                                    TypeInfo typeInfo = model.GetTypeInfo(currentExpression);
-                                    if (typeInfo.Type == null)
-                                        continue;
-                                    if (typeInfo.Type.ToString() == "string" || typeInfo.Type.ToString() == "System.String")
-                                        lstVulnerableCheck.Add(currentExpression.Expression);
-                                }
+                                TypeInfo typeInfo = model.GetTypeInfo(currentExpression);
+                                if (typeInfo.Type == null)
+                                    continue;
+                                if (typeInfo.Type.ToString() == "string" || typeInfo.Type.ToString() == "System.String")
+                                    lstVulnerableCheck.Add(currentExpression.Expression);
                             }
                         }
                     }
@@ -191,7 +190,7 @@ namespace ASTTask
                 foreach (var assignment in classItem.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>())
                 {
                     SymbolInfo symbolInfo = model.GetSymbolInfo(assignment.Left);
-                    ISymbol symbol = symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol;
+                    ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
                     if (symbol == null)
                     {
                         var member = assignment.Left as MemberAccessExpressionSyntax;
@@ -200,7 +199,7 @@ namespace ASTTask
                         else
                         {
                             symbolInfo = model.GetSymbolInfo(member.Expression);
-                            symbol = symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol;
+                            symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
                             if (symbol == null)
                                 continue;
                             else if (WebFormsControlProperties.Any(obj => obj == symbol.ToString() + "." + member.Name))

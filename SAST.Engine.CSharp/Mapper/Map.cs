@@ -11,6 +11,8 @@ namespace SAST.Engine.CSharp.Mapper
         public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType type, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             var vulnerabilityList = new List<VulnerabilityDetail>();
+            if (syntaxList == null || syntaxList.Count == 0)
+                return vulnerabilityList;
             if (syntaxList is List<SASTCookie> astCookie)
                 ConvertFromSASTCookie<T>(filePath, astCookie, vulnerabilityList);
             else if (syntaxList is List<SyntaxNode> syntaxNodeList)
