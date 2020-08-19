@@ -162,7 +162,7 @@ namespace ASTTask
                     SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
                     IMethodSymbol symbol = (symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault()) as IMethodSymbol;
                     // WriteLine(symbol);
-                    if (symbol == null)
+                    if (symbol == null)   
                         continue;
                     if (!WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
                         continue;
