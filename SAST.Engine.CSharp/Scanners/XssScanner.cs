@@ -1,27 +1,31 @@
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis.FindSymbols;
 using static System.Console;
+using System.Collections.Generic;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp;
 using SAST.Engine.CSharp.Mapper;
 using SAST.Engine.CSharp.Core;
-using System.ComponentModel;
-using System;
-using Microsoft.CodeAnalysis.FindSymbols;
-using System.IO.Enumeration;
-using SAST.Engine.CSharp.Models;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices.WindowsRuntime;
 using SAST.Engine.CSharp.Enums;
+using System.Linq;
+using System.IO;
+using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Parser;
+using System;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
+using System.Data;
+using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.CodeAnalysis.Operations;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace ASTTask
 {
-    public class XssScanner : IScanner
+    public class XssScanner : IScanner//, IMarkupScanner
     {
         //private static string[] encodingMethods = {
         //    "System.Text.Encodings.Web.TextEncoder.Encode",
@@ -29,6 +33,10 @@ namespace ASTTask
         //   };
 
         #region Variable,Property Declarations
+        private List<string> DataRetrievalMethods = new List<string> {
+            "System.Data.Common.DbDataReader.GetString",
+            "System.Data.SqlClient.SqlCommand.ExecuteScalar"
+            };
         private static string[] ControllerClassNames = {
             "Microsoft.AspNetCore.Mvc.ControllerBase",
             "System.Web.Mvc.Controller"
@@ -148,10 +156,7 @@ namespace ASTTask
                     if (method.Body == null || method.Body.Statements.OfType<ReturnStatementSyntax>().Count() == 0)
                         continue;
                     foreach (var item in method.Body.Statements.OfType<ReturnStatementSyntax>())
-                    {
-                        WriteLine(item.Expression);
                         lstVulnerableCheck.Add(item.Expression); ;
-                    }
                 }
             }
             //WebForms methods
@@ -161,8 +166,7 @@ namespace ASTTask
                 {
                     SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
                     IMethodSymbol symbol = (symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault()) as IMethodSymbol;
-                    // WriteLine(symbol);
-                    if (symbol == null)   
+                    if (symbol == null)
                         continue;
                     if (!WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
                         continue;
@@ -196,17 +200,12 @@ namespace ASTTask
                         var member = assignment.Left as MemberAccessExpressionSyntax;
                         if (member == null)
                             continue;
-                        else
-                        {
-                            symbolInfo = model.GetSymbolInfo(member.Expression);
-                            symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
-                            if (symbol == null)
-                                continue;
-                            else if (WebFormsControlProperties.Any(obj => obj == symbol.ToString() + "." + member.Name))
-                            {
-                                lstVulnerableCheck.Add(assignment.Right);
-                            }
-                        }
+                        symbolInfo = model.GetSymbolInfo(member.Expression);
+                        symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                        if (symbol == null)
+                            continue;
+                        else if (WebFormsControlProperties.Any(obj => obj == symbol.ToString() + "." + member.Name))
+                            lstVulnerableCheck.Add(assignment.Right);
                     }
                     if (WebFormsControlProperties.Any(obj => obj == symbol.ToString()))
                         lstVulnerableCheck.Add(assignment.Right);
@@ -214,120 +213,6 @@ namespace ASTTask
             }
             return lstVulnerableCheck;
         }
-        //private List<VulnerabilityDetail> FindStoredXSS(string filePath, ClassDeclarationSyntax classItem, SemanticModel model)
-        //{
-        //    List<VulnerableNode> lstVulnerableCheck = new List<VulnerableNode>();
-        //    var classSymbol = model.GetDeclaredSymbol(classItem);
-        //    //MVC Controllers and actions
-        //    if (Utils.DerivesFromAny(classSymbol, ControllerClassNames))
-        //    {
-        //        var methodsWithParameters = classItem.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>()
-        //            .Where(method => !method.ParameterList.Parameters.Count.Equals(0))
-        //            .Where(method => method.Modifiers.ToString().Equals("public"))
-        //            .Where(method => method.ReturnType.ToString().Equals("string"));
-        //        foreach (MethodDeclarationSyntax method in methodsWithParameters)
-        //        {
-        //            bool verbExists = false;
-        //            if (method.AttributeLists.Count() == 0)
-        //                continue;
-        //            foreach (var attributeList in method.AttributeLists)
-        //            {
-        //                foreach (var attribute in attributeList.Attributes)
-        //                {
-        //                    TypeInfo typeInfo = model.GetTypeInfo(attribute.Name);
-        //                    if (typeInfo.Type == null)
-        //                        continue;
-        //                    if (HttpVerbAttributes.Any(obj => obj == typeInfo.Type.ToString()))
-        //                    {
-        //                        verbExists = true;
-        //                        break;
-        //                    }
-        //                }
-        //                if (verbExists)
-        //                    break;
-        //            }
-        //            if (!verbExists)
-        //                continue;
-        //            if (method.Body.Statements.OfType<ReturnStatementSyntax>().Count() == 0)
-        //                continue;
-        //            var returnStatements = method.Body.Statements.OfType<ReturnStatementSyntax>();
-        //            foreach (var item in returnStatements)
-        //            {
-        //                WriteLine(item.Expression);
-        //                lstVulnerableCheck.Add(new VulnerableNode(item.Expression)); ;
-        //            }
-        //        }
-        //    }
-        //    //WebForms methods
-        //    else
-        //    {
-        //        foreach (var invocation in classItem.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>())
-        //        {
-        //            SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-        //            IMethodSymbol symbol = (symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol) as IMethodSymbol;
-        //            // WriteLine(symbol);
-        //            if (symbol == null)
-        //                continue;
-        //            if (WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
-        //            {
-        //                foreach (var argument in invocation.ArgumentList.Arguments)
-        //                {
-        //                    var argumentType = model.GetTypeInfo(argument.Expression);
-        //                    if (argumentType.Type == null)
-        //                        continue;
-        //                    if (argumentType.Type.ToString() == "string" || argumentType.Type.ToString() == "System.String")
-        //                        lstVulnerableCheck.Add(new VulnerableNode(argument.Expression));
-        //                    else if (argumentType.Type.ToString() == "char[]" && argument.Expression is InvocationExpressionSyntax)
-        //                    {
-        //                        var currentExpression = (argument.Expression as InvocationExpressionSyntax).Expression as MemberAccessExpressionSyntax;
-        //                        if (currentExpression != null && currentExpression.Name.ToString() == "ToCharArray")
-        //                        {
-        //                            TypeInfo typeInfo = model.GetTypeInfo(currentExpression);
-        //                            if (typeInfo.Type == null)
-        //                                continue;
-        //                            if (typeInfo.Type.ToString() == "string" || typeInfo.Type.ToString() == "System.String")
-        //                                lstVulnerableCheck.Add(new VulnerableNode(currentExpression.Expression));
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        foreach (var assignment in classItem.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>())
-        //        {
-        //            SymbolInfo symbolInfo = model.GetSymbolInfo(assignment.Left);
-        //            ISymbol symbol = symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol;
-        //            if (symbol == null)
-        //            {
-        //                var member = assignment.Left as MemberAccessExpressionSyntax;
-        //                if (member == null)
-        //                    continue;
-        //                else
-        //                {
-        //                    symbolInfo = model.GetSymbolInfo(member.Expression);
-        //                    symbol = symbolInfo.Symbol == null ? symbolInfo.CandidateSymbols.FirstOrDefault() : symbolInfo.Symbol;
-        //                    if (symbol == null)
-        //                        continue;
-        //                    else if (WebFormsControlProperties.Any(obj => obj == symbol.ToString() + "." + member.Name))
-        //                    {
-        //                        lstVulnerableCheck.Add(new VulnerableNode(assignment.Right));
-        //                    }
-        //                }
-        //            }
-        //            if (WebFormsControlProperties.Any(obj => obj == symbol.ToString()))
-        //                lstVulnerableCheck.Add(new VulnerableNode(assignment.Right));
-        //        }
-        //    }
-        //    //var lstVulnerableStatements = new List<SyntaxNode>();
-        //    //var nodeFactory = new NodeFactory(solution);
-        //    lstVulnerableCheck.ForEach(obj =>
-        //        obj.IsVulnerable = IsVulnerable(obj.Node, model)
-        //    );
-        //    lstVulnerableCheck.RemoveAll(obj => !obj.IsVulnerable);
-        //    return Map.ConvertToVulnerabilityList(filePath, lstVulnerableCheck.Select(obj => obj.Node).ToList(), SAST.Engine.CSharp.Enums.ScannerType.XSS,
-        //        SAST.Engine.CSharp.Enums.ScannerSubType.StoredXSS);
-        //}
-        private void FindDOMXSS()
-        { }
         /// <summary>
         /// Checking for Stored XSS
         /// </summary>
@@ -356,7 +241,8 @@ namespace ASTTask
                     var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                     foreach (var referencedSymbol in references)
                     {
-                        isVulnerable = IsVulnerable(referencedSymbol.Definition.Locations.First().SourceTree.GetRoot().FindNode(referencedSymbol.Definition.Locations.First().SourceSpan), model);
+                        isVulnerable = IsVulnerable(referencedSymbol.Definition.Locations.First().SourceTree.GetRoot()
+                            .FindNode(referencedSymbol.Definition.Locations.First().SourceSpan), model);
                         foreach (var referenceLocation in referencedSymbol.Locations)
                         {
                             if (syntaxNode.SpanStart <= referenceLocation.Location.SourceSpan.Start)
@@ -367,11 +253,7 @@ namespace ASTTask
                                 continue;
                             if (assigment.Left.ToString() == syntaxNode.ToString())
                                 isVulnerable = IsVulnerable(assigment.Right, model, symbol);
-                            //if (isVulnerable)
-                            //    break;
                         }
-                        //if (isVulnerable)
-                        //    break;
                     }
                     return isVulnerable;
                 case SyntaxKind.InvocationExpression:
@@ -381,29 +263,18 @@ namespace ASTTask
                     if (symbol == null)
                         return false;
                     var invocation = syntaxNode as InvocationExpressionSyntax;
-                    List<string> DataRetrievalMethods = new List<string> {
-                        "System.Data.Common.DbDataReader.GetString",
-                        "System.Data.SqlClient.SqlCommand.ExecuteScalar"
-                        };
                     if (DataRetrievalMethods.Any(method => method == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
-                    {
                         return true;
-                    }
                     if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "System.Convert.ToString")
-                    {
                         return IsVulnerable(invocation.ArgumentList.Arguments.First().Expression, model);
-                    }
                     else if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "object.ToString")
-                    {
-                        var member = invocation.Expression as MemberAccessExpressionSyntax;
-                        return IsVulnerable(member.Expression, model);
-                    }
+                        return IsVulnerable((invocation.Expression as MemberAccessExpressionSyntax).Expression, model);
                     if (NodeFactory.IsSanitized(syntaxNode as InvocationExpressionSyntax, model, SAST.Engine.CSharp.Enums.ScannerType.XSS))
                         return false;
                     foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
                     {
                         var methodDeclarationSyntax = syntaxReference.GetSyntax() as MethodDeclarationSyntax;
-                        WriteLine(syntaxReference.SyntaxTree);
+                        //WriteLine(syntaxReference.SyntaxTree);
                         SemanticModel currentModel = null;
                         foreach (var project in solution.Projects)
                         {
@@ -413,17 +284,12 @@ namespace ASTTask
                         if (currentModel == null || methodDeclarationSyntax == null || methodDeclarationSyntax.Body == null)
                             continue;
                         if (methodDeclarationSyntax.ExpressionBody != null)
-                        {
-                            isVulnerable = IsVulnerable(methodDeclarationSyntax.ExpressionBody.Expression, currentModel);
-                            continue;
-                        }
+                            return IsVulnerable(methodDeclarationSyntax.ExpressionBody.Expression, currentModel);
                         if (methodDeclarationSyntax.Body == null)
                             continue;
                         var returnStatements = methodDeclarationSyntax.Body.Statements.OfType<ReturnStatementSyntax>();
                         foreach (var returnStatement in returnStatements)
-                        {
                             isVulnerable = IsVulnerable(returnStatement.Expression, currentModel);
-                        }
                     }
                     return isVulnerable;
                 case SyntaxKind.SimpleAssignmentExpression:
@@ -444,19 +310,57 @@ namespace ASTTask
                 default:
                     return false;
             }
-            return false;
         }
-        private static string[] CommandExecuteMethods = {
-            "System.Data.",
-            };
 
-        private bool IsDataBaseRetrievalMethod(SyntaxNode syntaxNode)
+        //private void ParseChildren(AspxParser.AspxNode node)
+        //{
+        //    WriteLine(node.GetType());
+        //    if (node is AspxParser.AspxNode.AspxExpressionTag aspxExpressionTag)
+        //        WriteLine(aspxExpressionTag.Expression);
+        //    else if (node is AspxParser.AspxNode.AspxTag aspxTag)
+        //    {
+        //        WriteLine(aspxTag.ControlName);
+        //        foreach (var attribute in aspxTag.Attributes)
+        //        {
+        //            WriteLine(attribute.Key + " : " + attribute.Value);
+        //        }
+        //    }
+        //    else if (node is AspxParser.AspxNode.CodeRender codeRender)
+        //    {
+        //        WriteLine(codeRender.Expression);
+        //    }
+        //    else if (node is AspxParser.AspxNode.CodeRenderEncode codeRenderEncode)
+        //    {
+        //        WriteLine(codeRenderEncode.Expression);
+        //    }
+        //    else if (node is AspxParser.AspxNode.CodeRenderExpression codeRenderExpression)
+        //        WriteLine(codeRenderExpression.Expression);
+        //    else if (node is AspxParser.AspxNode.DataBinding databinding)
+        //        WriteLine(databinding.Expression);
+        //    else if (node is AspxParser.AspxNode.HtmlTag htmlTag)
+        //    {
+        //        WriteLine(htmlTag.Name);
+        //        foreach (var attribute in htmlTag.Attributes)
+        //        {
+        //            WriteLine(attribute.Key + " : " + attribute.Value);
+        //        }
+        //    }
+        //    else if (node is AspxParser.AspxNode.Literal literal)
+        //        WriteLine(literal.Text);
+
+        //    foreach (var childNode in node.Children)
+        //    {
+        //        ParseChildren(childNode);
+        //    }
+        //}
+        public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
-            if (syntaxNode is InvocationExpressionSyntax)
-            {
-                return true;
-            }
-            return false;
+            List<VulnerabilityDetail> vulnerabilityDetails = new List<VulnerabilityDetail>();
+            //if (filePath.ToLower().EndsWith("managepassword.aspx"))
+            //{
+            //    string Content = File.ReadAllTextAsync(filePath).Result;
+            //}
+            return vulnerabilityDetails;
         }
     }
 }

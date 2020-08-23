@@ -208,21 +208,20 @@ namespace SAST.Engine.CSharp.Core
                         {
                             foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
                             {
-                                if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath)))
+                                if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
                                 {
                                     IConfigScanner configScanner = ConfigScan(scannerType);
                                     if (configScanner == null)
                                         continue;
                                     vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
-                                    //Console.WriteLine("{0} {1} {2}", "IConfigScanner", item.FilePath, scannerType);
                                 }
-                                else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath)))
+                                else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
                                 {
-                                    //IConfigScanner configScanner = ConfigScan(scannerType);
-                                    //if (configScanner == null)
-                                    //    continue;
-                                    //vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
-                                    //Console.WriteLine("{0} {1} {2}", "IMarkupScanner", item.FilePath, scannerType);
+                                    IMarkupScanner markupScanner = MarkupScan(scannerType);
+                                    if (markupScanner == null)
+                                        continue;
+                                    if (item.FilePath.Contains(".aspx"))
+                                        vulnerabilities.AddRange(markupScanner.FindVulnerabilties(item.FilePath));
                                 }
                             }
                         }
@@ -285,6 +284,17 @@ namespace SAST.Engine.CSharp.Core
                 _ => null,
             };
         }
+        private IMarkupScanner MarkupScan(ScannerType scannerType)
+        {
+            return scannerType switch
+            {
+                //ScannerType.XSS => new XssScanner(),
+                _ => null,
+            };
+        }
+
+
+
         public void Dispose()
         {
             workspace.Dispose();
