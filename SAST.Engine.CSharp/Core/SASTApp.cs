@@ -8,6 +8,7 @@ using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Scanners;
 using SAST.Engine.CSharp.Parser;
 using ASTTask;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SAST.Engine.CSharp.Core
 {
@@ -69,6 +70,7 @@ namespace SAST.Engine.CSharp.Core
                     LanguageNames.CSharp);
                 workspace.AddProject(projectInfo);
                 LoadSourceFiles(projectInfo.Id, files);
+                ResolveReferences();
                 return true;
             }
         }
@@ -77,6 +79,8 @@ namespace SAST.Engine.CSharp.Core
             if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.ProjectIds.Count() == 0)
                 return;
             bool dependencyMayExists = workspace.CurrentSolution.ProjectIds.Count() > 1;
+            //if (!dependencyMayExists)
+            //    return;
             Solution solution = workspace.CurrentSolution;
             List<MetadataReference> metadataReferences;
             Utils.LoadMetadata(out metadataReferences);
@@ -141,8 +145,8 @@ namespace SAST.Engine.CSharp.Core
                 //sourceFilePaths.AddRange(DotnetParser.GetSourceFiles(projectPath, "/Project/ItemGroup/Content", "Include", Utils.ConfigurationFileExtensions));
                 workspace.TryApplyChanges(solution);
                 LoadSourceFiles(projectInfo.Id, sourceFilePaths);
+                ResolveReferences();
             }
-            ResolveReferences();
             return true;
         }
         //private Workspace AddAdditionalDocuments(Workspace workspace)
@@ -220,8 +224,8 @@ namespace SAST.Engine.CSharp.Core
                                     IMarkupScanner markupScanner = MarkupScan(scannerType);
                                     if (markupScanner == null)
                                         continue;
-                                    if (item.FilePath.Contains(".aspx"))
-                                        vulnerabilities.AddRange(markupScanner.FindVulnerabilties(item.FilePath));
+                                    //if (item.FilePath.Contains(".aspx"))
+                                    //    vulnerabilities.AddRange(markupScanner.FindVulnerabilties(item.FilePath));
                                 }
                             }
                         }
@@ -229,8 +233,8 @@ namespace SAST.Engine.CSharp.Core
                     if (project.Documents != null)
                         foreach (var document in project.Documents)
                         {
-                            if (!document.FilePath.Contains("HomeController"))
-                                continue;
+                            //if (!document.FilePath.Contains("HomeController"))
+                            //    continue;
                             //var compilation = project.GetCompilationAsync().Result;
                             //var stream = new MemoryStream();
                             //var emitResult = compilation.Emit(stream);
@@ -260,19 +264,20 @@ namespace SAST.Engine.CSharp.Core
         {
             return scannerType switch
             {
-                ScannerType.Csrf => new CsrfScanner(),
-                ScannerType.EmptyCatch => new EmptyCatchScanner(),
-                ScannerType.EmptyTry => new EmptyTryScanner(),
-                ScannerType.HardcodePassword => new CredsFinder(),
-                ScannerType.InsecureCookie => new CookieFlagScanner(),
-                ScannerType.InsecureRandom => new InsecureRandomScanner(),
-                ScannerType.Ldap => new LDAPScanner(),
-                ScannerType.OpenRedirect => new OpenRedirectScanner(),
-                ScannerType.SqlInjection => new SqlInjectionScanner(),
-                ScannerType.WeakHashingConfig => new WeakHashingValidator(),
-                ScannerType.WeakPasswordConfig => new WeakPasswordValidator(),
-                ScannerType.XPath => new XPathScanner(),
-                ScannerType.XSS => new XssScanner(),
+                //ScannerType.Csrf => new CsrfScanner(),
+                //ScannerType.EmptyCatch => new EmptyCatchScanner(),
+                //ScannerType.EmptyTry => new EmptyTryScanner(),
+                //ScannerType.HardcodePassword => new CredsFinder(),
+                //ScannerType.InsecureCookie => new CookieFlagScanner(),
+                //ScannerType.InsecureRandom => new InsecureRandomScanner(),
+                //ScannerType.Ldap => new LDAPScanner(),
+                //ScannerType.OpenRedirect => new OpenRedirectScanner(),
+                //ScannerType.SqlInjection => new SqlInjectionScanner(),
+                //ScannerType.WeakHashingConfig => new WeakHashingValidator(),
+                //ScannerType.WeakPasswordConfig => new WeakPasswordValidator(),
+                //ScannerType.XPath => new XPathScanner(),
+                //ScannerType.XSS => new XssScanner(),
+                ScannerType.XXE => new XxeScanner(),
                 _ => null,
             };
         }

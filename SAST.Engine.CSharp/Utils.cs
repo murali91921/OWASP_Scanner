@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp
         internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
         internal static readonly string[] SourceCodeFileExtensions = { ".cs", ".txt" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
-        internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx" };
+        internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx", ".html" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
 
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
@@ -35,6 +35,8 @@ namespace SAST.Engine.CSharp
         }
         public static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
+            if (baseTypes == null && baseTypes.Count() == 0)
+                return false;
             while (typeSymbol != null)
             {
                 if (baseTypes.Contains(typeSymbol.ToString()))

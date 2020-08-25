@@ -10,19 +10,6 @@ using SAST.Engine.CSharp.Mapper;
 using SAST.Engine.CSharp.Core;
 using SAST.Engine.CSharp.Enums;
 using System.Linq;
-using System.IO;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Parser;
-using System;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Parser.TagHelpers;
-using System.Data;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.CodeAnalysis.Operations;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-
 namespace ASTTask
 {
     public class XssScanner : IScanner//, IMarkupScanner

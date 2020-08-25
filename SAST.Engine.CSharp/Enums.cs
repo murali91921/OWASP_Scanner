@@ -21,7 +21,8 @@ namespace SAST.Engine.CSharp.Enums
         InsecureRandom = 10,
         SqlInjection = 11,
         XPath = 12,
-        XSS = 13
+        XSS = 13,
+        XXE = 14
     }
     public enum ScannerSubType
     {
