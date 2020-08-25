@@ -44,4 +44,7 @@ XPath Injections
   <li>
 XSS Injection
   </li>
+  <li>
+XXE Injection
+  </li>
 </ol>
