@@ -27,10 +27,12 @@ namespace SAST.Engine.CSharp.Tests
             Program program = new Program();
             //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "MVCWebApplication1.sln") };
             //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "WebApplication1", "WebApplication1.csproJ") };
-            string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "WebApplication3", "WebApplication3.sln") };
+            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "WebApplication3", "WebApplication3.sln") };
+            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample1.cs") };
+            string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample2.cs") };
             LoadFiles(files);
-            files = GetExamples().ToArray();
-            LoadFiles(files);
+            //files = GetExamples().ToArray();
+            //LoadFiles(files);
             return;
         }
         static void LoadFiles(string[] projectPaths)
