@@ -6,17 +6,14 @@
     <RootNamespace>ASTTask</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="bin\Debug\netcoreapp3.1\Examples\**" />
-    <Compile Remove="bin\Examples\**" />
+  <ItemGroup>  
+    <Compile Remove="bin\**" />
     <Compile Remove="Examples\**" />
     <Compile Remove="modules\**" />
-    <EmbeddedResource Remove="bin\Debug\netcoreapp3.1\Examples\**" />
-    <EmbeddedResource Remove="bin\Examples\**" />
+    <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="Examples\**" />
     <EmbeddedResource Remove="modules\**" />
-    <None Remove="bin\Debug\netcoreapp3.1\Examples\**" />
-    <None Remove="bin\Examples\**" />
+    <None Remove="bin\**" />
     <None Remove="Examples\**" />
     <None Remove="modules\**" />
   </ItemGroup>
