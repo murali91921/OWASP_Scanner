@@ -233,15 +233,6 @@ namespace SAST.Engine.CSharp.Core
                     if (project.Documents != null)
                         foreach (var document in project.Documents)
                         {
-                            //if (!document.FilePath.Contains("HomeController"))
-                            //    continue;
-                            //var compilation = project.GetCompilationAsync().Result;
-                            //var stream = new MemoryStream();
-                            //var emitResult = compilation.Emit(stream);
-                            //foreach (var item in emitResult.Diagnostics)
-                            //{
-                            //    Console.WriteLine(item.ToString());
-                            //}
                             var model = document.GetSemanticModelAsync().Result;
                             var syntaxNode = document.GetSyntaxRootAsync().Result;
                             foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())

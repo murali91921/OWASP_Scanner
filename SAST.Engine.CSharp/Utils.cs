@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SAST.Engine.CSharp
 {
@@ -60,9 +61,13 @@ namespace SAST.Engine.CSharp
             // Visual Studio IDE
             //string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Examples", "References"));
             // Visual Studio Code
-            string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "bin", "debug", "netvoreapp3.1", "Examples", "References"));
+            //System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName
+            string directory = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            Console.WriteLine(directory);
+            string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
             {
+                //AssemblyResources.ResourceManager
                 if (File.Exists(assemblyFile))
                     MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
             }

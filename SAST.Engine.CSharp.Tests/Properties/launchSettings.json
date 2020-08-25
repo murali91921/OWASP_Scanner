@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SAST.Engine.CSharp.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "-\"F:\\Proto Geek\\Examples\""
+    }
+  }
+}

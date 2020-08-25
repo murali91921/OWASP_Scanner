@@ -139,7 +139,7 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     foreach (var referencedLocation in referencedSymbol.Locations)
                     {
-                        var refNode = syntaxNode.FindNode(referencedLocation.Location.SourceSpan);
+                        var refNode = referencedLocation.Location.SourceTree.GetRoot().FindNode(referencedLocation.Location.SourceSpan);
                         //Get the statements before the current Response.Redirect statements only
                         if (syntaxNode.Span.Start > refNode.Span.Start)
                         {

@@ -11,31 +11,29 @@ namespace SAST.Engine.CSharp.Tests
         //static ServiceCollection serviceCollection = new ServiceCollection();
         //static ServiceProvider serviceProvider;
 
-        static IEnumerable<string> GetExamples()
+        static string[] GetExamples(string path)
         {
-            string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "netcoreapp3.1", "Examples");
-            //string exampleDirectory = Path.Combine(Directory.GetParent(".").Parent.Parent.ToString(), "Examples");
-            IEnumerable<string> fileNames = Directory.EnumerateFiles(exampleDirectory, "*", SearchOption.TopDirectoryOnly)
+            FileAttributes fileAttributes = File.GetAttributes(path);
+            if (!fileAttributes.HasFlag(FileAttributes.Directory))
+                return new string[] { path };
+            else
+                return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
                 .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
-                || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
-            //fileNames = fileNames.Where(obj => obj.Contains("XssExample2")).ToArray();
-            return fileNames;
+                || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToArray();
         }
         static void Main(string[] args)
         {
-            Program program = new Program();
-            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "MVCWebApplication1.sln") };
-            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "WebApplication1", "WebApplication1.csproJ") };
-            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "WebApplication3", "WebApplication3.sln") };
-            //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample1.cs") };
-            // string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample2.cs") };
-            // LoadFiles(files);
-            string[] files = GetExamples().ToArray();
-            foreach (var file in files)
+            if (args.Length == 0)
             {
-                LoadFiles(new string[] { files });
+                Console.WriteLine("usage : dotnet run -Path\nPath should be Folder or file");
+                Console.WriteLine("Example : dotnet run -\"C:\\Examples\"");
+                return;
             }
+            string Path = args[0].TrimStart('-');
+            string[] files = GetExamples(Path);
+            foreach (var file in files)
+                LoadFiles(new string[] { file });
         }
         static void LoadFiles(string[] projectPaths)
         {
