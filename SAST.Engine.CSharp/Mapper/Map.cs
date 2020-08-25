@@ -8,7 +8,7 @@ namespace SAST.Engine.CSharp.Mapper
 {
     public static class Map
     {
-        public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType type, ScannerSubType scannerSubType = ScannerSubType.None)
+        public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType scannerType, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             var vulnerabilityList = new List<VulnerabilityDetail>();
             if (syntaxList == null || syntaxList.Count == 0)
@@ -23,8 +23,9 @@ namespace SAST.Engine.CSharp.Mapper
                         FilePath = filePath,
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
-                        Type = type.ToString(),
-                        Vulnerability = scannerSubType == ScannerSubType.None ? type.ToString() : scannerSubType.ToString()
+                        Type = scannerType,
+                        SubType =scannerSubType
+                        //Description = scannerSubType == ScannerSubType.None ? scannerType.ToString() : scannerSubType.ToString()
                     });
                 }
             else if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)
@@ -35,8 +36,7 @@ namespace SAST.Engine.CSharp.Mapper
                         FilePath = filePath,
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
-                        Type = ScannerType.InsecureCookie.ToString(),
-                        Vulnerability = ScannerType.InsecureCookie.ToString()
+                        Type = ScannerType.InsecureCookie,
                     });
                 }
             return vulnerabilityList;
@@ -58,8 +58,8 @@ namespace SAST.Engine.CSharp.Mapper
                     FilePath = filePath,
                     CodeSnippet = item.CookieStatement.ToString(),
                     LineNumber = GetLineNumber(item.CookieStatement),
-                    Type = ScannerType.InsecureCookie.ToString(),
-                    Vulnerability = missing
+                    Type = ScannerType.InsecureCookie,
+                    Description = missing
                 });
             }
         }

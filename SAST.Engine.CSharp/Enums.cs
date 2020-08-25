@@ -31,4 +31,13 @@ namespace SAST.Engine.CSharp.Enums
         ReflectedXSS = 2,
         DomXSS = 3,
     }
+    public enum Severity
+    {
+        Critical = 1,
+        High = 2,
+        Medium = 3,
+        Low = 4,
+        Information = 0,
+    }
+
 }

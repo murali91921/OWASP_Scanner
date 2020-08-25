@@ -15,7 +15,45 @@ namespace SAST.Engine.CSharp
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx", ".html" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
+        internal static readonly Dictionary<Enums.ScannerSubType, string> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerSubType, string>{
+            {Enums.ScannerSubType.StoredXSS, "Stored xss"},
+            {Enums.ScannerSubType.ReflectedXSS, "Reflected xss"},
+            {Enums.ScannerSubType.DomXSS, "Dom based xss"},
+            {Enums.ScannerSubType.None, null}
+        };
 
+        internal static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
+            {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
+            {Enums.ScannerType.EmptyCatch, "Empty catch block"},
+            {Enums.ScannerType.EmptyTry, "Empty try block"},
+            {Enums.ScannerType.HardcodePassword, "Hard coded credentials"},
+            {Enums.ScannerType.InsecureCookie, "Cookie missing secure/httpOnly flag(s)"},
+            {Enums.ScannerType.InsecureRandom, "Weak random generation"},
+            {Enums.ScannerType.Ldap, "Ldap injection"},
+            {Enums.ScannerType.OpenRedirect, "Open redirect"},
+            {Enums.ScannerType.SqlInjection, "Sql injection"},
+            {Enums.ScannerType.WeakHashingConfig, "Weak hashing configuration"},
+            {Enums.ScannerType.WeakPasswordConfig, "Weak password configuration"},
+            {Enums.ScannerType.XPath, "Xpath injection"},
+            {Enums.ScannerType.XSS, "Croos site scripting attack"},
+            {Enums.ScannerType.XXE, "XML external entity injection"}
+        };
+        internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
+            {Enums.ScannerType.Csrf, Enums.Severity.Medium},
+            {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
+            {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
+            {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
+            {Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
+            {Enums.ScannerType.InsecureRandom, Enums.Severity.Medium},
+            {Enums.ScannerType.Ldap, Enums.Severity.High},
+            {Enums.ScannerType.OpenRedirect, Enums.Severity.Medium},
+            {Enums.ScannerType.SqlInjection, Enums.Severity.Critical},
+            {Enums.ScannerType.WeakHashingConfig, Enums.Severity.Medium},
+            {Enums.ScannerType.WeakPasswordConfig, Enums.Severity.Low},
+            {Enums.ScannerType.XPath, Enums.Severity.Medium},
+            {Enums.ScannerType.XSS, Enums.Severity.Medium},
+            {Enums.ScannerType.XXE, Enums.Severity.Medium}
+        };
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();

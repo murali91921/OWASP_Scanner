@@ -60,8 +60,8 @@ namespace SAST.Engine.CSharp.Scanners
                         FilePath = filePath,
                         CodeSnippet = element.OuterXml.Trim(),
                         LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString() : string.Empty,
-                        Type = ScannerType.InsecureCookie.ToString(),
-                        Vulnerability = missing
+                        Type = ScannerType.InsecureCookie,
+                        Description = missing
                     };
                     vulnerabilities = new List<VulnerabilityDetail>() { vulnerability };
                 }

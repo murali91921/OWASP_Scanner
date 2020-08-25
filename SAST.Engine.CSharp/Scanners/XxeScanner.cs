@@ -25,7 +25,7 @@ namespace SAST.Engine.CSharp.Scanners
             this.model = model;
             this.solution = solution;
             this.syntaxNode = syntaxNode;
-            List<SyntaxNode> nodes = new List<SyntaxNode>();
+            List<SyntaxNode> vulnerableNodes = new List<SyntaxNode>();
             var methodDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
             foreach (var methodDeclaration in methodDeclarations)
             {
@@ -38,22 +38,19 @@ namespace SAST.Engine.CSharp.Scanners
                         continue;
                     if (invocationSymbol.ContainingType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlTextReader.Read")
                     {
-                        Console.WriteLine("{0}\t{1}", IsVulnerableXmlTextReader(invocation), invocation.ToString());
-                        Console.WriteLine(invocation.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First().Identifier);
+                        if (IsVulnerableXmlTextReader(invocation))
+                            vulnerableNodes.Add(invocation);
                     }
                     else if (invocationSymbol.ContainingType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlReader.Create")
                     {
-                        if (invocation.ArgumentList.Arguments.Count() >= 2)
-                        {
-
-                            Console.WriteLine("{0}\t{1}", IsVulnerableXmlReader(invocation), invocation.ToString());
-                            Console.WriteLine(invocation.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First().Identifier);
-
-                        }
+                        if (invocation.ArgumentList.Arguments.Count() < 1)
+                            continue;
+                        if (IsVulnerableXmlReader(invocation))
+                            vulnerableNodes.Add(invocation);
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, nodes, Enums.ScannerType.XSS);
+            return Map.ConvertToVulnerabilityList(filePath, vulnerableNodes, Enums.ScannerType.XXE);
         }
         private bool IsVulnerableXmlTextReader(InvocationExpressionSyntax invocationExpression)
         {
