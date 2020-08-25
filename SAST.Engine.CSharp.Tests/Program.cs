@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp.Tests
 
         static IEnumerable<string> GetExamples()
         {
-            string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Examples");
+            string exampleDirectory = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "netcoreapp3.1", "Examples");
             //string exampleDirectory = Path.Combine(Directory.GetParent(".").Parent.Parent.ToString(), "Examples");
             IEnumerable<string> fileNames = Directory.EnumerateFiles(exampleDirectory, "*", SearchOption.TopDirectoryOnly)
                 .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
@@ -29,11 +29,13 @@ namespace SAST.Engine.CSharp.Tests
             //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "MVCWebApplication1", "WebApplication1", "WebApplication1.csproJ") };
             //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "WebApplication3", "WebApplication3.sln") };
             //string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample1.cs") };
-            string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample2.cs") };
-            LoadFiles(files);
-            //files = GetExamples().ToArray();
-            //LoadFiles(files);
-            return;
+            // string[] files = { Path.Combine(Directory.GetCurrentDirectory(), "Examples", "XxeExample2.cs") };
+            // LoadFiles(files);
+            string[] files = GetExamples().ToArray();
+            foreach (var file in files)
+            {
+                LoadFiles(new string[] { files });
+            }
         }
         static void LoadFiles(string[] projectPaths)
         {

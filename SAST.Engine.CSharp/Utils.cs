@@ -57,7 +57,10 @@ namespace SAST.Engine.CSharp
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
-            string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Examples", "References"));
+            // Visual Studio IDE
+            //string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Examples", "References"));
+            // Visual Studio Code
+            string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "bin", "debug", "netvoreapp3.1", "Examples", "References"));
             foreach (var assemblyFile in assemblyPaths)
             {
                 if (File.Exists(assemblyFile))
