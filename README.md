@@ -51,7 +51,7 @@ XXE Injection
     Forms Authentication: Weak Cookie Protection
   </li>
   <li>
-  MachineKeyScanner
+  Cleartext Machine Key
   </li>
 </ol>
 
