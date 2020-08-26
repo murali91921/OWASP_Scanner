@@ -30,8 +30,13 @@ namespace SAST.Engine.CSharp.Tests
                 Console.WriteLine("Example : dotnet run -\"C:\\Examples\"");
                 return;
             }
-            string Path = args[0].TrimStart('-');
-            string[] files = GetExamples(Path);
+            string path = args[0].TrimStart('-');
+            if (!Directory.Exists(path) && !File.Exists(path))
+            {
+                Console.WriteLine($"{path} is invalid");
+                return;
+            }
+            string[] files = GetExamples(path);
             foreach (var file in files)
                 LoadFiles(new string[] { file });
         }

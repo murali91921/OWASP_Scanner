@@ -20,6 +20,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerSubType.StoredXSS, "Stored xss"},
             {Enums.ScannerSubType.ReflectedXSS, "Reflected xss"},
             {Enums.ScannerSubType.DomXSS, "Dom based xss"},
+            {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
             {Enums.ScannerSubType.None, null}
         };
 
@@ -37,7 +38,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakPasswordConfig, "Weak password configuration"},
             {Enums.ScannerType.XPath, "Xpath injection"},
             {Enums.ScannerType.XSS, "Croos site scripting attack"},
-            {Enums.ScannerType.XXE, "XML external entity injection"}
+            {Enums.ScannerType.XXE, "XML external entity injection"},
+            {Enums.ScannerType.FormsAuthentication, "Forms Authentication"}
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -53,31 +55,18 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakPasswordConfig, Enums.Severity.Low},
             {Enums.ScannerType.XPath, Enums.Severity.Medium},
             {Enums.ScannerType.XSS, Enums.Severity.Medium},
-            {Enums.ScannerType.XXE, Enums.Severity.Medium}
+            {Enums.ScannerType.XXE, Enums.Severity.Medium},
+            {Enums.ScannerType.FormsAuthentication, Enums.Severity.High}
         };
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
-            // Visual Studio IDE
-            //string[] assemblyPaths = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Examples", "References"));
-            // Visual Studio Code
-            //System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName
             string directory = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             Console.WriteLine(directory);
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
-            {
-                //AssemblyResources.ResourceManager
                 if (File.Exists(assemblyFile))
                     MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
-            }
-            //if (required_mscolib)
-            //{
-            //    string assemblyFile = Path.Combine(Directory.GetCurrentDirectory(), "Examples", "References", "mscorlib.dll");
-            //    if (File.Exists(assemblyFile))
-            //        allMetadataReference.Add(MetadataReference.CreateFromFile(assemblyFile));
-            //}
-            //return allMetadataReference.ToArray();
         }
         public static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {

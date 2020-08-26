@@ -22,7 +22,8 @@ namespace SAST.Engine.CSharp.Enums
         SqlInjection = 11,
         XPath = 12,
         XSS = 13,
-        XXE = 14
+        XXE = 14,
+        FormsAuthentication = 15
     }
     public enum ScannerSubType
     {
@@ -30,6 +31,7 @@ namespace SAST.Engine.CSharp.Enums
         StoredXSS = 1,
         ReflectedXSS = 2,
         DomXSS = 3,
+        FAWeakCookie = 4
     }
     public enum Severity
     {

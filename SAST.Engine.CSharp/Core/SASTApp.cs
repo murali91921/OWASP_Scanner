@@ -14,13 +14,14 @@ namespace SAST.Engine.CSharp.Core
 {
     public class SASTApp : ISASTApp, IDisposable
     {
+        AdhocWorkspace workspace;
+        static List<MetadataReference> metadataReferences;
+
         static SASTApp()
         {
-            //MSBuildLocator.RegisterDefaults();
-            //if (instance == null)
-            //    instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            Utils.LoadMetadata(out metadataReferences);
         }
-        AdhocWorkspace workspace;
+
         public bool LoadFiles(string[] filePaths)
         {
             if (filePaths == null || filePaths.Count() == 0)
@@ -74,6 +75,7 @@ namespace SAST.Engine.CSharp.Core
                 return true;
             }
         }
+
         private void ResolveReferences()
         {
             if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.ProjectIds.Count() == 0)
@@ -82,8 +84,6 @@ namespace SAST.Engine.CSharp.Core
             //if (!dependencyMayExists)
             //    return;
             Solution solution = workspace.CurrentSolution;
-            List<MetadataReference> metadataReferences;
-            Utils.LoadMetadata(out metadataReferences);
             foreach (var parentProject in solution.Projects)
             {
                 solution = solution.AddMetadataReferences(parentProject.Id, metadataReferences);
@@ -149,42 +149,7 @@ namespace SAST.Engine.CSharp.Core
             }
             return true;
         }
-        //private Workspace AddAdditionalDocuments(Workspace workspace)
-        //{
-        //    if (workspace.CurrentSolution != null)
-        //    {
-        //        foreach (var project in workspace.CurrentSolution.Projects)
-        //        {
 
-        //            XmlTextReader reader = new XmlTextReader(project.FilePath);
-        //            reader.Namespaces = false;
-        //            XPathDocument document = new XPathDocument(reader);
-        //            XPathNavigator navigator = document.CreateNavigator();
-        //            //XPathNodeIterator nodes = navigator.Select("//book");
-        //            XPathNodeIterator nodes = navigator.Select("/Project/ItemGroup/Content");
-        //            while (nodes.MoveNext())
-        //            {
-        //                nodes.Current.MoveToFirstAttribute();
-        //                do
-        //                {
-        //                    Console.WriteLine(nodes.Current.Name + "," + nodes.Current.Value);
-        //                    if (string.Compare(nodes.Current.Name, "Include", true) == 0
-        //                        && AdditionalExtensions.Any(obj => obj.EndsWith(Path.GetExtension(nodes.Current.Value.ToLower()))))
-        //                    {
-        //                        string additionalDocument = Path.GetDirectoryName(project.FilePath) + Path.DirectorySeparatorChar + nodes.Current.Value;
-        //                        Console.WriteLine(additionalDocument);
-        //                        Solution solution = workspace.CurrentSolution.AddAdditionalDocument(DocumentId.CreateNewId(project.Id), Path.GetFileName(additionalDocument),
-        //                            File.ReadAllText(additionalDocument), filePath: additionalDocument);
-        //                        workspace.TryApplyChanges(solution);
-        //                        break;
-        //                    }
-        //                }
-        //                while (nodes.Current.MoveToNextAttribute());
-        //            }
-        //        }
-        //    }
-        //    return workspace;
-        //}
         private bool LoadSolution(string solutionPath)
         {
             //if (!Microsoft.Build.Locator.MSBuildLocator.IsRegistered)
@@ -196,6 +161,7 @@ namespace SAST.Engine.CSharp.Core
             workspace.AddSolution(solutionInfo);
             return LoadProjects(projects.ToArray());
         }
+
         public IEnumerable<VulnerabilityDetail> ScanAll()
         {
             if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.Projects == null || workspace.CurrentSolution.Projects.Count() == 0)
@@ -203,7 +169,6 @@ namespace SAST.Engine.CSharp.Core
             else
             {
                 List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-                //Console.WriteLine("-------------------------------------------");
                 foreach (Project project in workspace.CurrentSolution.Projects)
                 {
                     if (project.AdditionalDocuments.Count() > 0)
@@ -221,11 +186,9 @@ namespace SAST.Engine.CSharp.Core
                                 }
                                 else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
                                 {
-                                    IMarkupScanner markupScanner = MarkupScan(scannerType);
+                                    IConfigScanner markupScanner = MarkupScan(scannerType);
                                     if (markupScanner == null)
                                         continue;
-                                    //if (item.FilePath.Contains(".aspx"))
-                                    //    vulnerabilities.AddRange(markupScanner.FindVulnerabilties(item.FilePath));
                                 }
                             }
                         }
@@ -241,8 +204,6 @@ namespace SAST.Engine.CSharp.Core
                                 if (scanner == null)
                                     continue;
                                 vulnerabilities.AddRange(scanner.FindVulnerabilties(syntaxNode, document.FilePath, model, workspace.CurrentSolution));
-                                //Console.WriteLine("{0} {1} {2}", "IScanner", document.FilePath, scannerType);
-                                //vulnerabilities.AddRange(new CookieFlagScanner().FindVulnerabilties(syntaxNode, Path.GetFileName(document.FilePath), model, workspace));
                             }
                         }
                     else
@@ -251,6 +212,7 @@ namespace SAST.Engine.CSharp.Core
                 return vulnerabilities;
             }
         }
+
         private IScanner Scan(ScannerType scannerType)
         {
             return scannerType switch
@@ -272,15 +234,18 @@ namespace SAST.Engine.CSharp.Core
                 _ => null,
             };
         }
+
         private IConfigScanner ConfigScan(ScannerType scannerType)
         {
             return scannerType switch
             {
+                ScannerType.FormsAuthentication => new FormsAuthenticationScanner(),
                 ScannerType.InsecureCookie => new CookieFlagScanner(),
                 _ => null,
             };
         }
-        private IMarkupScanner MarkupScan(ScannerType scannerType)
+
+        private IConfigScanner MarkupScan(ScannerType scannerType)
         {
             return scannerType switch
             {
@@ -288,8 +253,6 @@ namespace SAST.Engine.CSharp.Core
                 _ => null,
             };
         }
-
-
 
         public void Dispose()
         {
