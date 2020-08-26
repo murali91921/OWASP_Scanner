@@ -216,7 +216,7 @@ namespace SAST.Engine.CSharp.Scanners
             var objectCreations = syntaxNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
-                ISymbol symbolQualifiedName = model.GetSymbolInfo((item as ObjectCreationExpressionSyntax).Type).Symbol;
+                ISymbol symbolQualifiedName = model.GetSymbolInfo(item.Type).Symbol;
                 //Console.WriteLine("ObCreation {0} {1} {2}",item.Kind(),symbolQualifiedName,item);
                 if (symbolQualifiedName != null &&
                     (symbolQualifiedName.ToString() == "System.Web.HttpCookie"

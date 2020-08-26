@@ -231,6 +231,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.XPath => new XPathScanner(),
                 ScannerType.XSS => new XssScanner(),
                 ScannerType.XXE => new XxeScanner(),
+                ScannerType.WeakSymmetricAlgorithm => new WeakSymmetricAlgorithmScanner(),
                 _ => null,
             };
         }
