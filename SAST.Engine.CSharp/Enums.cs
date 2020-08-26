@@ -1,10 +1,5 @@
-﻿using System.Runtime.Serialization;
-
-namespace SAST.Engine.CSharp.Enums
+﻿namespace SAST.Engine.CSharp.Enums
 {
-    /// <summary>
-    /// TODO: Replace this with SAST.Core once integrate
-    /// </summary>
     public enum ScannerType
     {
         None = 0,
@@ -23,7 +18,8 @@ namespace SAST.Engine.CSharp.Enums
         XPath = 12,
         XSS = 13,
         XXE = 14,
-        FormsAuthentication = 15
+        FormsAuthentication = 15,
+        MachineKeyClearText = 16
     }
     public enum ScannerSubType
     {

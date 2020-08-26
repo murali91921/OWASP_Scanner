@@ -13,29 +13,25 @@ namespace SAST.Engine.CSharp.Scanners
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             bool vulnerable = false;
-            string returnStatement = string.Empty;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             XPathDocument doc = new XPathDocument(filePath);
             XPathNavigator element = doc.CreateNavigator().SelectSingleNode("configuration/system.web/authentication[@mode='Forms']/forms");
-            if (element != null)
+            if (element != null && element.HasAttributes)
             {
-                if (element.HasAttributes)
+                element.MoveToFirstAttribute();
+                do
                 {
-                    element.MoveToFirstAttribute();
-                    do
-                    {
-                        if (element.Name.Equals("Protection", StringComparison.InvariantCultureIgnoreCase))
-                            if (!element.Value.Equals("All", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                vulnerable = true;
-                                break;
-                            }
-                    }
-                    while (element.MoveToNextAttribute());
+                    if (element.Name.Equals("Protection", StringComparison.InvariantCultureIgnoreCase))
+                        if (!element.Value.Equals("All", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            vulnerable = true;
+                            break;
+                        }
                 }
-                if (vulnerable)
-                {
-                    vulnerabilities = new List<VulnerabilityDetail>()
+                while (element.MoveToNextAttribute());
+            }
+            if (vulnerable)
+                vulnerabilities = new List<VulnerabilityDetail>()
                     {
                         new VulnerabilityDetail()
                         {
@@ -46,8 +42,6 @@ namespace SAST.Engine.CSharp.Scanners
                             SubType = Enums.ScannerSubType.FAWeakCookie
                         }
                     };
-                }
-            }
             return vulnerabilities;
         }
     }

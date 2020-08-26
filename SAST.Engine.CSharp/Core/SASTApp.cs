@@ -184,12 +184,12 @@ namespace SAST.Engine.CSharp.Core
                                         continue;
                                     vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
                                 }
-                                else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
-                                {
-                                    IConfigScanner markupScanner = MarkupScan(scannerType);
-                                    if (markupScanner == null)
-                                        continue;
-                                }
+                                //else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
+                                //{
+                                //    IConfigScanner markupScanner = MarkupScan(scannerType);
+                                //    if (markupScanner == null)
+                                //        continue;
+                                //}
                             }
                         }
                     }
@@ -241,6 +241,7 @@ namespace SAST.Engine.CSharp.Core
             {
                 ScannerType.FormsAuthentication => new FormsAuthenticationScanner(),
                 ScannerType.InsecureCookie => new CookieFlagScanner(),
+                ScannerType.MachineKeyClearText => new MachineKeyScanner(),
                 _ => null,
             };
         }
