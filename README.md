@@ -47,6 +47,12 @@ XSS Injection
   <li>
 XXE Injection
   </li>
+  <li>
+    Forms Authentication: Weak Cookie Protection
+  </li>
+  <li>
+  Cleartext Machine Key
+  </li>
 </ol>
 
 
