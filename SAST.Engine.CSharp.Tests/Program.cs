@@ -8,9 +8,21 @@ namespace SAST.Engine.CSharp.Tests
 {
     class Program
     {
-        //static ServiceCollection serviceCollection = new ServiceCollection();
-        //static ServiceProvider serviceProvider;
-
+        static void LoadFiles(string[] projectPaths)
+        {
+            Core.SASTApp sASTApp = new Core.SASTApp();
+            if (sASTApp.LoadFiles(projectPaths))
+            {
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
+                vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
+                foreach (var item in vulnerabilities)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+            }
+            else
+                Console.WriteLine("Unable to load the files");
+        }
         static string[] GetExamples(string path)
         {
             FileAttributes fileAttributes = File.GetAttributes(path);
@@ -39,20 +51,6 @@ namespace SAST.Engine.CSharp.Tests
             string[] files = GetExamples(path);
             foreach (var file in files)
                 LoadFiles(new string[] { file });
-        }
-        static void LoadFiles(string[] projectPaths)
-        {
-            Core.SASTApp sASTApp = new Core.SASTApp();
-            if (sASTApp.LoadFiles(projectPaths))
-            {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-                foreach (var item in vulnerabilities)
-                {
-                    Console.WriteLine(item.ToString());
-                }
-            }
-            else
-                Console.WriteLine("Unable to load the files");
         }
     }
 }

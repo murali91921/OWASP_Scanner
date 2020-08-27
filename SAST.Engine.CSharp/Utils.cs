@@ -41,7 +41,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.XXE, "XML external entity injection"},
             {Enums.ScannerType.FormsAuthentication, "Forms Authentication"},
             {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
-            {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"}
+            {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"},
+            {Enums.ScannerType.WeakCipherMode, "Weak Cipher Mode"}
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -60,7 +61,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.XXE, Enums.Severity.Medium},
             {Enums.ScannerType.FormsAuthentication, Enums.Severity.High},
             {Enums.ScannerType.MachineKeyClearText, Enums.Severity.High},
-            {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High}
+            {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
+            {Enums.ScannerType.WeakCipherMode, Enums.Severity.High}
         };
         public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {

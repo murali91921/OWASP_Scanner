@@ -20,7 +20,8 @@
         XXE = 14,
         FormsAuthentication = 15,
         MachineKeyClearText = 16,
-        WeakSymmetricAlgorithm = 17
+        WeakSymmetricAlgorithm = 17,
+        WeakCipherMode = 18
     }
     public enum ScannerSubType
     {

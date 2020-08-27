@@ -96,6 +96,9 @@
     <None Update="Resources\Microsoft.Security.Application.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\mscorlib.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.ComponentModel.DataAnnotations.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
