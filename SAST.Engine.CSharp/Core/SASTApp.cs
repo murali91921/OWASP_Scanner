@@ -55,8 +55,8 @@ namespace SAST.Engine.CSharp.Core
                 foreach (var item in filePaths)
                 {
                     if (Utils.SourceCodeFileExtensions.Any(ext => ext == Path.GetExtension(item).ToLower())
-                        || Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item).ToLower()))
-                        || Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item).ToLower())
+                        || Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item).ToLower())
+                        || Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item).ToLower()))
                         files.Add(item);
                 }
                 if (files.Count() == 0)

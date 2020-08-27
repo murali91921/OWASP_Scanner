@@ -50,7 +50,7 @@ namespace SAST.Engine.CSharp.Core
                         foreach (var refLocation in reference.Locations)
                         {
                             currentNode = node.SyntaxTree.GetRoot().FindNode(refLocation.Location.SourceSpan);
-                            if (CheckSameBlock(currentNode, node) && currentNode.SpanStart < node.SpanStart)
+                            if (Utils.CheckSameMethod(currentNode, node) && currentNode.SpanStart < node.SpanStart)
                             {
                                 var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                                 if (assignment != null)

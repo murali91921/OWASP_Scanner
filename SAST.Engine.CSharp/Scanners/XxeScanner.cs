@@ -135,7 +135,7 @@ namespace SAST.Engine.CSharp.Scanners
                         if (refLocation.Location.SourceSpan.Start >= settingNode.SpanStart)
                             continue;
                         var currentNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
-                        if (!IsSameBlock(currentNode, settingNode))
+                        if (!Utils.CheckSameMethod(currentNode, settingNode))
                             continue;
                         var assignment = currentNode.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                         if (assignment == null || currentNode.SpanStart >= assignment.Right.SpanStart)

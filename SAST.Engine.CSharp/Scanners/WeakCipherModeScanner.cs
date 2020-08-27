@@ -29,10 +29,10 @@ namespace SAST.Engine.CSharp.Scanners
 
                 SymbolInfo symbolInfo = model.GetSymbolInfo(rightSyntax.Expression);
                 var rightSymbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
-                if (rightSyntax == null || rightSymbol.OriginalDefinition.ToString() != CipherMode)
-                    continue;
+                // if (rightSyntax == null || rightSymbol.OriginalDefinition.ToString() != CipherMode)
+                //     continue;
 
-                lstVulnerableStatements.Add(item);
+                // lstVulnerableStatements.Add(item);
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.WeakCipherMode);
         }

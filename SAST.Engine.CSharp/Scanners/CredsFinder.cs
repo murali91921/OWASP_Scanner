@@ -86,14 +86,12 @@ namespace SAST.Engine.CSharp.Scanners
                         isString = symbol is ILocalSymbol && ((symbol as ILocalSymbol).Type.ToString() == "string" || (symbol as ILocalSymbol).Type.ToString() == "System.String");
                     if (isString)
                     {
-                        if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax equalsValue && equalsValue.Value is LiteralExpressionSyntax literalExpression)
+                        if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax equalsValue
+                        && equalsValue.Value is LiteralExpressionSyntax literalExpression)
                         {
-                            var literalExpression = (item.Initializer as EqualsValueClauseSyntax).Value as LiteralExpressionSyntax;
                             if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
-                            {
                                 if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
                                     secretStrings.Add(item);
-                            }
                         }
                         var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                         foreach (var reference in references)

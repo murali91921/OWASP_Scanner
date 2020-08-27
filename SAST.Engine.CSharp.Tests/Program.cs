@@ -14,7 +14,7 @@ namespace SAST.Engine.CSharp.Tests
             if (sASTApp.LoadFiles(projectPaths))
             {
                 IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-                vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
+                //vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
                 foreach (var item in vulnerabilities)
                 {
                     Console.WriteLine(item.ToString());

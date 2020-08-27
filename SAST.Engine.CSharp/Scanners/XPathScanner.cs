@@ -96,7 +96,7 @@ namespace SAST.Engine.CSharp.Scanners
                     foreach (var refLocation in reference.Locations)
                     {
                         currentNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
-                        if (CheckSameBlock(currentNode, node) && currentNode.SpanStart < node.SpanStart)
+                        if (Utils.CheckSameMethod(currentNode, node) && currentNode.SpanStart < node.SpanStart)
                         {
                             var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                             if (assignment == null)
