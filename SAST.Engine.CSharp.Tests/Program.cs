@@ -31,6 +31,8 @@ namespace SAST.Engine.CSharp.Tests
             else
                 return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
                 .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                || obj.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+                || obj.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
                 || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToArray();
         }
