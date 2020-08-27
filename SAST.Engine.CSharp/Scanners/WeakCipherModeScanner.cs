@@ -9,7 +9,8 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class WeakCipherModeScanner : IScanner
     {
-        static readonly string CipherMode = "System.Security.Cryptography.CipherMode";
+        static readonly string CipherModeType = "System.Security.Cryptography.CipherMode";
+        static readonly string[] WeakCipherModes = { "ECB", "CBC", "OFB" };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
@@ -17,11 +18,13 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in Nodes)
             {
                 ITypeSymbol leftTypeSymbol = model.GetTypeInfo(item.Left).Type;
-                if (leftTypeSymbol == null || leftTypeSymbol.ToString() != CipherMode)
+                if (leftTypeSymbol == null || leftTypeSymbol.ToString() != CipherModeType)
                     continue;
 
                 var rightSyntax = item.Right as MemberAccessExpressionSyntax;
-                if (rightSyntax == null || rightSyntax.Name.Identifier.ValueText != "ECB")
+                if (rightSyntax == null)
+                    continue;
+                if (rightSyntax.Name.Identifier.ValueText == "ECB")
                     continue;
 
                 SymbolInfo symbolInfo = model.GetSymbolInfo(rightSyntax.Expression);

@@ -1,15 +1,10 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp.Formatting;
+using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Enums;
+using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics;
-using System;
-using System.Threading;
-using SAST.Engine.CSharp.Contract;
-using SAST.Engine.CSharp.Mapper;
-using SAST.Engine.CSharp.Enums;
 
 namespace SAST.Engine.CSharp.Scanners
 {

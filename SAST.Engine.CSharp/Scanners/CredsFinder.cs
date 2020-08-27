@@ -1,16 +1,13 @@
-using SAST.Engine.CSharp.Mapper;
-using SAST.Engine.CSharp.Enums;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Enums;
+using SAST.Engine.CSharp.Mapper;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SAST.Engine.CSharp.Scanners
 {
@@ -65,7 +62,6 @@ namespace SAST.Engine.CSharp.Scanners
             {"Google Cloud Platform API","(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]"},
             {"LinkedIn Client ID","(?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]"},
             {"LinkedIn Secret Key","(?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]"},
-            //{"MD5 Hash","[a-f0-9]{32}"},
             {"Slack Token","xox[baprs]-([0-9a-zA-Z]{10,48})?"},
             {"Twitter Oauth","[t|T][w|W][i|I][t|T][t|T][e|E][r|R].{0,30}['\"\\s][0-9a-zA-Z]{35,44}['\"\\s]"},
             {"Twitter Secret Key","(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}"},
@@ -78,14 +74,10 @@ namespace SAST.Engine.CSharp.Scanners
         SyntaxNode syntaxNode;
         public void FindHardcodeStringNodes(VariableDeclaratorSyntax item)
         {
-            // Console.WriteLine(" :After checking"+item.Span.ToString());
-            // VariableDeclarationSyntax variableDeclarationSyntax = (VariableDeclarationSyntax)item.Parent;
-            // foreach (var varItem in variableDeclarationSyntax.Variables)
             {
                 // Finding sensitive variable names
                 // Variable name should matches with keywords, and variable value is not empty,and expression  should have Literal("").
                 ISymbol symbol = model.GetDeclaredSymbol(item);
-                //TypeInfo typeInfo = model.GetTypeInfo(item);
                 if (symbol != null)
                 {
                     bool isString = false;
@@ -94,67 +86,52 @@ namespace SAST.Engine.CSharp.Scanners
                         isString = symbol is ILocalSymbol && ((symbol as ILocalSymbol).Type.ToString() == "string" || (symbol as ILocalSymbol).Type.ToString() == "System.String");
                     if (isString)
                     {
-                        if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax)
+                        if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax equalsValue && equalsValue.Value is LiteralExpressionSyntax literalExpression)
                         {
-                            if ((item.Initializer as EqualsValueClauseSyntax).Value is LiteralExpressionSyntax)
+                            var literalExpression = (item.Initializer as EqualsValueClauseSyntax).Value as LiteralExpressionSyntax;
+                            if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
                             {
-                                var literalExpression = (item.Initializer as EqualsValueClauseSyntax).Value as LiteralExpressionSyntax;
-                                if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')) /*&& IsSecretVariable(symbol.Name)*/)
-                                {
-                                    if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
-                                        secretStrings.Add(item);
-                                }
+                                if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
+                                    secretStrings.Add(item);
                             }
                         }
                         var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-                        //List<SyntaxNode> allStatements = new List<SyntaxNode>();
                         foreach (var reference in references)
                         {
-                            // new Thread(()=>{
                             foreach (var referenceLocation in reference.Locations)
                             {
                                 string stringValue = string.Empty;
-                                // Console.WriteLine(referenceLocation.Location.SourceSpan);
                                 var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
-                                if (presentStatement is AssignmentExpressionSyntax && (presentStatement as AssignmentExpressionSyntax).Right is LiteralExpressionSyntax)
+                                if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
                                 {
-                                    stringValue = (presentStatement as AssignmentExpressionSyntax).Right.ToString();
+                                    stringValue = literal.ToString();
                                     if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
                                         if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
                                             secretStrings.Add(presentStatement);
                                 }
-                                else if (presentStatement is BinaryExpressionSyntax && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
+                                else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
                                 {
-                                    BinaryExpressionSyntax condition = presentStatement as BinaryExpressionSyntax;
-                                    if (((condition.Right is LiteralExpressionSyntax && condition.Left is IdentifierNameSyntax)
-                                    || (condition.Left is LiteralExpressionSyntax && condition.Right is IdentifierNameSyntax)))
+                                    if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
+                                    || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
                                     {
-                                        stringValue = (condition.Right is LiteralExpressionSyntax) ? condition.Right.ToString() : condition.Left.ToString();
+                                        stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
                                         if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
                                             if (IsSecretVariable(symbol.Name))
                                                 secretStrings.Add(presentStatement);
                                     }
                                 }
                             }
-                            // }).Start();
                         }
                     }
                 }
-                // Finding sensitive stored values
-                // if(varItem.ChildNodesAndTokens().Count>1 &&  IsSecretValue(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1].ToString()))
-                //     secretStrings.Add(varItem.ChildNodesAndTokens()[1].ChildNodesAndTokens()[1]);
             }
         }
         //Check string variable name matches with secret keywords patterns
         public static bool IsSecretVariable(string variable)
         {
             foreach (var SecretKeywordItem in SecretKeywords)
-            {
                 if (Regex.IsMatch(variable, SecretKeywordItem, RegexOptions.IgnoreCase))
-                {
                     return true;
-                }
-            }
             return false;
         }
 
@@ -162,15 +139,11 @@ namespace SAST.Engine.CSharp.Scanners
         public static bool IsSecretValue(string stringValue)
         {
             foreach (var pattern in secretPatterns)
-            {
                 if (Regex.IsMatch(stringValue, pattern.Value))
-                {
-                    //Console.WriteLine("{0} : {1}",stringValue,pattern.Value);
                     return true;
-                }
-            }
             return false;
         }
+
         private string FindCommentText(SyntaxTrivia commentNode)
         {
             string commentText = "";
@@ -186,6 +159,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return commentText;
         }
+
         //Finding non-empty single/multi line comments in source code
         private List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
         {
@@ -207,31 +181,10 @@ namespace SAST.Engine.CSharp.Scanners
             this.model = model;
             this.syntaxNode = syntaxNode;
             this.solution = solution;
-            //    // Creating Adhoc Workspace
-            //    AdhocWorkspace workspace = new AdhocWorkspace();
-            //    SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create());
-            //    var project = workspace.AddProject("CredsFinder", "C#");
-            //    project = project.AddMetadataReference(MetadataReference.CreateFromFile(filePath));
-            //    workspace.TryApplyChanges(project.Solution);
-            //    document = workspace.AddDocument(project.Id, "CredsFinder", SourceText.From(root.ToString()));
-            //    model = document.GetSemanticModelAsync().Result;
-            //    rootNode = document.GetSyntaxRootAsync().Result;
-            // Console.WriteLine("Before checking");
-
-            // List<SyntaxNodeOrToken> hardcoreStringNodes= FindHardcodeStrings(rootNode);
             IEnumerator<VariableDeclaratorSyntax> hardcoreStringNodes = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().GetEnumerator();
             //Checking strings are Passwords, secret keys or not.
-            // var watch = System.Diagnostics.Stopwatch.StartNew();
             while (hardcoreStringNodes.MoveNext())
-            {
-                //FindHardcodeStringNodes(item);
-                // new Thread(() =>
-                // {
                 FindHardcodeStringNodes(hardcoreStringNodes.Current);
-                // }).Start();
-            }
-            // watch.Stop();
-            // Console.WriteLine($"{filePath}: {watch.ElapsedMilliseconds} ms ");
 
             //Finding Sensitive comments
             List<SyntaxTrivia> commentNodes = FindComments(syntaxNode);
@@ -241,7 +194,6 @@ namespace SAST.Engine.CSharp.Scanners
                 if (IsSecretValue(commentText))
                     secretComments.Add(commentNode);
             }
-
             var vulnerabilityList = Map.ConvertToVulnerabilityList(filePath, secretStrings, ScannerType.HardcodePassword);
             vulnerabilityList.AddRange(Map.ConvertToVulnerabilityList(filePath, secretComments, ScannerType.HardcodePassword));
             return vulnerabilityList;

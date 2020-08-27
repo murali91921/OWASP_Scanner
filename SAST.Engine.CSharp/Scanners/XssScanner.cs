@@ -12,14 +12,8 @@ using SAST.Engine.CSharp.Enums;
 using System.Linq;
 namespace ASTTask
 {
-    public class XssScanner : IScanner//, IMarkupScanner
+    public class XssScanner : IScanner
     {
-        //private static string[] encodingMethods = {
-        //    "System.Text.Encodings.Web.TextEncoder.Encode",
-        //    "HttpContext.Server.HtmlEncode"
-        //   };
-
-        #region Variable,Property Declarations
         private List<string> DataRetrievalMethods = new List<string> {
             "System.Data.Common.DbDataReader.GetString",
             "System.Data.SqlClient.SqlCommand.ExecuteScalar"
@@ -70,9 +64,8 @@ namespace ASTTask
                 "System.Web.UI.WebControls.InnerHtml",
                 "System.Web.UI.Control.ID"
             };
-        //SemanticModel model;
         Solution solution;
-        #endregion
+
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.solution = solution;
@@ -200,6 +193,7 @@ namespace ASTTask
             }
             return lstVulnerableCheck;
         }
+
         /// <summary>
         /// Checking for Stored XSS
         /// </summary>
@@ -261,13 +255,10 @@ namespace ASTTask
                     foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
                     {
                         var methodDeclarationSyntax = syntaxReference.GetSyntax() as MethodDeclarationSyntax;
-                        //WriteLine(syntaxReference.SyntaxTree);
                         SemanticModel currentModel = null;
                         foreach (var project in solution.Projects)
-                        {
                             if (project.GetCompilationAsync().Result.ContainsSyntaxTree(syntaxReference.SyntaxTree))
                                 currentModel = project.GetCompilationAsync().Result.GetSemanticModel(syntaxReference.SyntaxTree);
-                        }
                         if (currentModel == null || methodDeclarationSyntax == null || methodDeclarationSyntax.Body == null)
                             continue;
                         if (methodDeclarationSyntax.ExpressionBody != null)
@@ -284,8 +275,8 @@ namespace ASTTask
                     return IsVulnerable(assignmentExpression.Right, model);
                 case SyntaxKind.AddExpression:
                     var addExpression = syntaxNode as BinaryExpressionSyntax;
-                    var left = IsVulnerable((addExpression as BinaryExpressionSyntax).Left, model, callingSymbol);
-                    var right = IsVulnerable((addExpression as BinaryExpressionSyntax).Right, model, callingSymbol);
+                    var left = IsVulnerable(addExpression.Left, model, callingSymbol);
+                    var right = IsVulnerable(addExpression.Right, model, callingSymbol);
                     return left || right;
                 case SyntaxKind.VariableDeclarator:
                     var variableDeclarator = syntaxNode as VariableDeclaratorSyntax;
@@ -297,57 +288,6 @@ namespace ASTTask
                 default:
                     return false;
             }
-        }
-
-        //private void ParseChildren(AspxParser.AspxNode node)
-        //{
-        //    WriteLine(node.GetType());
-        //    if (node is AspxParser.AspxNode.AspxExpressionTag aspxExpressionTag)
-        //        WriteLine(aspxExpressionTag.Expression);
-        //    else if (node is AspxParser.AspxNode.AspxTag aspxTag)
-        //    {
-        //        WriteLine(aspxTag.ControlName);
-        //        foreach (var attribute in aspxTag.Attributes)
-        //        {
-        //            WriteLine(attribute.Key + " : " + attribute.Value);
-        //        }
-        //    }
-        //    else if (node is AspxParser.AspxNode.CodeRender codeRender)
-        //    {
-        //        WriteLine(codeRender.Expression);
-        //    }
-        //    else if (node is AspxParser.AspxNode.CodeRenderEncode codeRenderEncode)
-        //    {
-        //        WriteLine(codeRenderEncode.Expression);
-        //    }
-        //    else if (node is AspxParser.AspxNode.CodeRenderExpression codeRenderExpression)
-        //        WriteLine(codeRenderExpression.Expression);
-        //    else if (node is AspxParser.AspxNode.DataBinding databinding)
-        //        WriteLine(databinding.Expression);
-        //    else if (node is AspxParser.AspxNode.HtmlTag htmlTag)
-        //    {
-        //        WriteLine(htmlTag.Name);
-        //        foreach (var attribute in htmlTag.Attributes)
-        //        {
-        //            WriteLine(attribute.Key + " : " + attribute.Value);
-        //        }
-        //    }
-        //    else if (node is AspxParser.AspxNode.Literal literal)
-        //        WriteLine(literal.Text);
-
-        //    foreach (var childNode in node.Children)
-        //    {
-        //        ParseChildren(childNode);
-        //    }
-        //}
-        public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
-        {
-            List<VulnerabilityDetail> vulnerabilityDetails = new List<VulnerabilityDetail>();
-            //if (filePath.ToLower().EndsWith("managepassword.aspx"))
-            //{
-            //    string Content = File.ReadAllTextAsync(filePath).Result;
-            //}
-            return vulnerabilityDetails;
         }
     }
 }

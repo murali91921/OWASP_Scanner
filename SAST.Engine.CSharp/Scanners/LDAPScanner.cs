@@ -26,7 +26,6 @@ namespace SAST.Engine.CSharp.Scanners
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();
 
             var classDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
-            //var classDeclarations = rootNode.DescendantNodes().OfType<LambdaExpressionSyntax>();
             foreach (var classDeclare in classDeclarations)
             {
                 var objectCreationExpressions = classDeclare.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
@@ -35,44 +34,31 @@ namespace SAST.Engine.CSharp.Scanners
                     ISymbol symbol = model.GetSymbolInfo(objectCreation.Type).Symbol;
                     if (symbol != null && symbol.ToString() == DirectorySearcher)
                     {
-                        // WriteLine(symbol);
-                        // WriteLine(objectCreation);
                         if (objectCreation.Initializer?.Expressions.Count > 0)
                         {
-                            var filterStatement = objectCreation.Initializer?.Expressions.OfType<AssignmentExpressionSyntax>()
-                            .FirstOrDefault(p => (p.Left as IdentifierNameSyntax)?.Identifier.ValueText == "Filter");
+                            var filterStatement = objectCreation.Initializer?.Expressions.OfType<AssignmentExpressionSyntax>().FirstOrDefault(p =>
+                                (p.Left as IdentifierNameSyntax)?.Identifier.ValueText == "Filter");
                             if (filterStatement != null)
-                            {
                                 lstVulnerableCheck.Add(filterStatement.Right);
-                            }
                         }
-
                         if (objectCreation.ArgumentList?.Arguments.Count() > 0)
-                        {
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
                                 ITypeSymbol argumentType = model.GetTypeInfo(argument.Expression).Type;
                                 if (argumentType.ToString() == "string" || argumentType.ToString() == "System.String" || argument.Expression is BinaryExpressionSyntax)
-                                {
                                     lstVulnerableCheck.Add(argument.Expression);
-                                }
                             }
-                        }
                     }
                 }
 
-                // Checking all assignments
                 var assignmentExpressions = classDeclare.DescendantNodes().OfType<AssignmentExpressionSyntax>();
                 foreach (var assignment in assignmentExpressions)
                 {
-                    var leftAssign = assignment.Left as MemberAccessExpressionSyntax;
-                    if (leftAssign != null)
+                    if (assignment.Left is MemberAccessExpressionSyntax leftAssign)
                     {
                         var leftSymbol = model.GetSymbolInfo(leftAssign).Symbol;
                         if (leftSymbol != null && leftSymbol.ToString() == filter)
-                        {
                             lstVulnerableCheck.Add(assignment.Right);
-                        }
                     }
                 }
             }
@@ -81,7 +67,6 @@ namespace SAST.Engine.CSharp.Scanners
                 if (item is IdentifierNameSyntax)
                 {
                     SyntaxNode vulnerable = null;
-                    // WriteLine("--- {0} {1}", item, IsVulnerable(item) ? "Yes" : "No");
                     ISymbol symbol = model.GetSymbolInfo(item).Symbol;
                     var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                     foreach (var reference in references)
@@ -116,11 +101,10 @@ namespace SAST.Engine.CSharp.Scanners
         }
         public bool IsVulnerable(SyntaxNode node)
         {
-            if (node is BinaryExpressionSyntax)
+            if (node is BinaryExpressionSyntax binaryExpression)
             {
-                // return  IsVulnerable((node as BinaryExpressionSyntax).Right) && IsVulnerable((node as BinaryExpressionSyntax).Left);
-                var left = IsVulnerable((node as BinaryExpressionSyntax).Left);
-                var right = IsVulnerable((node as BinaryExpressionSyntax).Right);
+                var left = IsVulnerable(binaryExpression.Left);
+                var right = IsVulnerable(binaryExpression.Right);
                 return right || left;
             }
             else if (node is InvocationExpressionSyntax)
@@ -135,6 +119,7 @@ namespace SAST.Engine.CSharp.Scanners
             else
                 return true;
         }
+
         public List<SyntaxNode> VulnerableNodes(SyntaxNode node)
         {
             List<SyntaxNode> lstNode = new List<SyntaxNode>();
@@ -150,6 +135,5 @@ namespace SAST.Engine.CSharp.Scanners
                 }
             return lstNode;
         }
-
     }
 }

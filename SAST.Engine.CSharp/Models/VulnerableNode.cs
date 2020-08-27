@@ -9,8 +9,11 @@ namespace SAST.Engine.CSharp.Models
     public class VulnerableNode
     {
         public VulnerableNode(SyntaxNode expression) => Expression = expression;
+        
         public SyntaxNode Expression { set; get; }
+        
         public bool IsVulnerable { set; get; }
+        
         public ScannerSubType VulnerabileSubType { set; get; }
     }
 }

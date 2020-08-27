@@ -86,6 +86,13 @@ namespace SAST.Engine.CSharp
             }
             return false;
         }
+        internal static bool CheckSameMethod(SyntaxNode first, SyntaxNode second)
+        {
+            MethodDeclarationSyntax block1 = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            var blocks = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            bool ret = blocks.Any(blk => blk.IsEquivalentTo(block1));
+            return ret;
+        }
     }
 
     public static class LinePositionExtension

@@ -14,7 +14,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     public class InsecureRandomScanner : IScanner
     {
-        // private static string RandomClass = "System.Random";
         private static string[] RandomMethods = {
             "System.Random.Next",
             "System.Random.NextDouble",
@@ -24,13 +23,6 @@ namespace SAST.Engine.CSharp.Scanners
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();
-            // var objectCreationExpressions = rootNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
-            // foreach (var objectCreation in objectCreationExpressions)
-            // {
-            //     IMethodSymbol symbol = model.GetSymbolInfo(objectCreation).Symbol as IMethodSymbol;
-            //     if(symbol.ContainingType.ToString() == RandomClass && symbol.MethodKind == MethodKind.Constructor)
-            //         lstVulnerableStatements.Add(objectCreation);
-            // }
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in invocations)
             {
@@ -41,6 +33,5 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.InsecureRandom);
         }
-
     }
 }

@@ -45,26 +45,20 @@ namespace SAST.Engine.CSharp.Scanners
                                                     || obj.IsKind(SyntaxKind.ObjectCreationExpression));
             foreach (var item in syntaxNodes)
             {
-                // Console.WriteLine(item);
-                if (item is ObjectCreationExpressionSyntax)
+                if (item is ObjectCreationExpressionSyntax objectCreation)
                 {
-                    ObjectCreationExpressionSyntax objectCreation = item as ObjectCreationExpressionSyntax;
                     var typeInfo = model.GetTypeInfo(objectCreation);
                     if (Utils.DerivesFromAny(typeInfo.ConvertedType, WeakTypes))
                     {
                         if (objectCreation.ArgumentList == null)
                             lstVulnerableStatements.Add(objectCreation);
                         else
-                        {
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
                                 var argSymbol = model.GetSymbolInfo(argument.Expression);
-                                // Console.WriteLine(objectCreation);
-                                // Console.WriteLine(argSymbol.Symbol);
                                 if (argSymbol.Symbol != null && QualifiedPropertyNames.Any(name => name == argSymbol.Symbol.ToString()))
                                     lstVulnerableStatements.Add(objectCreation);
                             }
-                        }
                     }
                 }
                 else
@@ -72,9 +66,7 @@ namespace SAST.Engine.CSharp.Scanners
                     InvocationExpressionSyntax invocation = item as InvocationExpressionSyntax;
                     if (model.GetSymbolInfo((item as InvocationExpressionSyntax).Expression).Symbol is IMethodSymbol methodSymbol)
                         if (Utils.DerivesFromAny(methodSymbol.ReturnType, WeakTypes) || CheckWeakHashingCreation(methodSymbol, invocation.ArgumentList))
-                        {
                             lstVulnerableStatements.Add(item);
-                        }
                 }
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakHashingConfig);

@@ -1,12 +1,10 @@
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using SAST.Engine.CSharp.Mapper;
 using SAST.Engine.CSharp.Contract;
-using System.Runtime.InteropServices;
+using SAST.Engine.CSharp.Mapper;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
@@ -31,20 +29,7 @@ namespace SAST.Engine.CSharp.Scanners
         private static string[] AnonymousAttribute = {
             "System.Web.Mvc.AllowAnonymousAttribute",
             "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute"};
-        //Recursive method to check base types.--> Not required because different types of Return statements will come.
-        // private bool CheckReturnType(INamedTypeSymbol typeSymbol)
-        // {
-        //     // return true;
-        //     if(typeSymbol ==null)
-        //         return false;
-        //     if(ReturnTypeClasses.Any(obj=>obj == typeSymbol.ToString()))
-        //         return true;
-        //     else if(typeSymbol.BaseType !=null && typeSymbol.BaseType.ToString()!="System.Object")
-        //         return CheckReturnType(typeSymbol.BaseType);
-        //     else if(typeSymbol.AllInterfaces !=null && typeSymbol.AllInterfaces.Count()>0)
-        //         return typeSymbol.AllInterfaces.Any(baseInterface=> CheckReturnType(baseInterface));
-        //     return false;
-        // }
+
         private bool CheckHttbVerb(ITypeSymbol typeSymbol)
         {
             if (typeSymbol != null)
@@ -66,7 +51,6 @@ namespace SAST.Engine.CSharp.Scanners
         IEnumerable<VulnerabilityDetail> IScanner.FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
-            //Filter all class declarations with Attribute specification
             var attributeClassDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
             foreach (var itemClass in attributeClassDeclarations)
             {
@@ -90,12 +74,10 @@ namespace SAST.Engine.CSharp.Scanners
                     var methods = itemClass.DescendantNodes().OfType<MethodDeclarationSyntax>();
                     foreach (var method in methods)
                     {
-                        // Parallel.ForEach (methods, method => {
                         // Action method should be PUBLIC
                         if (!method.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)))
                             break;
                         var returnTypeSymbol = model.GetSymbolInfo(method.ReturnType).Symbol;
-                        //if(CheckReturnType(returnTypeSymbol as INamedTypeSymbol))
                         {
                             bool hasHttpVerb = false;
                             bool hasCsrfAttribute = false;
@@ -111,27 +93,15 @@ namespace SAST.Engine.CSharp.Scanners
                                         hasCsrfAttribute = CheckCsrfAttribute(typeInfo.Type) || hasCsrfAttribute;
                                         hasAnonymousAttribute = CheckAnonymousAttribute(typeInfo.Type) || hasAnonymousAttribute;
                                     }
-                                    // else if(symbolInfo.CandidateSymbols.Count()>0)
-                                    // {
-                                    //     foreach (var candidateSymbol in symbolInfo.CandidateSymbols)
-                                    //     {
-                                    //         hasHttpVerb = CheckHttbVerb(symbolInfo.Symbol) || hasHttpVerb;
-                                    //         hasCsrftAttribute = CheckCsrfAttribute(candidateSymbol) || hasCsrftAttribute;
-                                    //     }
-                                    // }
                                 }
                             }
                             if (hasHttpVerb && !hasCsrfAttribute & !hasAnonymousAttribute)
-                            {
                                 lstVulnerableStatements.Add(method);
-                            }
                         }
-                        //});
                     }
                 }
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.Csrf);
         }
-
     }
 }

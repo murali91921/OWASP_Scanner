@@ -1,8 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
-using SAST.Engine.CSharp.Contract;
+﻿using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 

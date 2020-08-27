@@ -68,7 +68,7 @@ namespace SAST.Engine.CSharp.Scanners
                         if (referenceLocation.Location.SourceSpan.Start >= invocationExpression.SpanStart)
                             continue;
                         var currentNode = syntaxNode.FindNode(referenceLocation.Location.SourceSpan);
-                        if (!IsSameBlock(currentNode, invocationExpression))
+                        if (!Utils.CheckSameMethod(currentNode, invocationExpression))
                             continue;
                         var assignment = currentNode.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                         if (assignment == null)
@@ -85,7 +85,6 @@ namespace SAST.Engine.CSharp.Scanners
                                 vulnerable = (assignment.Right as MemberAccessExpressionSyntax).Name.ToString() == "Parse";
                         }
                     }
-                    //return vulnerable;
                 }
             }
             return vulnerable;
@@ -142,14 +141,6 @@ namespace SAST.Engine.CSharp.Scanners
                         if (assignment == null || currentNode.SpanStart >= assignment.Right.SpanStart)
                             continue;
                         vulnerable = IsVulnerableSettings(assignment, assignment.Span);
-                        //symbolInfo = model.GetSymbolInfo(assignment.Left);
-                        //ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
-                        //if (symbol == null)
-                        //    continue;
-                        //if (symbol.Name.ToString() == "ProhibitDtd")
-                        //    vulnerable = assignment.Right.Kind() == SyntaxKind.FalseLiteralExpression;
-                        //else if (symbol.Name.ToString() == "DtdProcessing")
-                        //    vulnerable = (assignment.Right as MemberAccessExpressionSyntax).Name.ToString() == "Parse";
                     }
                 }
             }
@@ -177,17 +168,6 @@ namespace SAST.Engine.CSharp.Scanners
             return vulnerable;
         }
 
-        private bool IsNullObject(SyntaxNode node)
-        {
-            return node.Kind() == SyntaxKind.NullLiteralExpression;
-        }
-        private bool IsSameBlock(SyntaxNode first, SyntaxNode second)
-        {
-            var firstMethodBlock = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            var secondMethodBlock = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            if (firstMethodBlock == secondMethodBlock)
-                return true;
-            return false;
-        }
+        private bool IsNullObject(SyntaxNode node) => node.Kind() == SyntaxKind.NullLiteralExpression;
     }
 }

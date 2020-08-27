@@ -8,7 +8,7 @@ namespace SAST.Engine.CSharp.Mapper
 {
     public static class Map
     {
-        public static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType scannerType, ScannerSubType scannerSubType = ScannerSubType.None)
+        internal static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType scannerType, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             var vulnerabilityList = new List<VulnerabilityDetail>();
             if (syntaxList == null || syntaxList.Count == 0)
@@ -25,7 +25,6 @@ namespace SAST.Engine.CSharp.Mapper
                         LineNumber = GetLineNumber(item),
                         Type = scannerType,
                         SubType =scannerSubType
-                        //Description = scannerSubType == ScannerSubType.None ? scannerType.ToString() : scannerSubType.ToString()
                     });
                 }
             else if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)
@@ -42,7 +41,7 @@ namespace SAST.Engine.CSharp.Mapper
             return vulnerabilityList;
         }
 
-        private static void ConvertFromSASTCookie<T>(string filePath, List<SASTCookie> astCookie, List<VulnerabilityDetail> vulnerabilityList)
+        internal static void ConvertFromSASTCookie<T>(string filePath, List<SASTCookie> astCookie, List<VulnerabilityDetail> vulnerabilityList)
         {
             foreach (var item in astCookie)
             {
@@ -66,6 +65,6 @@ namespace SAST.Engine.CSharp.Mapper
 
         internal static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
 
-        private static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        internal static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
     }
 }

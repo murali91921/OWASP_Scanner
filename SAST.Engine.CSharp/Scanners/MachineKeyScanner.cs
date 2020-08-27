@@ -1,7 +1,6 @@
 ﻿using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 
@@ -42,30 +41,6 @@ namespace SAST.Engine.CSharp.Scanners
                         }
                     };
             return vulnerabilities;
-
-
-
-
-
-
-            //validationKey = "abc";
-            //decryptionKey = "def";
-            //var attribute = element.Attribute("validationKey");
-            //var flag = attribute != null && !attribute.Value.Contains("AutoGenerate");
-
-            ////Check the decryptionKey element for "AutoGenerate"
-            //if (!flag)
-            //{
-            //    attribute = element.Attribute("decryptionKey");
-            //    flag = attribute != null && !attribute.Value.Contains("AutoGenerate");
-            //}
-
-            ////Send the diagnostic warning if identified cleartext key
-            //if (flag)
-            //{
-            //    var lineInfo = config.GetProductionLineInfo(element, SEARCH_EXPRESSION);
-            //    VulnerableAdditionalText.Push(new DiagnosticInfo(config.Source.Path, lineInfo.LineNumber, element.ToString()));
-            //}
         }
     }
 }
