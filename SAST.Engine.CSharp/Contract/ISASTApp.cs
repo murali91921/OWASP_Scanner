@@ -29,5 +29,6 @@ namespace SAST.Engine.CSharp.Contract
         /// </summary>
         /// <returns>List of vulnerabilities found</returns>
         IEnumerable<VulnerabilityDetail> ScanAll();
+        IEnumerable<VulnerabilityDetail> Scan(Enums.ScannerType scannerType);
     }
 }

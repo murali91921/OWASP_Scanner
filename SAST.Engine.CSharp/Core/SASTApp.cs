@@ -163,7 +163,7 @@ namespace SAST.Engine.CSharp.Core
                             {
                                 if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
                                 {
-                                    IConfigScanner configScanner = ConfigScan(scannerType);
+                                    IConfigScanner configScanner = GetConfigScanner(scannerType);
                                     if (configScanner == null)
                                         continue;
                                     vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
@@ -176,7 +176,7 @@ namespace SAST.Engine.CSharp.Core
                         {
                             foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
                             {
-                                IScanner scanner = Scan(scannerType);
+                                IScanner scanner = GetScanner(scannerType);
                                 if (scanner == null)
                                     continue;
                                 vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
@@ -190,7 +190,44 @@ namespace SAST.Engine.CSharp.Core
             }
         }
 
-        private IScanner Scan(ScannerType scannerType)
+        public IEnumerable<VulnerabilityDetail> Scan(ScannerType scannerType)
+        {
+            if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.Projects == null || workspace.CurrentSolution.Projects.Count() == 0)
+                return null;
+            if (scannerType == ScannerType.Invalid || scannerType == ScannerType.None)
+                return new List<VulnerabilityDetail>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            foreach (Project project in workspace.CurrentSolution.Projects)
+            {
+                if (project.AdditionalDocuments.Count() > 0)
+                {
+                    foreach (var item in project.AdditionalDocuments)
+                    {
+                        if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
+                        {
+                            IConfigScanner configScanner = GetConfigScanner(scannerType);
+                            if (configScanner == null)
+                                continue;
+                            vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
+                        }
+                    }
+                }
+                if (project.Documents != null)
+                    foreach (var document in project.Documents)
+                    {
+                        IScanner scanner = GetScanner(scannerType);
+                        if (scanner == null)
+                            continue;
+                        vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
+                            document.GetSemanticModelAsync().Result, workspace.CurrentSolution));
+                    }
+                else
+                    break;
+            }
+            return vulnerabilities;
+        }
+
+        private IScanner GetScanner(ScannerType scannerType)
         {
             return scannerType switch
             {
@@ -214,7 +251,7 @@ namespace SAST.Engine.CSharp.Core
             };
         }
 
-        private IConfigScanner ConfigScan(ScannerType scannerType)
+        private IConfigScanner GetConfigScanner(ScannerType scannerType)
         {
             return scannerType switch
             {

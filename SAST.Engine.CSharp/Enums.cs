@@ -39,5 +39,4 @@
         Low = 4,
         Information = 0,
     }
-
 }

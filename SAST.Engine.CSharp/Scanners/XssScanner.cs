@@ -64,6 +64,11 @@ namespace ASTTask
                 "System.Web.UI.WebControls.InnerHtml",
                 "System.Web.UI.Control.ID"
             };
+        private static string[] ViewStateTypes = {
+                "",
+                "",
+                ""
+            };
         Solution solution;
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
@@ -105,7 +110,7 @@ namespace ASTTask
                 var methodsWithParameters = classItem.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>()
                     .Where(method => !method.ParameterList.Parameters.Count.Equals(0))
                     .Where(method => method.Modifiers.ToString().Equals("public"))
-                    .Where(method => method.ReturnType.ToString().Equals("string"));
+                    /*.Where(method => method.ReturnType.ToString().Equals("string"))*/;
                 foreach (MethodDeclarationSyntax method in methodsWithParameters)
                 {
                     bool verbExists = false;
@@ -133,10 +138,30 @@ namespace ASTTask
                         lstVulnerableCheck.Add(method.ExpressionBody.Expression);
                         continue;
                     }
-                    if (method.Body == null || method.Body.Statements.OfType<ReturnStatementSyntax>().Count() == 0)
+                    if (method.Body == null /*|| method.Body.Statements.OfType<ReturnStatementSyntax>().Count() == 0*/)
                         continue;
                     foreach (var item in method.Body.Statements.OfType<ReturnStatementSyntax>())
-                        lstVulnerableCheck.Add(item.Expression); ;
+                        lstVulnerableCheck.Add(item);
+                    foreach (var item in method.DescendantNodes().OfType<AssignmentExpressionSyntax>())
+                    {
+                        if (item.Left is MemberAccessExpressionSyntax viewBagExpression)
+                        {
+                            ISymbol symbol = Utils.GetSymbol(viewBagExpression.Expression, model);
+                            if (symbol == null)
+                                continue;
+                            if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewBag")
+                                lstVulnerableCheck.Add(item.Right);
+                        }
+                        else if (item.Left is ElementAccessExpressionSyntax dataExpression)
+                        {
+                            ISymbol symbol = Utils.GetSymbol(dataExpression.Expression, model);
+                            if (symbol == null)
+                                continue;
+                            if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewData"
+                                || symbol.ToString() == "System.Web.Mvc.ControllerBase.TempData")
+                                lstVulnerableCheck.Add(item.Right);
+                        }
+                    }
                 }
             }
             //WebForms methods

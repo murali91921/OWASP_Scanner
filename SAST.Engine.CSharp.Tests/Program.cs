@@ -13,8 +13,7 @@ namespace SAST.Engine.CSharp.Tests
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))
             {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-                //vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.XSS);
                 foreach (var item in vulnerabilities)
                 {
                     Console.WriteLine(item.ToString());
@@ -29,18 +28,13 @@ namespace SAST.Engine.CSharp.Tests
             if (!fileAttributes.HasFlag(FileAttributes.Directory))
                 return new string[] { path };
             else
-                return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
-                .Where(obj => obj.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
-                || obj.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
-                || obj.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
-                || obj.EndsWith(".config", StringComparison.OrdinalIgnoreCase)
-                || obj.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToArray();
+                return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly).ToArray();
         }
         static void Main(string[] args)
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("usage : dotnet run -Path\nPath should be Folder or file");
+                Console.WriteLine("usage : dotnet run -\"Path\"\nPath should be Folder or file");
                 Console.WriteLine("Example : dotnet run -\"C:\\Examples\"");
                 return;
             }

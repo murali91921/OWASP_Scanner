@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace SAST.Engine.CSharp
 {
@@ -23,7 +22,6 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
             {Enums.ScannerSubType.None, null}
         };
-
         internal static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
             {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
             {Enums.ScannerType.EmptyCatch, "Empty catch block"},
@@ -37,7 +35,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakHashingConfig, "Weak hashing configuration"},
             {Enums.ScannerType.WeakPasswordConfig, "Weak password configuration"},
             {Enums.ScannerType.XPath, "Xpath injection"},
-            {Enums.ScannerType.XSS, "Croos site scripting attack"},
+            {Enums.ScannerType.XSS, "Cross Site Scripting attack"},
             {Enums.ScannerType.XXE, "XML external entity injection"},
             {Enums.ScannerType.FormsAuthentication, "Forms Authentication"},
             {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
@@ -64,7 +62,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High}
         };
-        public static void LoadMetadata(out List<MetadataReference> MetadataReferences)
+
+        internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
             string directory = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
@@ -74,7 +73,8 @@ namespace SAST.Engine.CSharp
                 if (File.Exists(assemblyFile))
                     MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
         }
-        public static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
+
+        internal static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;
@@ -86,11 +86,24 @@ namespace SAST.Engine.CSharp
             }
             return false;
         }
+
         internal static bool CheckSameMethod(SyntaxNode first, SyntaxNode second)
         {
             MethodDeclarationSyntax firstBlock = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
             MethodDeclarationSyntax secondBlock = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            return firstBlock.IsEquivalentTo(secondBlock) ;
+            return firstBlock.IsEquivalentTo(secondBlock);
+        }
+
+        internal static ISymbol GetSymbol(SyntaxNode node, SemanticModel model)
+        {
+            SymbolInfo symbolInfo = model.GetSymbolInfo(node);
+            return symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+        }
+
+        internal static ITypeSymbol GetTypeSymbol(SyntaxNode node, SemanticModel model)
+        {
+            TypeInfo typeInfo = model.GetTypeInfo(node);
+            return typeInfo.Type is IErrorTypeSymbol ? null : typeInfo.Type;
         }
     }
 

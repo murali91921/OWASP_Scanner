@@ -28,7 +28,9 @@ namespace SAST.Engine.CSharp.Core
         };
         public bool IsVulnerable(SyntaxNode node, SemanticModel model, ISymbol callingSymbol = null)
         {
-            if (node is IdentifierNameSyntax)
+            if (node is ReturnStatementSyntax returnStatement)
+                return IsVulnerable(returnStatement.Expression, model);
+            else if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
                 if (type == null)
@@ -79,8 +81,13 @@ namespace SAST.Engine.CSharp.Core
             }
             else if (node is VariableDeclaratorSyntax && (node as VariableDeclaratorSyntax).Initializer != null)
                 return IsVulnerable((node as VariableDeclaratorSyntax).Initializer.Value, model);
-            else if (node is AssignmentExpressionSyntax)
-                return IsVulnerable((node as AssignmentExpressionSyntax).Right, model, null);
+            else if (node is AssignmentExpressionSyntax assignmentExpression)
+            {
+                //TypeInfo typeInfo = model.GetTypeInfo(assignmentExpression.Left);
+                //if (typeInfo.Type.TypeKind == TypeKind.Dynamic)
+                //    return IsVulnerable(assignmentExpression.Right, model, null);
+                return IsVulnerable(assignmentExpression.Right, model, null);
+            }
             else if (node is InterpolatedStringExpressionSyntax)
             {
                 bool vulnerable = false;
@@ -113,7 +120,7 @@ namespace SAST.Engine.CSharp.Core
             else
                 return false;
         }
-        
+
 
         internal static bool IsSanitized(InvocationExpressionSyntax node, SemanticModel model, ScannerType scannerType)
         {
