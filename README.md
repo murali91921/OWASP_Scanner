@@ -1,5 +1,5 @@
-# Static Code Analysis
-Usage:
+###Static Applcaition Security Testing  
+####Usage:
 SAST scanner will be used as follows
 <br/>Create a SASTApp object and load files by calling LoadFiles method. If LoadFiles method return true, it creates required objects.
 <br/>After LoadFiles method calling, by calling ScanAll method, it retrieves all vulnerbilies objects.
@@ -56,7 +56,7 @@ XXE Injection
 </ol>
 
 
-How to Use:</br>
+####How to Use:</br>
 You can test applciation by following command</br>
 `dotnet run -Path`</br>
 Parameter `Path` should be valid path of folder or file.</br>
@@ -65,3 +65,10 @@ goto `LoadFiles` method in `SAST.Engine.CSharp.Tests/Program.cs`, filter the `Sc
 ```
 vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
 ```
+
+####Note:
+Before runnign the project, You have resolve th package references
+#####Step 1:
+dotnet restore on Library project
+#####Step 2:
+dotnet run -"FilePath" on Console project
