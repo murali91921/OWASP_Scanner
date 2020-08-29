@@ -66,7 +66,7 @@ namespace SAST.Engine.CSharp
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
-            string directory = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            string directory = Directory.GetCurrentDirectory();
             //Console.WriteLine(directory);
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
@@ -103,7 +103,7 @@ namespace SAST.Engine.CSharp
         internal static ITypeSymbol GetTypeSymbol(SyntaxNode node, SemanticModel model)
         {
             TypeInfo typeInfo = model.GetTypeInfo(node);
-            return typeInfo.Type is IErrorTypeSymbol ? null : typeInfo.Type;
+            return typeInfo.Type;
         }
     }
 
