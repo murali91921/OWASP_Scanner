@@ -67,6 +67,7 @@ namespace SAST.Engine.CSharp
         {
             MetadataReferences = new List<MetadataReference>();
             string directory = Directory.GetCurrentDirectory();
+            Console.WriteLine(directory);
             //Console.WriteLine(directory);
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
