@@ -8,15 +8,15 @@ namespace SAST.Engine.CSharp.Tests
 {
     class Program
     {
-        static void LoadFiles(string[] projectPaths)
+        static void ScanFiles(string[] projectPaths)
         {
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))
             {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.XSS);
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.WeakSymmetricAlgorithm);
                 foreach (var item in vulnerabilities)
                 {
-                    Console.WriteLine(item.ToString());
+                    Console.WriteLine("\n" + item.ToString());
                 }
             }
             else
@@ -46,7 +46,7 @@ namespace SAST.Engine.CSharp.Tests
             }
             string[] files = GetExamples(path);
             foreach (var file in files)
-                LoadFiles(new string[] { file });
+                ScanFiles(new string[] { file });
         }
     }
 }

@@ -3,16 +3,22 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
     internal class WeakSymmetricAlgorithmScanner : IScanner
     {
-        static readonly string[] WeakAlgorithms = {
+        static readonly string[] WeakAlgorithmTypes = {
             "System.Security.Cryptography.TripleDESCryptoServiceProvider",
             "System.Security.Cryptography.DESCryptoServiceProvider",
             "System.Security.Cryptography.RC2CryptoServiceProvider"
+        };
+        static readonly string[] WeakAlgorithmMethods = {
+            "System.Security.Cryptography.DES.Create",
+            "System.Security.Cryptography.RC2.Create",
+            "System.Security.Cryptography.TripleDES.Create"
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -21,13 +27,26 @@ namespace SAST.Engine.CSharp.Scanners
                                                                || obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InvocationExpression));
             foreach (var item in Nodes)
             {
-                TypeInfo typeInfo = model.GetTypeInfo(item);
-                if (typeInfo.Type == null)
-                    continue;
-                if (Utils.DerivesFromAny(typeInfo.Type, WeakAlgorithms))
-                    lstVulnerableStatements.Add(item);
+                if (item is InvocationExpressionSyntax invocation)
+                {
+                    if (!invocation.ToString().Contains("Create"))
+                        continue;
+                    ISymbol symbol = null;
+                    symbol = Utils.GetSymbol(invocation, model);
+                    if (symbol == null)
+                        continue;
+                    if (WeakAlgorithmMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
+                        lstVulnerableStatements.Add(item);
+                }
+                else if (item is ObjectCreationExpressionSyntax objectCreation)
+                {
+                    TypeInfo typeInfo = model.GetTypeInfo(item);
+                    if (Utils.DerivesFromAny(typeInfo.Type, WeakAlgorithmTypes))
+                        lstVulnerableStatements.Add(item);
+                }
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.WeakSymmetricAlgorithm);
         }
+
     }
 }

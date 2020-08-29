@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.CipherMode;
 
 namespace VulnerableApp
 {
@@ -9,7 +10,7 @@ namespace VulnerableApp
             var tripleDES1 = new TripleDESCryptoServiceProvider();
             var simpleDES = new DESCryptoServiceProvider();
             var RC2 = new RC2CryptoServiceProvider();
-            RC2 = new RC2CryptoServiceProvider { Mode = CipherMode.ECB };
+            RC2 = new RC2CryptoServiceProvider { Mode = ECB };
             RC2 = new RC2CryptoServiceProvider { Mode = CipherMode.CBC };
             RC2.Mode = CipherMode.CFB;
         }
