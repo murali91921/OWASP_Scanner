@@ -21,20 +21,19 @@ SAST scanner will be used as follows
   <li>XXE Injection</li>
   <li>Forms Authentication: Weak Cookie Protection</li>
   <li>Cleartext Machine Key</li>
+  <li>Weak Symmetric Algorithm</li>
+  <li>Weak Cipher Mode</li>
 </ol>
 
 #### How to Use:</br>
 You can test applciation by following command</br>
 `dotnet run -Path`</br>
 Parameter `Path` should be valid path of folder or file.</br>
-If you  want to filter for few types of vulnerabilities
-goto `LoadFiles` method in `SAST.Engine.CSharp.Tests/Program.cs`, filter the `ScannerType` as you required</br>
-```
-vulnerabilities = vulnerabilities.Where(obj => obj.Type == Enums.ScannerType.WeakCipherMode);
-```
+You can run the scanners individually by calling `Scan` method with paramater of `Enums.ScannerType` or  
+all sccanners by calling `ScanAll` method in `SASTApp` class.
 
 #### Note:
-Before runnign the project, You have resolve th package references
+Before running the project, You have to resolve the package references
 ##### Step 1:
 `dotnet restore` on Library project
 ##### Step 2:
