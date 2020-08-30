@@ -1,4 +1,4 @@
-### Static Applcaition Security Testing  
+### Static Application Security Testing  
 #### Usage:
 SAST scanner will be used as follows
 <br/>Create a SASTApp object and load files by calling LoadFiles method. If LoadFiles method return true, it creates required objects.
