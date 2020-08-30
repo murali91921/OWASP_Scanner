@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 
 namespace SAST.Engine.CSharp.Tests
 {
@@ -13,7 +12,7 @@ namespace SAST.Engine.CSharp.Tests
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))
             {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.WeakSymmetricAlgorithm);
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.InsecureDeserialization);
                 foreach (var item in vulnerabilities)
                 {
                     Console.WriteLine("\n" + item.ToString());

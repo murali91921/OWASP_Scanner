@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -15,11 +14,13 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Security.Cryptography.DESCryptoServiceProvider",
             "System.Security.Cryptography.RC2CryptoServiceProvider"
         };
+        
         static readonly string[] WeakAlgorithmMethods = {
             "System.Security.Cryptography.DES.Create",
             "System.Security.Cryptography.RC2.Create",
             "System.Security.Cryptography.TripleDES.Create"
         };
+
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
@@ -47,6 +48,5 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.WeakSymmetricAlgorithm);
         }
-
     }
 }

@@ -4,6 +4,7 @@
     {
         None = 0,
         Invalid = -1,
+
         HardcodePassword = 1,
         InsecureCookie = 2,
         OpenRedirect = 3,
@@ -21,7 +22,8 @@
         FormsAuthentication = 15,
         MachineKeyClearText = 16,
         WeakSymmetricAlgorithm = 17,
-        WeakCipherMode = 18
+        WeakCipherMode = 18,
+        InsecureDeserialization = 19
     }
     public enum ScannerSubType
     {

@@ -17,10 +17,7 @@ namespace SAST.Engine.CSharp.Core
         AdhocWorkspace workspace;
         static List<MetadataReference> metadataReferences;
 
-        static SASTApp()
-        {
-            Utils.LoadMetadata(out metadataReferences);
-        }
+        static SASTApp() => Utils.LoadMetadata(out metadataReferences);
 
         public bool LoadFiles(string[] filePaths)
         {
@@ -247,6 +244,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.XXE => new XxeScanner(),
                 ScannerType.WeakSymmetricAlgorithm => new WeakSymmetricAlgorithmScanner(),
                 ScannerType.WeakCipherMode => new WeakCipherModeScanner(),
+                ScannerType.InsecureDeserialization => new InsecureDeserializationScanner(),
                 _ => null,
             };
         }

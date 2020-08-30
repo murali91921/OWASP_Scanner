@@ -40,7 +40,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.FormsAuthentication, "Forms Authentication"},
             {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
             {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"},
-            {Enums.ScannerType.WeakCipherMode, "Weak Cipher Mode"}
+            {Enums.ScannerType.WeakCipherMode, "Weak Cipher Mode"},
+            {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"}
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -66,9 +67,9 @@ namespace SAST.Engine.CSharp
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
-            string directory = Directory.GetCurrentDirectory();
-            Console.WriteLine(directory);
-            //Console.WriteLine(directory);
+            string directory = AppDomain.CurrentDomain.BaseDirectory;
+            // Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            // Console.WriteLine();
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
                 if (File.Exists(assemblyFile))
