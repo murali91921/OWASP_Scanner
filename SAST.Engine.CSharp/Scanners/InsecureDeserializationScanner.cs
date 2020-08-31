@@ -68,10 +68,10 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in assignments)
             {
                 ISymbol symbol = Utils.GetSymbol(item.Left, _model);
-                if (symbol.ToString() != JsonSerializerSettings_TypeNameHandling)
+                if (symbol == null || symbol.ToString() != JsonSerializerSettings_TypeNameHandling)
                     continue;
                 ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item.Right, _model);
-                if (typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
+                if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
                     continue;
                 Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
                 if (!value.HasValue)
@@ -88,7 +88,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in objectCreations)
             {
                 ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item, _model);
-                if (typeSymbol.ToString() != "System.Web.Script.Serialization.JavaScriptSerializer")
+                if (typeSymbol == null || typeSymbol.ToString() != "System.Web.Script.Serialization.JavaScriptSerializer")
                     continue;
                 var argument = item.ArgumentList.Arguments.FirstOrDefault();
                 if (argument != null && Utils.GetTypeSymbol(argument.Expression, _model) != null)
