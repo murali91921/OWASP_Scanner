@@ -47,6 +47,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\fastJSON.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Microsoft.AspNet.Identity.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -104,6 +107,9 @@
     <None Update="Resources\Newtonsoft.Json.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\ServiceStack.Text.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.ComponentModel.DataAnnotations.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -134,6 +140,9 @@
     <None Update="Resources\System.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Messaging.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Net.Http.Headers.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -143,7 +152,13 @@
     <None Update="Resources\System.Runtime.Extensions.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Runtime.Serialization.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Runtime.Serialization.Formatters.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\System.Runtime.Serialization.Formatters.Soap.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\System.Runtime.Serialization.Json.dll">

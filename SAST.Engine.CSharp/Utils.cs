@@ -61,6 +61,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.FormsAuthentication, Enums.Severity.High},
             {Enums.ScannerType.MachineKeyClearText, Enums.Severity.High},
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
+            {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High}
         };
 

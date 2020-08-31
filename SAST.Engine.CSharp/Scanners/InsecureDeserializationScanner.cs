@@ -17,12 +17,44 @@ namespace SAST.Engine.CSharp.Scanners
         SyntaxNode _syntaxNode;
         string _filePath;
         SemanticModel _model;
-        static readonly string[] InsecureBinaryDeserializationMethods ={
+
+        private static readonly string[] _insecureMethods ={
             "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Deserialize",
             "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserialize",
-            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserializeMethodResponse"
+            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserializeMethodResponse",
+            "System.Messaging.BinaryMessageFormatter.Read",
+            "System.Runtime.Serialization.Formatters.Soap.SoapFormatter.Deserialize",
+            "System.Web.UI.ObjectStateFormatter.Deserialize",
+            "System.Runtime.Serialization.XmlObjectSerializer.ReadObject",
+            "System.Runtime.Serialization.NetDataContractSerializer.Deserialize",
+            "System.Runtime.Serialization.NetDataContractSerializer.ReadObject",
+            "System.Runtime.Serialization.DataContractSerializer.ReadObject",
+            "System.Runtime.Serialization.DataContractJsonSerializer.ReadObject",
+            "System.Runtime.Serialization.DataContractSerializer.ReadObject",
+            "System.Runtime.Serialization.Json.DataContractJsonSerializer.ReadObject",
+            "System.Xml.Serialization.XmlSerializer.Deserialize",
+            "System.Messaging.XmlMessageFormatter.Read",
+            "System.Web.UI.LosFormatter.Deserialize",
+            "fastJSON.JSON.ToObject",
+            "ServiceStack.Text.JsonSerializer.DeserializeFromString",
+            "ServiceStack.Text.JsonSerializer.DeserializeFromReader",
+            "ServiceStack.Text.JsonSerializer.DeserializeFromStream",
+            "ServiceStack.Text.TypeSerializer.DeserializeFromString",
+            "ServiceStack.Text.TypeSerializer.DeserializeFromReader",
+            "ServiceStack.Text.TypeSerializer.DeserializeFromStream",
+            "ServiceStack.Text.CsvSerializer.DeserializeFromString",
+            "ServiceStack.Text.CsvSerializer.DeserializeFromReader",
+            "ServiceStack.Text.CsvSerializer.DeserializeFromStream",
+            "ServiceStack.Text.XmlSerializer.DeserializeFromString",
+            "ServiceStack.Text.XmlSerializer.DeserializeFromReader",
+            "ServiceStack.Text.XmlSerializer.DeserializeFromStream"
         };
-        static readonly string JsonSerializerSettings_TypeNameHandling = "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling";
+        private static readonly string[] _insecureObjectCreation = {
+            "System.Runtime.Serialization.DataContractSerializer",
+            "System.Runtime.Serialization.Json.DataContractJsonSerializer",
+            "System.Xml.Serialization.XmlSerializer",
+            "System.Resources.ResourceReader"
+        };
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -30,13 +62,14 @@ namespace SAST.Engine.CSharp.Scanners
             _syntaxNode = syntaxNode;
             _filePath = filePath;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            vulnerabilities.AddRange(FindVulnerableProperties());
-            vulnerabilities.AddRange(FindVulnerableSettings());
+            vulnerabilities.AddRange(FindVulnerableAttributes());
+            vulnerabilities.AddRange(FindVulnerableAssignments());
             vulnerabilities.AddRange(FindVulnerableObjectCreations());
+            vulnerabilities.AddRange(FindVulnerableInvocations());
             return vulnerabilities;
-            //if (InsecureBinaryDeserializationMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
         }
-        private List<VulnerabilityDetail> FindVulnerableProperties()
+
+        private List<VulnerabilityDetail> FindVulnerableAttributes()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
             var attributeArguments = _syntaxNode.DescendantNodesAndSelf().OfType<AttributeSyntax>();
@@ -61,14 +94,15 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
-        private List<VulnerabilityDetail> FindVulnerableSettings()
+
+        private List<VulnerabilityDetail> FindVulnerableAssignments()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
             var assignments = _syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var item in assignments)
             {
                 ISymbol symbol = Utils.GetSymbol(item.Left, _model);
-                if (symbol == null || symbol.ToString() != JsonSerializerSettings_TypeNameHandling)
+                if (symbol == null || symbol.ToString() != "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling")
                     continue;
                 ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item.Right, _model);
                 if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
@@ -81,6 +115,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
+
         private List<VulnerabilityDetail> FindVulnerableObjectCreations()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
@@ -88,10 +123,31 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in objectCreations)
             {
                 ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item, _model);
-                if (typeSymbol == null || typeSymbol.ToString() != "System.Web.Script.Serialization.JavaScriptSerializer")
+                if (typeSymbol == null)
                     continue;
-                var argument = item.ArgumentList.Arguments.FirstOrDefault();
-                if (argument != null && Utils.GetTypeSymbol(argument.Expression, _model) != null)
+                if (_insecureObjectCreation.Any(obj => obj == typeSymbol.ToString()))
+                {
+                    vulnerabilities.Add(item);
+                    continue;
+                }
+                else if (typeSymbol.ToString() == "System.Web.Script.Serialization.JavaScriptSerializer")
+                {
+                    var argument = item.ArgumentList.Arguments.FirstOrDefault();
+                    if (argument != null && Utils.GetTypeSymbol(argument.Expression, _model) != null)
+                        vulnerabilities.Add(item);
+                }
+            }
+            return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
+        }
+
+        private List<VulnerabilityDetail> FindVulnerableInvocations()
+        {
+            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            var invocationExpressions = _syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
+            foreach (var item in invocationExpressions)
+            {
+                ISymbol symbol = Utils.GetSymbol(item, _model);
+                if (symbol != null && _insecureMethods.Any(obj => obj == symbol.ContainingType + "." + symbol.Name))
                     vulnerabilities.Add(item);
             }
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
