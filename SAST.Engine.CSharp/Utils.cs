@@ -62,7 +62,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.MachineKeyClearText, Enums.Severity.High},
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
-            {Enums.ScannerType.WeakCipherMode, Enums.Severity.High}
+            {Enums.ScannerType.InsecureDeserialization, Enums.Severity.High}
         };
 
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
