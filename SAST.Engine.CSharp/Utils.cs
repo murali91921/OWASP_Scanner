@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,9 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
             {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"},
             {Enums.ScannerType.WeakCipherMode, "Weak Cipher Mode"},
-            {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"}
+            {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"},
+            {Enums.ScannerType.CommandInjection, "Command Injection"},
+            {Enums.ScannerType.FilePathInjection, "File Path Injection"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -62,7 +65,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.MachineKeyClearText, Enums.Severity.High},
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
-            {Enums.ScannerType.InsecureDeserialization, Enums.Severity.High}
+            {Enums.ScannerType.InsecureDeserialization, Enums.Severity.High},
+            {Enums.ScannerType.FilePathInjection, Enums.Severity.High},
         };
 
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
@@ -107,6 +111,67 @@ namespace SAST.Engine.CSharp
         {
             TypeInfo typeInfo = model.GetTypeInfo(node);
             return typeInfo.Type;
+        }
+
+        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null)
+        {
+            if (node is IdentifierNameSyntax)
+            {
+                ITypeSymbol type = model.GetTypeInfo(node).Type;
+                if (type.ToString() != "string" && type.ToString() != "System.String")
+                    return false;
+
+                bool vulnerable = false;
+                ISymbol symbol = model.GetSymbolInfo(node).Symbol;
+                if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
+                    return false;
+
+                var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
+                foreach (var reference in references)
+                {
+                    var currentNode = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(reference.Definition.Locations.First().SourceSpan);
+                    vulnerable = IsVulnerable(currentNode, model, solution, callingSymbol);
+                    foreach (var refLocation in reference.Locations)
+                    {
+                        currentNode = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(refLocation.Location.SourceSpan);
+                        if (currentNode.SpanStart < node.SpanStart && Utils.CheckSameMethod(currentNode, node))
+                        {
+                            var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
+                            if (assignment == null)
+                                continue;
+                            if (currentNode.SpanStart < assignment.Right.SpanStart)
+                                vulnerable = IsVulnerable(assignment.Right, model, solution, symbol);
+                        }
+                    }
+                }
+                return vulnerable;
+            }
+            else if (node is BinaryExpressionSyntax)
+            {
+                var left = IsVulnerable((node as BinaryExpressionSyntax).Left, model, solution, callingSymbol);
+                var right = IsVulnerable((node as BinaryExpressionSyntax).Right, model, solution, callingSymbol);
+                return left || right;
+            }
+            else if (node is VariableDeclaratorSyntax variableDeclarator && variableDeclarator.Initializer != null)
+                return IsVulnerable(variableDeclarator.Initializer.Value, model, solution, callingSymbol);
+            else if (node is AssignmentExpressionSyntax)
+                return IsVulnerable((node as AssignmentExpressionSyntax).Right, model, solution, callingSymbol);
+            else if (node is InterpolatedStringExpressionSyntax)
+            {
+                bool vulnerable = false;
+                var contents = (node as InterpolatedStringExpressionSyntax).Contents.OfType<InterpolationSyntax>();
+                foreach (var item in contents)
+                {
+                    vulnerable = vulnerable || IsVulnerable(item.Expression, model, solution, callingSymbol);
+                    if (vulnerable)
+                        break;
+                }
+                return vulnerable;
+            }
+            else if (node is ParameterSyntax)
+                return true;
+            else
+                return false;
         }
     }
 

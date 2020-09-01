@@ -23,7 +23,9 @@
         MachineKeyClearText = 16,
         WeakSymmetricAlgorithm = 17,
         WeakCipherMode = 18,
-        InsecureDeserialization = 19
+        InsecureDeserialization = 19,
+        CommandInjection = 20,
+        FilePathInjection = 21,
     }
     public enum ScannerSubType
     {

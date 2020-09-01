@@ -140,6 +140,9 @@
     <None Update="Resources\System.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.IO.FileSystem.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Messaging.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

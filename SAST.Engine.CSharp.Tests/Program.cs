@@ -12,7 +12,8 @@ namespace SAST.Engine.CSharp.Tests
             Core.SASTApp sASTApp = new Core.SASTApp();
             if (sASTApp.LoadFiles(projectPaths))
             {
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.InsecureDeserialization);
+                //You can scan all scanners by calling sASTApp.ScanAll() method in below expression
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.FilePathInjection);
                 foreach (var item in vulnerabilities)
                 {
                     Console.WriteLine("\n" + item.ToString());

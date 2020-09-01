@@ -166,66 +166,66 @@ namespace SAST.Engine.CSharp.Scanners
             }
             foreach (var item in lstVulnerableCheck)
             {
-                if (IsVulnerable(item))
+                if (Utils.IsVulnerable(item, model, solution))
                     lstVulnerableStatements.Add(item.Parent);
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.SqlInjection);
         }
-        private bool IsVulnerable(SyntaxNode node, ISymbol callingSymbol = null)
-        {
-            if (node is IdentifierNameSyntax)
-            {
-                ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.ToString() != "string" || type.ToString() != "System.String")
-                    return false;
+        //private bool IsVulnerable(SyntaxNode node, ISymbol callingSymbol = null)
+        //{
+        //    if (node is IdentifierNameSyntax)
+        //    {
+        //        ITypeSymbol type = model.GetTypeInfo(node).Type;
+        //        if (type.ToString() != "string" || type.ToString() != "System.String")
+        //            return false;
 
-                bool vulnerable = false;
-                ISymbol symbol = model.GetSymbolInfo(node).Symbol;
-                if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
-                    return false;
+        //        bool vulnerable = false;
+        //        ISymbol symbol = model.GetSymbolInfo(node).Symbol;
+        //        if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
+        //            return false;
 
-                var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-                foreach (var reference in references)
-                {
-                    var currentNode = syntaxNode.FindNode(reference.Definition.Locations.First().SourceSpan);
-                    vulnerable = IsVulnerable(currentNode);
-                    foreach (var refLocation in reference.Locations)
-                    {
-                        currentNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
-                        if (currentNode.SpanStart < node.SpanStart && Utils.CheckSameMethod(currentNode, node))
-                        {
-                            var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
-                            if (assignment == null)
-                                continue;
-                            if (currentNode.SpanStart < assignment.Right.SpanStart)
-                                vulnerable = IsVulnerable(assignment.Right, symbol);
-                        }
-                    }
-                }
-                return vulnerable;
-            }
-            else if (node is BinaryExpressionSyntax)
-            {
-                var left = IsVulnerable((node as BinaryExpressionSyntax).Left, callingSymbol);
-                var right = IsVulnerable((node as BinaryExpressionSyntax).Right, callingSymbol);
-                return left || right;
-            }
-            else if (node is VariableDeclaratorSyntax && (node as VariableDeclaratorSyntax).Initializer != null)
-                return IsVulnerable((node as VariableDeclaratorSyntax).Initializer.Value);
-            else if (node is AssignmentExpressionSyntax)
-                return IsVulnerable((node as AssignmentExpressionSyntax).Right);
-            else if (node is InterpolatedStringExpressionSyntax)
-            {
-                bool vulnerable = false;
-                var contents = (node as InterpolatedStringExpressionSyntax).Contents.OfType<InterpolationSyntax>();
-                foreach (var item in contents)
-                    vulnerable = vulnerable || IsVulnerable(item.Expression, callingSymbol);
-                return vulnerable;
-            }
-            else if (node is ParameterSyntax)
-                return true;
-            else
-                return false;
-        }
+        //        var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
+        //        foreach (var reference in references)
+        //        {
+        //            var currentNode = syntaxNode.FindNode(reference.Definition.Locations.First().SourceSpan);
+        //            vulnerable = IsVulnerable(currentNode);
+        //            foreach (var refLocation in reference.Locations)
+        //            {
+        //                currentNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
+        //                if (currentNode.SpanStart < node.SpanStart && Utils.CheckSameMethod(currentNode, node))
+        //                {
+        //                    var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
+        //                    if (assignment == null)
+        //                        continue;
+        //                    if (currentNode.SpanStart < assignment.Right.SpanStart)
+        //                        vulnerable = IsVulnerable(assignment.Right, symbol);
+        //                }
+        //            }
+        //        }
+        //        return vulnerable;
+        //    }
+        //    else if (node is BinaryExpressionSyntax)
+        //    {
+        //        var left = IsVulnerable((node as BinaryExpressionSyntax).Left, callingSymbol);
+        //        var right = IsVulnerable((node as BinaryExpressionSyntax).Right, callingSymbol);
+        //        return left || right;
+        //    }
+        //    else if (node is VariableDeclaratorSyntax && (node as VariableDeclaratorSyntax).Initializer != null)
+        //        return IsVulnerable((node as VariableDeclaratorSyntax).Initializer.Value);
+        //    else if (node is AssignmentExpressionSyntax)
+        //        return IsVulnerable((node as AssignmentExpressionSyntax).Right);
+        //    else if (node is InterpolatedStringExpressionSyntax)
+        //    {
+        //        bool vulnerable = false;
+        //        var contents = (node as InterpolatedStringExpressionSyntax).Contents.OfType<InterpolationSyntax>();
+        //        foreach (var item in contents)
+        //            vulnerable = vulnerable || IsVulnerable(item.Expression, callingSymbol);
+        //        return vulnerable;
+        //    }
+        //    else if (node is ParameterSyntax)
+        //        return true;
+        //    else
+        //        return false;
+        //}
     }
 }
