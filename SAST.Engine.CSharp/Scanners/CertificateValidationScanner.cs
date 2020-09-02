@@ -29,7 +29,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!assignment.ToString().Contains("ServerCertificateValidationCallback") &&
                     !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
                     continue;
-                ISymbol symbol = Utils.GetSymbol(assignment.Left, model);
+                ISymbol symbol = model.GetSymbol(assignment.Left);
                 if (symbol == null)
                     continue;
                 if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))

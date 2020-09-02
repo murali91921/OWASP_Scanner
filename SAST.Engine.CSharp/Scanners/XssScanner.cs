@@ -142,7 +142,7 @@ namespace ASTTask
                     {
                         if (item.Left is MemberAccessExpressionSyntax viewBagExpression)
                         {
-                            ISymbol symbol = Utils.GetSymbol(viewBagExpression.Expression, model);
+                            ISymbol symbol = model.GetSymbol(viewBagExpression.Expression);
                             if (symbol == null)
                                 continue;
                             if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewBag")
@@ -150,7 +150,7 @@ namespace ASTTask
                         }
                         else if (item.Left is ElementAccessExpressionSyntax dataExpression)
                         {
-                            ISymbol symbol = Utils.GetSymbol(dataExpression.Expression, model);
+                            ISymbol symbol = model.GetSymbol(dataExpression.Expression);
                             if (symbol == null)
                                 continue;
                             if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewData"

@@ -103,18 +103,6 @@ namespace SAST.Engine.CSharp
             return firstBlock.IsEquivalentTo(secondBlock);
         }
 
-        internal static ISymbol GetSymbol(SyntaxNode node, SemanticModel model)
-        {
-            SymbolInfo symbolInfo = model.GetSymbolInfo(node);
-            return symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
-        }
-
-        internal static ITypeSymbol GetTypeSymbol(SyntaxNode node, SemanticModel model)
-        {
-            TypeInfo typeInfo = model.GetTypeInfo(node);
-            return typeInfo.Type;
-        }
-
         public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null)
         {
             if (node is IdentifierNameSyntax)

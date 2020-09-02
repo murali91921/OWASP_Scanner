@@ -75,7 +75,7 @@ namespace SAST.Engine.CSharp.Scanners
             var attributeArguments = _syntaxNode.DescendantNodesAndSelf().OfType<AttributeSyntax>();
             foreach (var argument in attributeArguments)
             {
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(argument.Name, _model);
+                ITypeSymbol typeSymbol = _model.GetTypeSymbol(argument.Name);
                 if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.JsonPropertyAttribute")
                     continue;
                 foreach (var item in argument.ArgumentList.Arguments)
@@ -83,7 +83,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (item.NameEquals.Name.ToString() == "TypeNameHandling")
                     {
                         Optional<object> value = _model.GetConstantValue(item.Expression);
-                        ISymbol symbol = Utils.GetSymbol(item.Expression, _model);
+                        ISymbol symbol = _model.GetSymbol(item.Expression);
                         if (value.HasValue && ((int)value.Value != 0))
                         {
                             vulnerabilities.Add(item);
@@ -101,10 +101,10 @@ namespace SAST.Engine.CSharp.Scanners
             var assignments = _syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var item in assignments)
             {
-                ISymbol symbol = Utils.GetSymbol(item.Left, _model);
+                ISymbol symbol = _model.GetSymbol(item.Left);
                 if (symbol == null || symbol.ToString() != "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling")
                     continue;
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item.Right, _model);
+                ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
                 if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
                     continue;
                 Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
@@ -122,7 +122,7 @@ namespace SAST.Engine.CSharp.Scanners
             var objectCreations = _syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item, _model);
+                ITypeSymbol typeSymbol = _model.GetTypeSymbol(item);
                 if (typeSymbol == null)
                     continue;
                 if (_insecureObjectCreation.Any(obj => obj == typeSymbol.ToString()))
@@ -133,7 +133,7 @@ namespace SAST.Engine.CSharp.Scanners
                 else if (typeSymbol.ToString() == "System.Web.Script.Serialization.JavaScriptSerializer")
                 {
                     var argument = item.ArgumentList.Arguments.FirstOrDefault();
-                    if (argument != null && Utils.GetTypeSymbol(argument.Expression, _model) != null)
+                    if (argument != null && _model.GetTypeSymbol(argument.Expression) != null)
                         vulnerabilities.Add(item);
                 }
             }
@@ -146,7 +146,7 @@ namespace SAST.Engine.CSharp.Scanners
             var invocationExpressions = _syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
-                ISymbol symbol = Utils.GetSymbol(item, _model);
+                ISymbol symbol = _model.GetSymbol(item);
                 if (symbol != null && _insecureMethods.Any(obj => obj == symbol.ContainingType + "." + symbol.Name))
                     vulnerabilities.Add(item);
             }

@@ -33,13 +33,13 @@ namespace SAST.Engine.CSharp.Scanners
             var invocationExpressions = _syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
-                ISymbol symbol = Utils.GetSymbol(item, _model);
+                ISymbol symbol = _model.GetSymbol(item);
                 if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "System.Diagnostics.Process.Start")
                     continue;
                 if (item.ArgumentList?.Arguments.Count == 0)
                     continue;
                 var argumentExpression = item.ArgumentList?.Arguments[0].Expression;
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(argumentExpression, _model);
+                ITypeSymbol typeSymbol = _model.GetTypeSymbol(argumentExpression);
                 if (typeSymbol == null || typeSymbol.ToString() == "System.Diagnostics.ProcessStartInfo")
                     continue;
                 if (item.ArgumentList?.Arguments.Count == 1)
@@ -78,7 +78,7 @@ namespace SAST.Engine.CSharp.Scanners
             var objectCreations = _syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item, _model);
+                ITypeSymbol typeSymbol = _model.GetTypeSymbol(item);
                 if (typeSymbol == null || typeSymbol.ToString() != "System.Diagnostics.ProcessStartInfo")
                     continue;
                 if (item.Initializer?.Expressions.Count == 0 && item.ArgumentList?.Arguments.Count == 0)

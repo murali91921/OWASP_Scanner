@@ -50,7 +50,7 @@ namespace SAST.Engine.CSharp.Scanners
             var objectCreations = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
-                ITypeSymbol typeSymbol = Utils.GetTypeSymbol(item, model);
+                ITypeSymbol typeSymbol = model.GetTypeSymbol(item);
                 if (typeSymbol == null || typeSymbol.ToString() != "System.IO.FileInfo")
                     continue;
                 syntaxNodes.Add(item);
@@ -58,7 +58,7 @@ namespace SAST.Engine.CSharp.Scanners
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
-                ISymbol symbol = Utils.GetSymbol(item, model);
+                ISymbol symbol = model.GetSymbol(item);
                 if (symbol == null || !insecureMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
                 int index = 0;
