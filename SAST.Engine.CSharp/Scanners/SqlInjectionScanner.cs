@@ -13,7 +13,7 @@ using SAST.Engine.CSharp.Mapper;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class SqlInjectionScanner : IScanner
+    internal class SqlInjectionScanner : IScanner
     {
         SemanticModel model;
         Solution solution;

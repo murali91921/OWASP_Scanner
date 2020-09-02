@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class CommandInjectionScanner : IScanner
+    internal class CommandInjectionScanner : IScanner
     {
         string _filePath;
         SyntaxNode _syntaxNode;

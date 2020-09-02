@@ -26,6 +26,7 @@
         InsecureDeserialization = 19,
         CommandInjection = 20,
         FilePathInjection = 21,
+        CertificateValidation = 22,
     }
     public enum ScannerSubType
     {

@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    internal class FIlePathInjectionScanner : IScanner
+    internal class FilePathInjectionScanner : IScanner
     {
-        internal static readonly string[] insecureMethods = {
+        private static readonly string[] insecureMethods = {
             "System.IO.Directory.Exists",
             "System.IO.FileInfo.CopyTo",
             "System.IO.FileInfo.MoveTo",
@@ -36,7 +36,7 @@ namespace SAST.Engine.CSharp.Scanners
             "System.IO.File.WriteAllLines",
             "System.IO.File.WriteAllText",
         };
-        internal static readonly string[] ParameterNames = {
+        private static readonly string[] ParameterNames = {
             "path",
             "sourceFileName",
             "destFileName",

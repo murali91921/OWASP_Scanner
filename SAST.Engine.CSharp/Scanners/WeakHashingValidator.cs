@@ -15,7 +15,7 @@ using SAST.Engine.CSharp.Contract;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class WeakHashingValidator : IScanner
+    internal class WeakHashingValidator : IScanner
     {
         static readonly string[] WeakTypes = {
             "System.Security.Cryptography.SHA1",

@@ -45,6 +45,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"},
             {Enums.ScannerType.CommandInjection, "Command Injection"},
             {Enums.ScannerType.FilePathInjection, "File Path Injection"},
+            {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -67,6 +68,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
             {Enums.ScannerType.InsecureDeserialization, Enums.Severity.High},
             {Enums.ScannerType.FilePathInjection, Enums.Severity.High},
+            {Enums.ScannerType.CertificateValidation, Enums.Severity.High},
         };
 
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)

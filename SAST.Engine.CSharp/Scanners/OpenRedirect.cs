@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class OpenRedirectScanner : IScanner
+    internal class OpenRedirectScanner : IScanner
     {
         SemanticModel model = null;
         SyntaxNode syntaxNode = null;

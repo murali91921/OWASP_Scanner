@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp.Tests
             if (sASTApp.LoadFiles(projectPaths))
             {
                 //You can scan all scanners by calling sASTApp.ScanAll() method in below expression
-                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.FilePathInjection);
+                IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.Scan(Enums.ScannerType.CertificateValidation);
                 foreach (var item in vulnerabilities)
                 {
                     Console.WriteLine("\n" + item.ToString());

@@ -12,9 +12,9 @@ using SAST.Engine.CSharp.Enums;
 using System.Linq;
 namespace ASTTask
 {
-    public class XssScanner : IScanner
+    internal class XssScanner : IScanner
     {
-        private List<string> DataRetrievalMethods = new List<string> {
+        private static string[] DataRetrievalMethods = {
             "System.Data.Common.DbDataReader.GetString",
             "System.Data.SqlClient.SqlCommand.ExecuteScalar"
             };
@@ -64,11 +64,6 @@ namespace ASTTask
                 "System.Web.UI.WebControls.InnerHtml",
                 "System.Web.UI.Control.ID"
             };
-        private static string[] ViewStateTypes = {
-                "",
-                "",
-                ""
-            };
         Solution solution;
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
@@ -100,6 +95,7 @@ namespace ASTTask
             //vulnerabilities.AddRange();
             return vulnerabilities;
         }
+
         private List<SyntaxNode> FindCauseVulnerabililties(ClassDeclarationSyntax classItem, SemanticModel model)
         {
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();

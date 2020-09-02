@@ -12,7 +12,7 @@ using SAST.Engine.CSharp.Mapper;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class InsecureRandomScanner : IScanner
+    internal class InsecureRandomScanner : IScanner
     {
         private static string[] RandomMethods = {
             "System.Random.Next",

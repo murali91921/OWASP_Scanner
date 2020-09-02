@@ -14,7 +14,7 @@ using System.Text;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class XxeScanner : IScanner
+    internal class XxeScanner : IScanner
     {
         SemanticModel model = null;
         Solution solution = null;
@@ -52,6 +52,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, vulnerableNodes, Enums.ScannerType.XXE);
         }
+        
         private bool IsVulnerableXmlTextReader(InvocationExpressionSyntax invocationExpression)
         {
             bool vulnerable = false;

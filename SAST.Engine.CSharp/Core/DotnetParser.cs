@@ -40,8 +40,10 @@ namespace SAST.Engine.CSharp.Parser
             List<string> sourceFiles = new List<string>();
             if (!File.Exists(projectPath) || string.IsNullOrWhiteSpace(File.ReadAllText(projectPath)))
                 return sourceFiles;
-            XmlTextReader reader = new XmlTextReader(projectPath);
-            reader.Namespaces = false;
+            XmlTextReader reader = new XmlTextReader(projectPath)
+            {
+                Namespaces = false
+            };
             XPathDocument document = new XPathDocument(reader);
             XPathNavigator navigator = document.CreateNavigator();
             XPathNodeIterator nodes = navigator.Select(nodePath);

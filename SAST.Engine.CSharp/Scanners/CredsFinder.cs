@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class CredsFinder : IScanner
+    internal class CredsFinder : IScanner
     {
         static readonly string[] SecretKeywords = new string[] {
             @"\w*(password|passwd|pwd|pass)\w*",
@@ -80,8 +80,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetDeclaredSymbol(item);
                 if (symbol != null)
                 {
-                    bool isString = false;
-                    isString = symbol is IFieldSymbol && ((symbol as IFieldSymbol).Type.ToString() == "string" || (symbol as IFieldSymbol).Type.ToString() == "System.String");
+                    bool isString = symbol is IFieldSymbol && ((symbol as IFieldSymbol).Type.ToString() == "string" || (symbol as IFieldSymbol).Type.ToString() == "System.String");
                     if (!isString)
                         isString = symbol is ILocalSymbol && ((symbol as ILocalSymbol).Type.ToString() == "string" || (symbol as ILocalSymbol).Type.ToString() == "System.String");
                     if (isString)

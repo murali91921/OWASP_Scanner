@@ -12,12 +12,11 @@ namespace SAST.Engine.CSharp.Core
     {
         public NodeFactory(Solution solution) => _solution = solution;
 
-        private Solution _solution;
-
-        private static List<Tuple<ScannerType, string>> _Injectables = new List<Tuple<ScannerType, string>> {
+        private readonly Solution _solution;
+        private static readonly List<Tuple<ScannerType, string>> _Injectables = new List<Tuple<ScannerType, string>> {
             new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpRequest.QueryString"),
         };
-        private static List<Tuple<ScannerType, string>> _SanitizedMethods = new List<Tuple<ScannerType, string>> {
+        private static readonly List<Tuple<ScannerType, string>> _SanitizedMethods = new List<Tuple<ScannerType, string>> {
             new Tuple<ScannerType, string>(ScannerType.XSS,"System.Text.Encodings.Web.TextEncoder.Encode"),
             new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpServerUtility.HtmlEncode"),
             new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpUtility.HtmlEncode"),
@@ -121,20 +120,6 @@ namespace SAST.Engine.CSharp.Core
                 return false;
         }
 
-
-        internal static bool IsSanitized(InvocationExpressionSyntax node, SemanticModel model, ScannerType scannerType)
-        {
-            if (node is null)
-                return false;
-            ISymbol symbol = null;
-            SymbolInfo symbolInfo = model.GetSymbolInfo(node);
-            symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
-            if (symbol == null)
-                return false;
-            string method = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
-            return GetSanitizedMethods(scannerType).Any(obj => obj == method);
-        }
-
         private static bool IsInjectable(SyntaxNode node, SemanticModel model, ScannerType scannerType)
         {
             if (node is MemberAccessExpressionSyntax)
@@ -150,8 +135,20 @@ namespace SAST.Engine.CSharp.Core
             return false;
         }
 
-        internal static IEnumerable<string> GetInjectableProperties(ScannerType scannerType) => _Injectables.Where(obj => obj.Item1 == scannerType).Select(obj => obj.Item2).ToList();
+        internal static bool IsSanitized(InvocationExpressionSyntax node, SemanticModel model, ScannerType scannerType)
+        {
+            if (node is null)
+                return false;
+            ISymbol symbol = null;
+            SymbolInfo symbolInfo = model.GetSymbolInfo(node);
+            symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+            if (symbol == null)
+                return false;
+            string method = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
+            return GetSanitizedMethods(scannerType).Any(obj => obj == method);
+        }
 
+        internal static IEnumerable<string> GetInjectableProperties(ScannerType scannerType) => _Injectables.Where(obj => obj.Item1 == scannerType).Select(obj => obj.Item2).ToList();
 
         internal static IEnumerable<string> GetSanitizedMethods(ScannerType scannerType) => _SanitizedMethods.Where(obj => obj.Item1 == scannerType).Select(obj => obj.Item2).ToList();
     }

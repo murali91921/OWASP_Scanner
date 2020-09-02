@@ -9,13 +9,13 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class WeakSymmetricAlgorithmScanner : IScanner
     {
-        static readonly string[] WeakAlgorithmTypes = {
+        private static readonly string[] WeakAlgorithmTypes = {
             "System.Security.Cryptography.TripleDESCryptoServiceProvider",
             "System.Security.Cryptography.DESCryptoServiceProvider",
             "System.Security.Cryptography.RC2CryptoServiceProvider"
         };
-        
-        static readonly string[] WeakAlgorithmMethods = {
+
+        private static readonly string[] WeakAlgorithmMethods = {
             "System.Security.Cryptography.DES.Create",
             "System.Security.Cryptography.RC2.Create",
             "System.Security.Cryptography.TripleDES.Create"

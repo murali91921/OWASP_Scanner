@@ -12,7 +12,7 @@ using SAST.Engine.CSharp.Mapper;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class WeakPasswordValidator : IScanner
+    internal class WeakPasswordValidator : IScanner
     {
         static int MINIMUM_PASSWORD_LENGTH = 8;
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)

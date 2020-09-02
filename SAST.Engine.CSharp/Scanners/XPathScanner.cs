@@ -14,7 +14,7 @@ using System.IO;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class XPathScanner : IScanner
+    internal class XPathScanner : IScanner
     {
         SemanticModel model = null;
         Solution solution = null;
@@ -75,6 +75,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.XPath);
         }
+
         private bool IsVulnerable(SyntaxNode node, ISymbol callingSymbol = null)
         {
             if (node is IdentifierNameSyntax)

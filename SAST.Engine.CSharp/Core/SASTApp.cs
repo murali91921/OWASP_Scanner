@@ -244,7 +244,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.WeakCipherMode => new WeakCipherModeScanner(),
                 ScannerType.InsecureDeserialization => new InsecureDeserializationScanner(),
                 ScannerType.CommandInjection => new CommandInjectionScanner(),
-                ScannerType.FilePathInjection => new FIlePathInjectionScanner(),
+                ScannerType.FilePathInjection => new FilePathInjectionScanner(),
+                ScannerType.CertificateValidation => new CertificateValidationScanner(),
                 _ => null,
             };
         }

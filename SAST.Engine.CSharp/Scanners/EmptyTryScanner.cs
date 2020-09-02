@@ -8,7 +8,7 @@ using SAST.Engine.CSharp.Contract;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class EmptyTryScanner : IScanner
+    internal class EmptyTryScanner : IScanner
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {

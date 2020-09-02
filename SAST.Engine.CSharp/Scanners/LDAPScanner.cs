@@ -13,12 +13,12 @@ using SAST.Engine.CSharp.Contract;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class LDAPScanner : IScanner
+    internal class LDAPScanner : IScanner
     {
         SemanticModel model;
-        private static string DirectorySearcher = "System.DirectoryServices.DirectorySearcher";
-        private static string LdapFilterEncode = "Microsoft.Security.Application.Encoder.LdapFilterEncode";
-        private static string filter = "System.DirectoryServices.DirectorySearcher.Filter";
+        private static readonly string DirectorySearcher = "System.DirectoryServices.DirectorySearcher";
+        private static readonly string LdapFilterEncode = "Microsoft.Security.Application.Encoder.LdapFilterEncode";
+        private static readonly string filter = "System.DirectoryServices.DirectorySearcher.Filter";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.model = model;

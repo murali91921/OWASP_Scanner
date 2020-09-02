@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class CsrfScanner : IScanner
+    internal class CsrfScanner : IScanner
     {
         //POST, GET, PUT, PATCH, and DELETE
         private static string[] HttpVerbAttributes = new string[] {

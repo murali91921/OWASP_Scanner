@@ -14,20 +14,20 @@ using System.Xml.XPath;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    public class CookieFlagScanner : IScanner, IConfigScanner
+    internal class CookieFlagScanner : IScanner, IConfigScanner
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             bool isSecure = false, isHttpOnly = false;
-            string returnStatement = string.Empty;
+            //string returnStatement = string.Empty;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             XPathDocument doc = new XPathDocument(filePath);
             XPathNavigator element = doc.CreateNavigator().SelectSingleNode("configuration/system.web/httpCookies");
             if (element != null)
             {
-                returnStatement = filePath + " : (" + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)
-                + "," + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LinePosition : 0) + ") : {0}\n"
-                + element.OuterXml.Trim();
+                //returnStatement = filePath + " : (" + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)
+                //+ "," + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LinePosition : 0) + ") : {0}\n"
+                //+ element.OuterXml.Trim();
                 if (element.HasAttributes)
                 {
                     element.MoveToFirstAttribute();
@@ -48,7 +48,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (!isSecure)
                         missing = string.IsNullOrEmpty(missing) ? "Secure" : (missing + ", Secure");
                     missing += " Flag(s) missing ";
-                    returnStatement = string.Format(returnStatement, missing);
+                    //returnStatement = string.Format(returnStatement, missing);
                     var vulnerability = new VulnerabilityDetail()
                     {
                         FilePath = filePath,
