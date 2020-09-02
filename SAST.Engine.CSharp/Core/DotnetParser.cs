@@ -17,17 +17,20 @@ namespace SAST.Engine.CSharp.Parser
             + @"(?<Sections>(.|\n|\r)*?)" + @"EndProject(\n|\r)";
         internal static IEnumerable<string> ParseSolution(string solutionFilePath)
         {
-            if (!File.Exists(solutionFilePath))
-                new ArgumentNullException("Invalid file path", new ArgumentNullException());
-            string slnText = File.ReadAllText(solutionFilePath);
-            var matches = Regex.Matches(slnText, ProjectPattern, RegexOptions.Multiline);
             var list = new List<string>();
+            if (!File.Exists(solutionFilePath))
+                return list;
+            string slnText = File.ReadAllText(solutionFilePath);
+            if (string.IsNullOrWhiteSpace(slnText))
+                return list;
+            var matches = Regex.Matches(slnText, ProjectPattern, RegexOptions.Multiline);
             foreach (Match match in matches)
             {
                 if (match != null)
                 {
-                    string projectpath = match.Groups["Path"].Value;
-                    list.Add(Path.GetFullPath(projectpath, Path.GetDirectoryName(solutionFilePath)));
+                    string projectPath = Path.GetFullPath(match.Groups["Path"].Value, Path.GetDirectoryName(solutionFilePath));
+                    if (File.Exists(projectPath) && !string.IsNullOrWhiteSpace(File.ReadAllTextAsync(projectPath).Result))
+                        list.Add(Path.GetFullPath(match.Groups["Path"].Value, Path.GetDirectoryName(solutionFilePath)));
                 }
             }
             return list;
@@ -35,7 +38,7 @@ namespace SAST.Engine.CSharp.Parser
         internal static IEnumerable<string> GetAttributes(string projectPath, string nodePath, string attributeName, string[] extensions)
         {
             List<string> sourceFiles = new List<string>();
-            if (string.IsNullOrEmpty(projectPath) || !File.Exists(projectPath))
+            if (!File.Exists(projectPath) || string.IsNullOrWhiteSpace(File.ReadAllText(projectPath)))
                 return sourceFiles;
             XmlTextReader reader = new XmlTextReader(projectPath);
             reader.Namespaces = false;
@@ -51,7 +54,7 @@ namespace SAST.Engine.CSharp.Parser
                         && extensions.Any(obj => obj == (Path.GetExtension(nodes.Current.Value.ToLower()))))
                     {
                         string sourceFilePath = Path.GetFullPath(nodes.Current.Value, Path.GetDirectoryName(projectPath));
-                        if (File.Exists(sourceFilePath))
+                        if (File.Exists(sourceFilePath) && !string.IsNullOrWhiteSpace(File.ReadAllText(sourceFilePath)))
                             sourceFiles.Add(sourceFilePath);
                         break;
                     }
