@@ -164,9 +164,4 @@ namespace SAST.Engine.CSharp
                 return false;
         }
     }
-
-    public static class LinePositionExtension
-    {
-        public static string ToLineString(this LinePosition lineposition) => (lineposition.Line + 1) + "," + (lineposition.Character + 1);
-    }
 }

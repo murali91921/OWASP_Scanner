@@ -63,8 +63,8 @@ namespace SAST.Engine.CSharp.Mapper
             }
         }
 
-        internal static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        internal static string GetLineNumber(SyntaxNodeOrToken item) => item.SyntaxTree.GetLineSpan(item.Span).StartLinePosition.ToLineString();
 
-        internal static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.FullSpan).StartLinePosition.ToLineString();
+        internal static string GetLineNumber(SyntaxTrivia item) => item.SyntaxTree.GetLineSpan(item.Span).StartLinePosition.ToLineString();
     }
 }
