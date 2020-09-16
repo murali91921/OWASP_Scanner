@@ -1,11 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SAST.Engine.CSharp
 {
@@ -67,6 +67,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
             {Enums.ScannerType.InsecureDeserialization, Enums.Severity.High},
+            {Enums.ScannerType.CommandInjection, Enums.Severity.High},
             {Enums.ScannerType.FilePathInjection, Enums.Severity.High},
             {Enums.ScannerType.CertificateValidation, Enums.Severity.High},
         };
@@ -103,19 +104,18 @@ namespace SAST.Engine.CSharp
             return firstBlock.IsEquivalentTo(secondBlock);
         }
 
-        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null)
+        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null, SyntaxNode parameterNode = null)
         {
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
                 if (type.ToString() != "string" && type.ToString() != "System.String")
                     return false;
-
+                string str = "=";
                 bool vulnerable = false;
                 ISymbol symbol = model.GetSymbolInfo(node).Symbol;
                 if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
                     return false;
-
                 var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                 foreach (var reference in references)
                 {
@@ -124,13 +124,13 @@ namespace SAST.Engine.CSharp
                     foreach (var refLocation in reference.Locations)
                     {
                         currentNode = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(refLocation.Location.SourceSpan);
-                        if (currentNode.SpanStart < node.SpanStart && Utils.CheckSameMethod(currentNode, node))
+                        if (currentNode.SpanStart < node.SpanStart && CheckSameMethod(currentNode, node))
                         {
                             var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                             if (assignment == null)
                                 continue;
                             if (currentNode.SpanStart < assignment.Right.SpanStart)
-                                vulnerable = IsVulnerable(assignment.Right, model, solution, symbol);
+                                vulnerable = IsVulnerable(assignment.Right, refLocation.Document.GetSemanticModelAsync().Result, solution, symbol, node);
                         }
                     }
                 }
@@ -160,8 +160,68 @@ namespace SAST.Engine.CSharp
             }
             else if (node is ParameterSyntax)
                 return true;
+            else if (node is InvocationExpressionSyntax invocation)
+            {
+                IMethodSymbol symbol = model.GetSymbol(invocation.Expression) as IMethodSymbol;
+                if (symbol == null)
+                    return true;
+                bool isVulnerable = false;
+                if (symbol.Locations.Count() > 0)
+                {
+                    foreach (var location in symbol.Locations)
+                    {
+                        if (location.IsInSource)
+                        {
+                            SemanticModel invocationModel = model.Compilation.GetSemanticModel(location.SourceTree);
+                            MethodDeclarationSyntax methodDeclaration = location.SourceTree.GetRoot().FindNode(location.SourceSpan) as MethodDeclarationSyntax;
+                            //bool sameObject = methodDeclaration.ParameterList.Parameters.First().Modifiers.Any(obj => obj.Kind() == SyntaxKind.OutKeyword || obj.Kind() == SyntaxKind.OutKeyword);
+                            //Filtering abstract methods and no paramater methods & if Extension method, parameter checking starts from Index 1.
+                            //int i = symbol.IsExtensionMethod ? 1 : 0;
+                            //if ((methodDeclaration.Body != null || methodDeclaration.ExpressionBody != null) && invocation.ArgumentList.Arguments.Count > i)
+                            //{
+                            //    foreach (var item in invocation.ArgumentList.Arguments)
+                            //    {
+                            //        if (item.Expression.ToString() == parameterNode.ToString())
+                            //        {
+                            //            //Parameters are retrieving from Array or from NameColon.
+                            //            if (item.NameColon == null)
+                            //                arrayList.Add(methodDeclaration.ParameterList.Parameters[i]);
+                            //            else
+                            //                arrayList.Add(methodDeclaration.ParameterList.Parameters.First(obj => obj.Identifier.ToString() == item.NameColon.Name.ToString()));
+                            //        }
+                            //        i++;
+                            //    }
+                            //}
+                            if (methodDeclaration.Body != null)
+                            {
+                                isVulnerable = false;
+                                var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
+                                //Atleast one Return statements exists, then set isVulnerable to True other wise methid may contain Exceptions;
+                                if (returnStatements.Count() > 0)
+                                    isVulnerable = true;
+                                foreach (var item in returnStatements)
+                                    if (!IsVulnerable(item.Expression, invocationModel, solution, null, null))
+                                    {
+                                        //If any statement is not vulnerable, then treat the method as Safe & break the loop.
+                                        isVulnerable = false;
+                                        break;
+                                    }
+                            }
+                            else if (methodDeclaration.ExpressionBody != null)
+                                if (!IsVulnerable(methodDeclaration.ExpressionBody.Expression, invocationModel, solution, null, null))
+                                {
+                                    //If any statement is not vulnerable, then treat the method as Safe & break the loop.
+                                    isVulnerable = false;
+                                    break;
+                                }
+                        }
+                    }
+                }
+                return isVulnerable;
+            }
             else
                 return false;
         }
+        //public static ArrayList arrayList = new ArrayList();
     }
 }

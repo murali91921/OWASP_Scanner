@@ -4,6 +4,7 @@ using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -59,7 +60,9 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in invocationExpressions)
             {
                 ISymbol symbol = model.GetSymbol(item);
-                if (symbol == null || !insecureMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
+                if (symbol == null)
+                    continue;
+                if (!insecureMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
                 int index = 0;
                 bool vulnerable = false;

@@ -32,8 +32,7 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     if (!invocation.ToString().Contains("Create"))
                         continue;
-                    ISymbol symbol = null;
-                    symbol = model.GetSymbol(invocation);
+                    ISymbol symbol = model.GetSymbol(invocation);
                     if (symbol == null)
                         continue;
                     if (WeakAlgorithmMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))

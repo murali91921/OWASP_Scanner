@@ -254,7 +254,7 @@ namespace SAST.Engine.CSharp.Core
         {
             return scannerType switch
             {
-                ScannerType.FormsAuthentication => new FormsAuthenticationScanner(),
+                ScannerType.FormsAuthentication => new FormAuthenticationScanner(),
                 ScannerType.InsecureCookie => new CookieFlagScanner(),
                 ScannerType.MachineKeyClearText => new MachineKeyScanner(),
                 _ => null,

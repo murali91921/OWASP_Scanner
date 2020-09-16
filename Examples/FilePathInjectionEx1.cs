@@ -10,7 +10,11 @@ namespace Example
             sw.Close();
             byte[] bytes = new byte[int.MaxValue];
             //Directory.Exists(srcfile);
-            //FileInfo fileInfo = new FileInfo(srcfile);
+            FileInfo fileInfo = new FileInfo(srcfile);
+            //destFile = "\Temp.txt";
+            destFile = cleanInput(destFile);
+            //destFile = cleanInput(out destFile);
+            //destFile = destFile.cleanInput("sub");
             fileInfo.CopyTo(destFile);
             fileInfo.MoveTo(destFile);
             fileInfo.Replace(destFile, destBackupFile);
@@ -45,6 +49,36 @@ namespace Example
             //File.WriteAllLinesAsync(destFile, bytes);
             File.WriteAllText(destFile, "");
             //File.WriteAllTextAsync(destFile);
+        }
+        static string cleanInput(string str)
+        {
+			string[] loop = { @"C:\", @"D:\", @"E:\" };
+            foreach (var item in loop)
+            {
+                if (str.StartsWith(item))
+                    //return str;
+				throw new ArgumentNullException();
+            }
+            if (str.EndsWith(".txt"))
+                return "\temp";
+            else
+                return str;
+        }
+        static string cleanInput(out string str)
+        {
+            str = string.Empty;
+            if (str.EndsWith(".txt"))
+                return str;
+            else
+                return "/temp";
+        }
+        static string cleanInput(this string str, string sub)
+        {
+            str = string.Empty;
+            if (str.EndsWith(".txt"))
+                return str;
+            else
+                return "/temp";
         }
     }
 }

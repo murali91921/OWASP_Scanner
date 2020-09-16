@@ -1,13 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 
 namespace SAST.Engine.CSharp.Scanners
 {
@@ -19,33 +17,26 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Net.HttpWebRequest.ServerCertificateValidationCallback",
             "System.Net.Http.HttpClientHandler.ServerCertificateCustomValidationCallback"
         };
+        private List<SyntaxNode> visitedNodes = new List<SyntaxNode>();
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
             var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignmentExpressions)
             {
-                //Console.WriteLine(assignment);
-                if (!assignment.ToString().Contains("ServerCertificateValidationCallback") &&
-                    !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
+                if (!assignment.ToString().Contains("ServerCertificateValidationCallback") && !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
                     continue;
                 ISymbol symbol = model.GetSymbol(assignment.Left);
                 if (symbol == null)
                     continue;
                 if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
-                var rightNode = GetBody(assignment.Right);
-                if (rightNode == null)
-                    continue;
-                var rightValue = model.GetConstantValue(rightNode);
-                if (rightValue.Value is bool value && value)
-                {
-                    Console.WriteLine("::::"+assignment);
-                    syntaxNodes.Add(assignment.Left);
-                }
+                if (IsVulnerable(assignment.Right, model))
+                    syntaxNodes.Add(assignment);
             }
             return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CertificateValidation);
         }
+
         private SyntaxNode GetBody(SyntaxNode rightNode)
         {
             if (rightNode == null)
@@ -60,13 +51,87 @@ namespace SAST.Engine.CSharp.Scanners
                     body = anonymous.Body;
                     break;
                 default:
-                    return null;
+                    return rightNode;
             }
-            if (body is BlockSyntax block && block.Statements.Count == 1)
-                if (block.Statements.First() is ReturnStatementSyntax ret)
-                    return ret.Expression;
+            if (body is BlockSyntax block && block.Statements.Count == 1 && block.Statements.First() is ReturnStatementSyntax ret)
+                return ret.Expression;
             body = body.RemoveParentheses();
             return body;
+        }
+
+        private bool IsVulnerable(SyntaxNode syntaxNode, SemanticModel model)
+        {
+            bool returnConditionalOrFalse = false;
+            syntaxNode = GetBody(syntaxNode);
+
+            if (syntaxNode is IdentifierNameSyntax || syntaxNode is InvocationExpressionSyntax)
+            {
+                ISymbol methodSymbol = model.GetSymbol(syntaxNode);
+                if (methodSymbol == null || methodSymbol.DeclaringSyntaxReferences.Count() > 1)
+                    return false;
+                var syntaxReference = methodSymbol.DeclaringSyntaxReferences.First();
+                SemanticModel methodModel = model.Compilation.GetSemanticModel(syntaxReference.SyntaxTree);
+                return IsVulnerable(syntaxReference.GetSyntaxAsync().Result, methodModel);
+            }
+            else if (syntaxNode is MethodDeclarationSyntax methodDeclaration)
+            {
+                if (!(methodDeclaration.Body is null))
+                {
+                    var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
+                    foreach (var item in returnStatements)
+                        if (IsConditionalOrFalse(item.Expression, model))
+                        {
+                            returnConditionalOrFalse = true;
+                            break;
+                        }
+                }
+                else if (!(methodDeclaration.ExpressionBody is null))
+                    returnConditionalOrFalse = IsConditionalOrFalse(methodDeclaration.ExpressionBody.Expression, model);
+            }
+            else if (syntaxNode is PropertyDeclarationSyntax propertyDeclaration)
+            {
+                var getAccessor = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
+                if (getAccessor != null)
+                {
+                    if (!(getAccessor.Body is null))
+                    {
+                        var returnStatements = getAccessor.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
+                        foreach (var item in returnStatements)
+                            if (IsConditionalOrFalse(item.Expression, model))
+                            {
+                                returnConditionalOrFalse = true;
+                                break;
+                            }
+                        //if (!returnConditionalOrFalse)
+                        //{
+                        //    var catchClauses = getAccessor.Body.DescendantNodesAndSelf().OfType<CatchClauseSyntax>();
+                        //}
+                    }
+                    else if (!(getAccessor.ExpressionBody is null))
+                        returnConditionalOrFalse = IsConditionalOrFalse(getAccessor.ExpressionBody.Expression, model);
+                }
+            }
+            else
+            {
+                returnConditionalOrFalse = IsConditionalOrFalse(syntaxNode, model);
+            }
+            return !returnConditionalOrFalse;
+        }
+        private bool IsConditionalOrFalse(SyntaxNode expression, SemanticModel model)
+        {
+            expression = GetBody(expression);
+            if (expression is IdentifierNameSyntax || expression is InvocationExpressionSyntax)
+            {
+                return IsVulnerable(expression, model);
+            }
+            var returnValue = model.GetConstantValue(expression);
+            // If expression is have boolean value as true;
+            if (returnValue.HasValue)
+            {
+                if (returnValue.Value is null || (returnValue.Value is bool value && value))
+                    return false;
+            }
+            return true;
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Xml.XPath;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    internal class FormsAuthenticationScanner : IConfigScanner
+    internal class FormAuthenticationScanner : IConfigScanner
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
