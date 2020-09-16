@@ -11,183 +11,122 @@ namespace Tests.Diagnostics
 
         void FalseNegatives()
         {
-            //Values from properties are not inspected at all
-            //CreateRQ().ServerCertificateValidationCallback += FalseNegativeValidatorWithProperty;
+            CreateRQ().ServerCertificateValidationCallback += FalseNegativeValidatorWithProperty;
             CreateRQ().ServerCertificateValidationCallback += DelegateProperty;
-            //Values from overriden operators are not inspected at all
-             CreateRQ().ServerCertificateValidationCallback += new CertificateValidationChecks() + 42; //Operator + is overriden to return delegate.
-            //Specific cases
-            //CreateRQ().ServerCertificateValidationCallback += FalseNegativeException;
+             CreateRQ().ServerCertificateValidationCallback += new CertificateValidationChecks() + 42;
+            CreateRQ().ServerCertificateValidationCallback += FalseNegativeException;
         }
 
         void DirectAddHandlers()
         {
-            //Inline version
-            //CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => true;
-//                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {{Enable server certificate validation on this SSL/TLS connection}}
-//                                                                                                             ^^^^ Secondary@-1
-            //Secondary@+1
-            //CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => (((true)));    //Noncompliant ---------------
-            // CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => false;
-            // CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => certificate.Subject == "Test";
+            
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => true;
 
-            //Lambda block syntax
-                                                                                                                                    //Secondary@+1
-            //CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => { return true; };    //Noncompliant
-            //CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) =>                      //Noncompliant
-            //{
-            //    return true;    //Secondary
-            //};
-            // CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) =>
-            // {
-                // return false;
-            // };
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => (((true)));    
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => false;
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => certificate.Subject == "Test";
 
-            //With variable
+                  
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) => { return true; };    
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) =>                      
+            {
+               return true;    
+            };
+            CreateRQ().ServerCertificateValidationCallback += (sender, certificate, chain, SslPolicyErrors) =>
+            {
+                return false;
+            };
+
             var rq = CreateRQ();
-            //rq.ServerCertificateValidationCallback += InvalidValidation;            //Noncompliant [flow2]
+            rq.ServerCertificateValidationCallback += InvalidValidation;
 
-            //Without variable
-            //CreateRQ().ServerCertificateValidationCallback += InvalidValidation;    //Noncompliant [flow3]
+            CreateRQ().ServerCertificateValidationCallback += InvalidValidation;
 
-            //Assignment syntax = instead of +=
-            //CreateRQ().ServerCertificateValidationCallback = InvalidValidation;    //Noncompliant  [flow4]
-            //CreateRQ().ServerCertificateValidationCallback = (sender, certificate, chain, SslPolicyErrors) => { return true; };    //Noncompliant
-                                                                                                                                   //Secondary@-1
-
-            //Do not test this one. It's .NET Standard 2.1 target only. It should work since we're hunting RemoteCertificateValidationCallback and method signature
-            //var ws = new System.Net.WebSockets.ClientWebSocket();
-            //ws.Options.RemoteCertificateValidationCallback += InvalidValidation;
-
-            //Do not test this one. It's .NET Standard 2.1 target only. It should work since we're hunting RemoteCertificateValidationCallback and method signature
-            //var sslOpts = new System.Net.Security.SslClientAuthentication();
-            //Security.SslClientAuthenticationOptions.RemoteCertificateValidationCallback;
+            CreateRQ().ServerCertificateValidationCallback = InvalidValidation;
+            CreateRQ().ServerCertificateValidationCallback = (sender, certificate, chain, SslPolicyErrors) => { return true; };
         }
 
         void MultipleHandlers()
         {
-            // ServicePointManager.ServerCertificateValidationCallback += CompliantValidation;
-            // ServicePointManager.ServerCertificateValidationCallback += CompliantValidationPositiveA;
-            // ServicePointManager.ServerCertificateValidationCallback += InvalidValidation;                          //Noncompliant [flow5]
-            // ServicePointManager.ServerCertificateValidationCallback += CompliantValidationPositiveB;
-            // ServicePointManager.ServerCertificateValidationCallback += CompliantValidationNegative;
-            // ServicePointManager.ServerCertificateValidationCallback += AdvInvalidTry;                              //Noncompliant [flow6]
-            // ServicePointManager.ServerCertificateValidationCallback += AdvInvalidWithTryObstacles;                 //Noncompliant [flow7]
-            // ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithTryObstacles;
-            // ServicePointManager.ServerCertificateValidationCallback += AdvInvalidWithObstacles;                    //Noncompliant [flow8]
-            // ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithObstacles;
-            // ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithException;
-            // ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithExceptionAndRethrow;
+            ServicePointManager.ServerCertificateValidationCallback += CompliantValidation;
+            ServicePointManager.ServerCertificateValidationCallback += CompliantValidationPositiveA;
+            ServicePointManager.ServerCertificateValidationCallback += InvalidValidation;           
+            ServicePointManager.ServerCertificateValidationCallback += CompliantValidationPositiveB;
+            ServicePointManager.ServerCertificateValidationCallback += CompliantValidationNegative;
+            ServicePointManager.ServerCertificateValidationCallback += AdvInvalidTry;               
+            ServicePointManager.ServerCertificateValidationCallback += AdvInvalidWithTryObstacles;  
+            ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithTryObstacles;
+            ServicePointManager.ServerCertificateValidationCallback += AdvInvalidWithObstacles;     
+            ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithObstacles;
+            ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithException;
+            ServicePointManager.ServerCertificateValidationCallback += AdvCompliantWithExceptionAndRethrow;
         }
 
         void GenericHandlerSignature()
         {
-            var httpHandler = new System.Net.Http.HttpClientHandler();          //This is not RemoteCertificateValidationCallback delegate type, but Func<...>
-            // httpHandler.ServerCertificateCustomValidationCallback += InvalidValidation;            //Noncompliant [flow9]
-
-            //Generic signature check without RemoteCertificateValidationCallback
-            var ShouldTrigger = new RelatedSignatureType();
-            ShouldTrigger.Callback += InvalidValidation;                                           //Noncompliant [flow10]
-            ShouldTrigger.Callback += CompliantValidation;
+            var httpHandler = new System.Net.Http.HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback += InvalidValidation;
 
             var ShouldNotTrigger = new NonrelatedSignatureType();
-            ShouldNotTrigger.Callback += (sender, chain, certificate, SslPolicyErrors) => true;   //Compliant, because signature types are not in expected order for validation
+            ShouldNotTrigger.Callback += (sender, chain, certificate, SslPolicyErrors) => true;
             ShouldNotTrigger.Callback += (sender, chain, certificate, SslPolicyErrors) => false;
-        }
-
-        void PassedAsArgument()
-        {
-            RemoteCertificateValidationCallback SingleAssignmentCB, FalseNegativeCB, CompliantCB, DeclarationAssignmentCompliantCB = null;
-            if (true)
-            {
-                //If there's only one Assignment, we will inspect it
-                                                                                    //Secondary@+1 [flow0]
-                SingleAssignmentCB = InvalidValidationAsArgument;                   //Secondary [flow1]
-                FalseNegativeCB = InvalidValidation;                                //Compliant due to false negative, the second assignment is after usage of the variable
-                CompliantCB = InvalidValidation;                                    //Compliant due to further logic and more assingments
-            }
-            if (true) //Environment.ComputerName, Environment.CommandLine, Debugger.IsAttached, Config.TestEnvironment
-            {
-                CompliantCB = null;                                                 //Compliant, there are more assignments, so there is a logic
-                DeclarationAssignmentCompliantCB = InvalidValidation;               //This is compliant due to the more assignments, first one is in variable initialization
-            }
-                                                                                    //Secondary@+1 [flow0]
-            InitAsArgument(SingleAssignmentCB);                                     //Secondary [flow1]
-            InitAsArgument(FalseNegativeCB);
-            InitAsArgument(CompliantCB);
-            InitAsArgument(DeclarationAssignmentCompliantCB);
-            FalseNegativeCB = null;                                                 //False negative due to more assignments, but this one is after variable usage.
-
-            InitAsArgument(InvalidValidationAsArgument);                            //Secondary [flow0, flow1]
-            InitAsArgument((sender, certificate, chain, SslPolicyErrors) => false);
-            InitAsArgument((sender, certificate, chain, SslPolicyErrors) => true);  //Secondary [flow0, flow1]
-
-            InitAsArgumentRecursive(InvalidValidation, 1);                          //Secondary [flow17]
-            InitAsOptionalArgument();
-
-            //Call in nested class from root (this)
-            new InnerAssignmentClass().InitAsArgument((sender, certificate, chain, SslPolicyErrors) => true);  //Secondary           
         }
 
         void DelegateReturnedByFunction()
         {
-            // CreateRQ().ServerCertificateValidationCallback += FindInvalid(false);       //Noncompliant [flow11]
-            // CreateRQ().ServerCertificateValidationCallback += FindInvalid();            //Noncompliant [flow12]
-            //CreateRQ().ServerCertificateValidationCallback += FindLambdaValidator();    //Noncompliant [flow13]
-            //CreateRQ().ServerCertificateValidationCallback += FindCompliant(true);
-            //CreateRQ().ServerCertificateValidationCallback += FindCompliantRecursive(3);
-            CreateRQ().ServerCertificateValidationCallback += FindInvalidRecursive(3);  //Noncompliant [flow14]
+            CreateRQ().ServerCertificateValidationCallback += FindInvalid(false);
+            CreateRQ().ServerCertificateValidationCallback += FindInvalid();
+            CreateRQ().ServerCertificateValidationCallback += FindLambdaValidator();
+            CreateRQ().ServerCertificateValidationCallback += FindCompliant(true);
+            CreateRQ().ServerCertificateValidationCallback += FindCompliantRecursive(3);
+            CreateRQ().ServerCertificateValidationCallback += FindInvalidRecursive(3);
         }
 
         void ConstructorArguments()
         {
-            var optA = new OptionalConstructorArguments(this, cb: InvalidValidation);   //Noncompliant [flow15]
+            var optA = new OptionalConstructorArguments(this, cb: InvalidValidation);
             var optB = new OptionalConstructorArguments(this, cb: CompliantValidation);
-
             using (var ms = new System.IO.MemoryStream())
             {
                 using (var ssl = new System.Net.Security.SslStream(ms, true, (sender, chain, certificate, SslPolicyErrors) => true))
-//                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {{Enable server certificate validation on this SSL/TLS connection}}
-//                                                                                                                            ^^^^ Secondary@-1
                 {
                 }
-                using (var ssl = new System.Net.Security.SslStream(ms, true, InvalidValidation))   //Noncompliant [flow16]
+                using (var ssl = new System.Net.Security.SslStream(ms, true, InvalidValidation))
                 {
                 }
                 using (var ssl = new System.Net.Security.SslStream(ms, true, CompliantValidation))
                 {
                 }
             }
-
         }
 
         #region Helpers
         
-        void InitAsArgument(RemoteCertificateValidationCallback Callback)   //This double-assigment will fire the seconday for each occurence twice
+        void InitAsArgument(RemoteCertificateValidationCallback Callback)
         {
-            var cb = Callback;                                              //Secondary [flow1]
-            // CreateRQ().ServerCertificateValidationCallback += Callback;     //Noncompliant [flow0]
-            // CreateRQ().ServerCertificateValidationCallback += cb;           //Noncompliant [flow1]
+            var cb = Callback;                                           
+            CreateRQ().ServerCertificateValidationCallback += Callback;  
+            CreateRQ().ServerCertificateValidationCallback += cb;        
         }
 
         void InitAsOptionalArgument(RemoteCertificateValidationCallback Callback = null)
         {
-            // CreateRQ().ServerCertificateValidationCallback += Callback;     //Compliant, it is called without argument
+            CreateRQ().ServerCertificateValidationCallback += Callback;  
         }
 
         void InitAsArgumentRecursive(RemoteCertificateValidationCallback Callback, int cnt)
         {
-            // if (cnt == 0)
-                // CreateRQ().ServerCertificateValidationCallback += Callback;     //Noncompliant [flow17]
-            // else
-                // InitAsArgumentRecursive(Callback, cnt - 1);
+            if (cnt == 0)
+                CreateRQ().ServerCertificateValidationCallback += Callback;     
+            else
+                InitAsArgumentRecursive(Callback, cnt - 1);
         }
         
         void InitAsArgumentRecursiveNoInvocation(RemoteCertificateValidationCallback Callback, int cnt)
         {
             if (cnt == 0)
             {
-                // CreateRQ().ServerCertificateValidationCallback += Callback;     //Compliant, no one is invoking this
+                CreateRQ().ServerCertificateValidationCallback += Callback;     
             }
             else
             {
@@ -202,7 +141,7 @@ namespace Tests.Diagnostics
 
         bool IsValid(X509Certificate crt)
         {
-            return crt.Subject == "Test";   //We do not inspect inner logic, yet
+            return crt.Subject == "Test";
         }
 
         void Log(X509Certificate crt)
@@ -216,31 +155,30 @@ namespace Tests.Diagnostics
 
         static bool InvalidValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            return true;    //Secondary [flow2, flow3, flow4, flow5, flow9, flow10, flow11, flow12, flow14, flow15, flow16, flow17]
+            return true;
         }
 
         bool InvalidValidationAsArgument(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            return true;    //Secondary [flow0, flow0, flow1, flow1]
+            return true;
         }
 
         static bool CompliantValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            return false; //Compliant
+            return false;
         }
 
         bool CompliantValidationPositiveA(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (certificate.Subject == "Test")
             {
-                return true;    //Compliant, checks were done
+                return true;
             }
             else
             {
                 return false; 
             }
         }
-
 
         bool CompliantValidationPositiveB(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
@@ -272,12 +210,12 @@ namespace Tests.Diagnostics
             try
             {
                 System.Diagnostics.Trace.WriteLine(certificate.Subject);
-                return true; //Secondary [flow6]
+                return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine(ex.Message);
-                return true; //Secondary [flow6]
+                return true;
             }
         }
         
@@ -289,13 +227,13 @@ namespace Tests.Diagnostics
                 System.Diagnostics.Trace.WriteLine("Log something");
                 Log(certificate);
 
-                return true; //Secondary [flow7]
+                return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine(ex.Message);
             }
-            return true; //Secondary [flow7]
+            return true;
         }
 
         bool AdvCompliantWithTryObstacles(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -305,8 +243,7 @@ namespace Tests.Diagnostics
                 Console.WriteLine("Log something");
                 System.Diagnostics.Trace.WriteLine("Log something");
                 Log(certificate);
-
-                return true; //Compliant, since Log(certificate) can also do some validation and throw exception resulting in return false. It's bad practice, but compliant.
+                return true;
             }
             catch (Exception ex)
             {
@@ -321,7 +258,7 @@ namespace Tests.Diagnostics
             System.Diagnostics.Trace.WriteLine("Log something");
             Log(certificate);
 
-            return true; //Secondary [flow8]
+            return true;
         }
         
         bool AdvCompliantWithObstacles(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -338,7 +275,7 @@ namespace Tests.Diagnostics
             {
                 throw new InvalidOperationException("You shall not pass!");
             }
-            return true;    //Compliant, uncaught exception is thrown above
+            return true;
         }
 
         bool AdvCompliantWithExceptionAndRethrow(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -349,14 +286,13 @@ namespace Tests.Diagnostics
                 {
                     throw new InvalidOperationException("You shall not pass!");
                 }
-                return true;    //Compliant due to throw logic
+                return true;
             }
             catch
             {
-                //Log
                 throw;
             }
-            return true;        //Compliant due to throw logic
+            return true;
         }
                 
         #endregion
@@ -365,27 +301,27 @@ namespace Tests.Diagnostics
 
         static RemoteCertificateValidationCallback FindInvalid()
         {
-            return InvalidValidation;                                      //Secondary [flow12]
+            return InvalidValidation;
         }
 
         static RemoteCertificateValidationCallback FindLambdaValidator()
         {
-            return (sender, certificate, chain, SslPolicyErrors) => true;        //Secondary [flow13]
+            return (sender, certificate, chain, SslPolicyErrors) => true;
         }
 
-        static RemoteCertificateValidationCallback FindInvalid(bool useDelegate)   //All paths return noncompliant
+        static RemoteCertificateValidationCallback FindInvalid(bool useDelegate)
         {
             if (useDelegate)
             {
-                return InvalidValidation;                                  //Secondary [flow11]
+                return InvalidValidation;                                  
             }
             else
             {
-                return (sender, certificate, chain, SslPolicyErrors) => true;   //Secondary [flow11]
+                return (sender, certificate, chain, SslPolicyErrors) => true; 
             }
         }
         
-        static RemoteCertificateValidationCallback FindCompliant(bool Compliant)    //At least one path returns compliant => there is a logic and it is considered compliant
+        static RemoteCertificateValidationCallback FindCompliant(bool Compliant)
         {
             if (Compliant)
             {
@@ -413,7 +349,7 @@ namespace Tests.Diagnostics
         {
             if (Index <= 0)
             {
-                return InvalidValidation;                                  //Secondary [flow14]
+                return InvalidValidation;
             }
             else
             {
@@ -429,20 +365,20 @@ namespace Tests.Diagnostics
         {
             get
             {
-                return (sender, certificate, chain, SslPolicyErrors) => true;   //False negative
+                return (sender, certificate, chain, SslPolicyErrors) => true;
             }
         }
 
         static bool FalseNegativeValidatorWithProperty(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            return TrueProperty;    //False negative
+            return TrueProperty;
         }
 
         static bool TrueProperty
         {
             get
             {
-                return true;        //False negative
+                return true;
             }
         }
 
@@ -459,13 +395,12 @@ namespace Tests.Diagnostics
                 {
                     throw new InvalidOperationException("You shall not pass! But you will anyway.");
                 }
-                return true;    //False negative
+                return true;
             }
-            catch   //All exceptions are cought, even those throw from inner DoValidation(crt).. helpers
+            catch
             {
-                //Log, no throw
             }
-            return true;        //False negative
+            return true;
         }
 
         #endregion
@@ -481,7 +416,6 @@ namespace Tests.Diagnostics
 
         class NonrelatedSignatureType
         {
-            //Parameters are in order, that we do not inspect
             public Func<NonrelatedSignatureType, X509Chain, X509Certificate2, SslPolicyErrors, Boolean> Callback { get; set; }
 
         }
@@ -501,25 +435,20 @@ namespace Tests.Diagnostics
 
             public void InitAsArgument(RemoteCertificateValidationCallback callback)
             {
-                // CertificateValidationChecks.CreateRQ().ServerCertificateValidationCallback += callback; //Noncompliant
+                CertificateValidationChecks.CreateRQ().ServerCertificateValidationCallback += callback;
             }
-
         }
 
         class NeighbourAssignmentClass
         {
-
             public void Init(RemoteCertificateValidationCallback callback)
             {
                 //Assignment from sibling class in nested tree
-                new InnerAssignmentClass().InitAsArgument((sender, certificate, chain, SslPolicyErrors) => true);  //Secondary           
+                new InnerAssignmentClass().InitAsArgument((sender, certificate, chain, SslPolicyErrors) => true);
             }
-
         }
 
         #endregion
 
     }
 }
-
-//Method Checking Invocation Expression, Recursive methods

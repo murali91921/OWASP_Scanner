@@ -31,8 +31,9 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
-                if (IsVulnerable(assignment.Right, model))
-                    syntaxNodes.Add(assignment);
+                if (assignment.Right.ToString().Contains("FindCompliantRecursive"))
+                    if (IsVulnerable(assignment.Right, model))
+                        syntaxNodes.Add(assignment);
             }
             return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CertificateValidation);
         }
@@ -78,12 +79,23 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!(methodDeclaration.Body is null))
                 {
                     var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
+                    ISymbol callingsymbol = model.GetDeclaredSymbol(methodDeclaration);
                     foreach (var item in returnStatements)
+                    {
+                        var invocation = item.Expression.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>().FirstOrDefault();
+                        if (invocation != null)
+                        {
+                            ISymbol calledsymbol = model.GetSymbol(invocation);
+                            //To Avoid Self Recurring methods
+                            if (calledsymbol.Equals(callingsymbol))
+                                continue;
+                        }
                         if (IsConditionalOrFalse(item.Expression, model))
                         {
                             returnConditionalOrFalse = true;
                             break;
                         }
+                    }
                 }
                 else if (!(methodDeclaration.ExpressionBody is null))
                     returnConditionalOrFalse = IsConditionalOrFalse(methodDeclaration.ExpressionBody.Expression, model);
