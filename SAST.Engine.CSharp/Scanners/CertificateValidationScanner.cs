@@ -17,7 +17,12 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Net.HttpWebRequest.ServerCertificateValidationCallback",
             "System.Net.Http.HttpClientHandler.ServerCertificateCustomValidationCallback"
         };
-        private List<SyntaxNode> visitedNodes = new List<SyntaxNode>();
+
+        /// <summary>
+        /// This variable stores the visited methods to avoid recursive calls.
+        /// </summary>
+        private HashSet<ISymbol> _visitedMethodSymbols = new HashSet<ISymbol>();
+
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -31,7 +36,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
-                if (assignment.Right.ToString().Contains("FindCompliantRecursive"))
+                //if (assignment.Right.ToString().Contains("FindCompliantRecursive"))
                     if (IsVulnerable(assignment.Right, model))
                         syntaxNodes.Add(assignment);
             }
@@ -72,37 +77,46 @@ namespace SAST.Engine.CSharp.Scanners
                     return false;
                 var syntaxReference = methodSymbol.DeclaringSyntaxReferences.First();
                 SemanticModel methodModel = model.Compilation.GetSemanticModel(syntaxReference.SyntaxTree);
-                return IsVulnerable(syntaxReference.GetSyntaxAsync().Result, methodModel);
+                if (!_visitedMethodSymbols.Any(obj => obj.Equals(methodSymbol)))
+                    return IsVulnerable(syntaxReference.GetSyntaxAsync().Result, methodModel);
             }
             else if (syntaxNode is MethodDeclarationSyntax methodDeclaration)
             {
-                if (!(methodDeclaration.Body is null))
+                if (methodDeclaration.Body != null || methodDeclaration.ExpressionBody != null)
                 {
-                    var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
                     ISymbol callingsymbol = model.GetDeclaredSymbol(methodDeclaration);
-                    foreach (var item in returnStatements)
+                    _visitedMethodSymbols.Add(callingsymbol);
+                    if (methodDeclaration.Body != null)
                     {
-                        var invocation = item.Expression.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>().FirstOrDefault();
-                        if (invocation != null)
+                        var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
+                        foreach (var item in returnStatements)
                         {
-                            ISymbol calledsymbol = model.GetSymbol(invocation);
-                            //To Avoid Self Recurring methods
-                            if (calledsymbol.Equals(callingsymbol))
-                                continue;
-                        }
-                        if (IsConditionalOrFalse(item.Expression, model))
-                        {
-                            returnConditionalOrFalse = true;
-                            break;
+                            var invocation = item.Expression.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>().FirstOrDefault();
+                            if (invocation != null)
+                            {
+                                ISymbol calledsymbol = model.GetSymbol(invocation);
+                                // If invocation is Recursive call
+                                if (_visitedMethodSymbols.Any(obj => obj == calledsymbol))
+                                    continue;
+                            }
+                            if (IsConditionalOrFalse(item.Expression, model))
+                            {
+                                returnConditionalOrFalse = true;
+                                break;
+                            }
                         }
                     }
+                    else if (!(methodDeclaration.ExpressionBody is null))
+                    {
+                        returnConditionalOrFalse = IsConditionalOrFalse(methodDeclaration.ExpressionBody.Expression, model);
+                    }
+                    _visitedMethodSymbols.Remove(callingsymbol);
+                    //return returnConditionalOrFalse;
                 }
-                else if (!(methodDeclaration.ExpressionBody is null))
-                    returnConditionalOrFalse = IsConditionalOrFalse(methodDeclaration.ExpressionBody.Expression, model);
             }
             else if (syntaxNode is PropertyDeclarationSyntax propertyDeclaration)
             {
-                var getAccessor = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
+                var getAccessor = propertyDeclaration.AccessorList.Accessors.FirstOrDefault(obj => obj.IsKind(SyntaxKind.GetAccessorDeclaration));
                 if (getAccessor != null)
                 {
                     if (!(getAccessor.Body is null))
@@ -124,9 +138,7 @@ namespace SAST.Engine.CSharp.Scanners
                 }
             }
             else
-            {
                 returnConditionalOrFalse = IsConditionalOrFalse(syntaxNode, model);
-            }
             return !returnConditionalOrFalse;
         }
         private bool IsConditionalOrFalse(SyntaxNode expression, SemanticModel model)
@@ -134,7 +146,28 @@ namespace SAST.Engine.CSharp.Scanners
             expression = GetBody(expression);
             if (expression is IdentifierNameSyntax || expression is InvocationExpressionSyntax)
             {
-                return IsVulnerable(expression, model);
+                return !IsVulnerable(expression, model);
+            }
+            else if (expression is ConditionalExpressionSyntax conditionalExpression)
+            {
+                bool TrueResult = IsVulnerable(conditionalExpression.WhenTrue, model);
+                bool falseResult = IsVulnerable(conditionalExpression.WhenFalse, model);
+                return TrueResult && falseResult;
+            }
+            else if (expression is IfStatementSyntax ifStatement)
+            {
+                bool trueResult = IsVulnerable(ifStatement.Statement, model);
+                bool falseResult = false;
+                if (ifStatement.Else != null)
+                {
+                    falseResult = IsVulnerable(ifStatement.Else.Statement, model);
+                    return trueResult && falseResult;
+                }
+                else
+                {
+                    return trueResult;
+                }
+
             }
             var returnValue = model.GetConstantValue(expression);
             // If expression is have boolean value as true;
