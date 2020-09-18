@@ -345,6 +345,8 @@ namespace Tests.Diagnostics
             }
         }
 
+		// static RemoteCertificateValidationCallback FindCompliantRecursive(int Index)=>Index <= 0?CompliantValidation:FindCompliantRecursive(Index - 1);
+
         static RemoteCertificateValidationCallback FindInvalidRecursive(int Index)
         {
             if (Index <= 0)

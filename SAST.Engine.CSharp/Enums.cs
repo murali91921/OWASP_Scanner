@@ -27,6 +27,7 @@
         CommandInjection = 20,
         FilePathInjection = 21,
         CertificateValidation = 22,
+        JWTValidation = 23
     }
     public enum ScannerSubType
     {

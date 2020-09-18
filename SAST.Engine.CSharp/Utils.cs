@@ -46,6 +46,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CommandInjection, "Command Injection"},
             {Enums.ScannerType.FilePathInjection, "File Path Injection"},
             {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
+            {Enums.ScannerType.JWTValidation, "JWT Signature Validation Disabled"}
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -70,6 +71,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CommandInjection, Enums.Severity.High},
             {Enums.ScannerType.FilePathInjection, Enums.Severity.High},
             {Enums.ScannerType.CertificateValidation, Enums.Severity.High},
+            {Enums.ScannerType.JWTValidation, Enums.Severity.High},
         };
 
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
@@ -94,6 +96,14 @@ namespace SAST.Engine.CSharp
                     return true;
                 typeSymbol = typeSymbol.BaseType?.ConstructedFrom;
             }
+            return false;
+        }
+        internal static bool ImplementsFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
+        {
+            if (baseTypes == null && baseTypes.Count() == 0)
+                return false;
+            if (typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.ToString())))
+                return true;
             return false;
         }
 
@@ -200,12 +210,15 @@ namespace SAST.Engine.CSharp
                                 if (returnStatements.Count() > 0)
                                     isVulnerable = true;
                                 foreach (var item in returnStatements)
+                                {
+                                    //item.Expression
                                     if (!IsVulnerable(item.Expression, invocationModel, solution, null, null))
                                     {
                                         //If any statement is not vulnerable, then treat the method as Safe & break the loop.
                                         isVulnerable = false;
                                         break;
                                     }
+                                }
                             }
                             else if (methodDeclaration.ExpressionBody != null)
                                 if (!IsVulnerable(methodDeclaration.ExpressionBody.Expression, invocationModel, solution, null, null))
@@ -222,6 +235,6 @@ namespace SAST.Engine.CSharp
             else
                 return false;
         }
-        //public static ArrayList arrayList = new ArrayList();
+        public static List<ISymbol> VisitedSymbols = new List<ISymbol>();
     }
 }

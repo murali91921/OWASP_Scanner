@@ -246,6 +246,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CommandInjection => new CommandInjectionScanner(),
                 ScannerType.FilePathInjection => new FilePathInjectionScanner(),
                 ScannerType.CertificateValidation => new CertificateValidationScanner(),
+                ScannerType.JWTValidation => new JWTSignatureScanner(),
                 _ => null,
             };
         }

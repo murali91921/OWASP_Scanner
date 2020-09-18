@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,9 +35,8 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
-                //if (assignment.Right.ToString().Contains("FindCompliantRecursive"))
-                    if (IsVulnerable(assignment.Right, model))
-                        syntaxNodes.Add(assignment);
+                if (IsVulnerable(assignment.Right, model))
+                    syntaxNodes.Add(assignment);
             }
             return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CertificateValidation);
         }
