@@ -26,9 +26,6 @@ namespace SAST.Engine.CSharp.Scanners
             XPathNavigator element = doc.CreateNavigator().SelectSingleNode(HttpCookies_Node);
             if (element != null)
             {
-                //returnStatement = filePath + " : (" + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)
-                //+ "," + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LinePosition : 0) + ") : {0}\n"
-                //+ element.OuterXml.Trim();
                 if (element.HasAttributes)
                 {
                     element.MoveToFirstAttribute();
@@ -40,6 +37,7 @@ namespace SAST.Engine.CSharp.Scanners
                             isSecure = bool.Parse(element.Value);
                     }
                     while (element.MoveToNextAttribute());
+                    element.MoveToParent();
                 }
                 if (!isHttpOnly || !isSecure)
                 {

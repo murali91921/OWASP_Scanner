@@ -260,6 +260,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.MachineKeyClearText => new MachineKeyScanner(),
                 ScannerType.HTTPHeaderChecking => new HTTPHeaderCheckingScanner(),
                 ScannerType.EventValidation => new EventValidationScanner(),
+                ScannerType.ViewStateMac => new ViewStateMacScanner(),
                 _ => null,
             };
         }

@@ -51,7 +51,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
             {Enums.ScannerType.JWTValidation, "JWT Signature Validation Disabled"},
             {Enums.ScannerType.HTTPHeaderChecking, "HTTP Header Checking Disabled"},
-            {Enums.ScannerType.EventValidation, "Event Validation Disabled"}
+            {Enums.ScannerType.EventValidation, "Event Validation Disabled"},
+            {Enums.ScannerType.ViewStateMac, "View State Mac Disabled"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -79,15 +80,18 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.JWTValidation, Enums.Severity.High},
             {Enums.ScannerType.HTTPHeaderChecking, Enums.Severity.Medium},
             {Enums.ScannerType.EventValidation, Enums.Severity.Medium},
+            {Enums.ScannerType.ViewStateMac, Enums.Severity.Medium},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
-            {Enums.ScannerSubType.DomXSS, Enums.Severity.Medium},       //XSS
-            {Enums.ScannerSubType.ReflectedXSS, Enums.Severity.Medium}, //XSS
-            {Enums.ScannerSubType.StoredXSS, Enums.Severity.Medium},    //XSS
-            {Enums.ScannerSubType.FAWeakCookie, Enums.Severity.High},           //Forms Authentication
-            {Enums.ScannerSubType.FACookielessMode, Enums.Severity.Medium},     //Forms Authentication
-            {Enums.ScannerSubType.FACrossAppRedirect, Enums.Severity.Medium},   //Forms Authentication
-            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium}      //Forms Authentication
+            //XSS
+            {Enums.ScannerSubType.DomXSS, Enums.Severity.Medium},
+            {Enums.ScannerSubType.ReflectedXSS, Enums.Severity.Medium},
+            {Enums.ScannerSubType.StoredXSS, Enums.Severity.Medium},
+            //Forms Authentication
+            {Enums.ScannerSubType.FAWeakCookie, Enums.Severity.High},
+            {Enums.ScannerSubType.FACookielessMode, Enums.Severity.Medium},
+            {Enums.ScannerSubType.FACrossAppRedirect, Enums.Severity.Medium},
+            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium}
         };
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {

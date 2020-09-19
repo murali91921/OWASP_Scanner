@@ -29,7 +29,8 @@
         CertificateValidation = 22,
         JWTValidation = 23,
         HTTPHeaderChecking = 24,
-        EventValidation = 25
+        EventValidation = 25,
+        ViewStateMac = 26,
     }
     public enum ScannerSubType
     {
