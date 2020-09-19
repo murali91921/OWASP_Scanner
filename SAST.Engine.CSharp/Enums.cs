@@ -35,7 +35,10 @@
         StoredXSS = 1,
         ReflectedXSS = 2,
         DomXSS = 3,
-        FAWeakCookie = 4
+        FAWeakCookie = 4,
+        FAInsecureCookie = 5,
+        FACookielessMode = 6,
+        FACrossAppRedirect = 7
     }
     public enum Severity
     {

@@ -17,11 +17,14 @@ namespace SAST.Engine.CSharp
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx", ".html" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
         internal static readonly Dictionary<Enums.ScannerSubType, string> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerSubType, string>{
-            {Enums.ScannerSubType.StoredXSS, "Stored xss"},
-            {Enums.ScannerSubType.ReflectedXSS, "Reflected xss"},
-            {Enums.ScannerSubType.DomXSS, "Dom based xss"},
+            {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
+            {Enums.ScannerSubType.ReflectedXSS, "Reflected XSS"},
+            {Enums.ScannerSubType.DomXSS, "Dom based XSS"},
             {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
-            {Enums.ScannerSubType.None, null}
+            {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
+            {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
+            {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"},
+            {Enums.ScannerSubType.None, string.Empty}
         };
         internal static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
             {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
@@ -48,7 +51,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
             {Enums.ScannerType.JWTValidation, "JWT Signature Validation Disabled"}
         };
-        internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
+        internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
             {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
             {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
@@ -61,9 +64,9 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakHashingConfig, Enums.Severity.Medium},
             {Enums.ScannerType.WeakPasswordConfig, Enums.Severity.Low},
             {Enums.ScannerType.XPath, Enums.Severity.Medium},
-            {Enums.ScannerType.XSS, Enums.Severity.Medium},
+            //{Enums.ScannerType.XSS, Enums.Severity.Medium},
             {Enums.ScannerType.XXE, Enums.Severity.Medium},
-            {Enums.ScannerType.FormsAuthentication, Enums.Severity.High},
+            //{Enums.ScannerType.FormsAuthentication, Enums.Severity.High},
             {Enums.ScannerType.MachineKeyClearText, Enums.Severity.High},
             {Enums.ScannerType.WeakSymmetricAlgorithm, Enums.Severity.High},
             {Enums.ScannerType.WeakCipherMode, Enums.Severity.High},
@@ -73,7 +76,15 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CertificateValidation, Enums.Severity.High},
             {Enums.ScannerType.JWTValidation, Enums.Severity.High},
         };
-
+        internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
+            {Enums.ScannerSubType.DomXSS, Enums.Severity.Medium},       //XSS
+            {Enums.ScannerSubType.ReflectedXSS, Enums.Severity.Medium}, //XSS
+            {Enums.ScannerSubType.StoredXSS, Enums.Severity.Medium},    //XSS
+            {Enums.ScannerSubType.FAWeakCookie, Enums.Severity.High},           //Forms Authentication
+            {Enums.ScannerSubType.FACookielessMode, Enums.Severity.Medium},     //Forms Authentication
+            {Enums.ScannerSubType.FACrossAppRedirect, Enums.Severity.Medium},   //Forms Authentication
+            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium}      //Forms Authentication
+        };
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
