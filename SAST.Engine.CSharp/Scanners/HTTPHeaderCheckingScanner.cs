@@ -9,6 +9,7 @@ namespace SAST.Engine.CSharp.Scanners
     internal class HTTPHeaderCheckingScanner : IConfigScanner
     {
         const string HttpRuntime_Node = "configuration/system.web/httpRuntime";
+
         /// <summary>
         /// Default value is true, so when enableHeaderChecking is set to false, consider as vulnerable
         /// </summary>
