@@ -8,7 +8,7 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class FormAuthenticationScanner : IConfigScanner
     {
-        const string FormsNode_Expression = "configuration/system.web/authentication[@mode='Forms']/forms";
+        const string Forms_Node = "configuration/system.web/authentication[@mode='Forms']/forms";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
@@ -28,7 +28,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="vulnerabilities"></param>
         private void FindWeakProtection(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(FormsNode_Expression);
+            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = false;
@@ -65,7 +65,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="vulnerabilities"></param>
         private void FindCrossAppRedirect(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(FormsNode_Expression);
+            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = false;
@@ -101,7 +101,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="vulnerabilities"></param>
         private void FindCookielessMode(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(FormsNode_Expression);
+            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = true;
@@ -142,7 +142,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="vulnerabilities"></param>
         private void FindRequireSsl(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(FormsNode_Expression);
+            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = true;

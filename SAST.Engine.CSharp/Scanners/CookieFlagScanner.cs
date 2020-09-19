@@ -16,13 +16,14 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class CookieFlagScanner : IScanner, IConfigScanner
     {
+        const string HttpCookies_Node = "configuration/system.web/httpCookies";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             bool isSecure = false, isHttpOnly = false;
             //string returnStatement = string.Empty;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             XPathDocument doc = new XPathDocument(filePath);
-            XPathNavigator element = doc.CreateNavigator().SelectSingleNode("configuration/system.web/httpCookies");
+            XPathNavigator element = doc.CreateNavigator().SelectSingleNode(HttpCookies_Node);
             if (element != null)
             {
                 //returnStatement = filePath + " : (" + ((IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber : 0)
