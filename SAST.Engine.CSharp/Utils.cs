@@ -53,6 +53,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HTTPHeaderChecking, "HTTP Header Checking Disabled"},
             {Enums.ScannerType.EventValidation, "Event Validation Disabled"},
             {Enums.ScannerType.ViewStateMac, "View State Mac Disabled"},
+            {Enums.ScannerType.PasswordLockout, "Password Lockout Disabled"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -81,6 +82,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HTTPHeaderChecking, Enums.Severity.Medium},
             {Enums.ScannerType.EventValidation, Enums.Severity.Medium},
             {Enums.ScannerType.ViewStateMac, Enums.Severity.Medium},
+            {Enums.ScannerType.PasswordLockout, Enums.Severity.Medium},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

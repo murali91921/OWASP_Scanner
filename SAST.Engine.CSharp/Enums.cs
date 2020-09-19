@@ -31,6 +31,7 @@
         HTTPHeaderChecking = 24,
         EventValidation = 25,
         ViewStateMac = 26,
+        PasswordLockout = 27,
     }
     public enum ScannerSubType
     {
