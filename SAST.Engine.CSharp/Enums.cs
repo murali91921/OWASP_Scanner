@@ -28,7 +28,8 @@
         FilePathInjection = 21,
         CertificateValidation = 22,
         JWTValidation = 23,
-        HTTPHeaderChecking = 24
+        HTTPHeaderChecking = 24,
+        EventValidation = 25
     }
     public enum ScannerSubType
     {

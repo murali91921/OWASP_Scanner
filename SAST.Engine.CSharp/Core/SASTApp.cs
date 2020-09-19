@@ -259,6 +259,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.InsecureCookie => new CookieFlagScanner(),
                 ScannerType.MachineKeyClearText => new MachineKeyScanner(),
                 ScannerType.HTTPHeaderChecking => new HTTPHeaderCheckingScanner(),
+                ScannerType.EventValidation => new EventValidationScanner(),
                 _ => null,
             };
         }
