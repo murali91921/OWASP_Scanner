@@ -24,6 +24,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
             {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
             {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"},
+            {Enums.ScannerSubType.SecureFlag, "Secure flag"},
+            {Enums.ScannerSubType.HttpOnlyFlag, "HttpOnly flag"},
             {Enums.ScannerSubType.None, string.Empty}
         };
         internal static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
@@ -31,7 +33,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.EmptyCatch, "Empty catch block"},
             {Enums.ScannerType.EmptyTry, "Empty try block"},
             {Enums.ScannerType.HardcodePassword, "Hard coded credentials"},
-            {Enums.ScannerType.InsecureCookie, "Cookie missing secure/httpOnly flag(s)"},
+            {Enums.ScannerType.InsecureCookie, "Cookie missing flag(s)"},
             {Enums.ScannerType.InsecureRandom, "Weak random generation"},
             {Enums.ScannerType.Ldap, "Ldap injection"},
             {Enums.ScannerType.OpenRedirect, "Open redirect"},
@@ -60,7 +62,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
             {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
             {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
-            {Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
+            //{Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
             {Enums.ScannerType.InsecureRandom, Enums.Severity.Medium},
             {Enums.ScannerType.Ldap, Enums.Severity.High},
             {Enums.ScannerType.OpenRedirect, Enums.Severity.Medium},
@@ -93,7 +95,10 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerSubType.FAWeakCookie, Enums.Severity.High},
             {Enums.ScannerSubType.FACookielessMode, Enums.Severity.Medium},
             {Enums.ScannerSubType.FACrossAppRedirect, Enums.Severity.Medium},
-            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium}
+            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium},
+            //Cookie Flag
+            {Enums.ScannerSubType.HttpOnlyFlag, Enums.Severity.Low},
+            {Enums.ScannerSubType.SecureFlag, Enums.Severity.Low}
         };
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {

@@ -8,7 +8,7 @@ namespace SAST.Engine.CSharp
 {
     internal static class HelperExtrensions
     {
-        public static SyntaxNode RemoveParentheses(this SyntaxNode expression)
+        public static SyntaxNode RemoveParenthesis(this SyntaxNode expression)
         {
             var currentExpression = expression;
             var parentheses = expression as ParenthesizedExpressionSyntax;

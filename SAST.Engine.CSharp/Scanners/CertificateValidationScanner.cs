@@ -59,7 +59,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             if (body is BlockSyntax block && block.Statements.Count == 1 && block.Statements.First() is ReturnStatementSyntax ret)
                 return ret.Expression;
-            body = body.RemoveParentheses();
+            body = body.RemoveParenthesis();
             return body;
         }
 

@@ -24,7 +24,7 @@ namespace SAST.Engine.CSharp.Mapper
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
                         Type = scannerType,
-                        SubType =scannerSubType
+                        SubType = scannerSubType
                     });
                 }
             else if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)

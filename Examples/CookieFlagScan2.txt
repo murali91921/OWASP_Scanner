@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-//using System.Net.Http;
-using Microsoft.Net.Http.Headers;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 
@@ -14,12 +15,12 @@ public class CFSClassExample2 : Page
         public HttpResponseMessage Snippet1()
         {
             var resp = new HttpResponseMessage();
-            Microsoft.Net.Http.Headers.CookieHeaderValue cookie = new Microsoft.Net.Http.Headers.CookieHeaderValue("CookieName11", "CookieVal11");
+            System.Net.Http.Headers.CookieHeaderValue cookie = new System.Net.Http.Headers.CookieHeaderValue("CookieName11", "CookieVal11");
             CookieHeaderValue cookie1 = new CookieHeaderValue("CookieName12", "CookieVal12");
             cookie.Expires = DateTimeOffset.Now.AddDays(1);
             cookie.Path = "/";
-            cookie.Secure = false;
-            //cookie.HttpOnly = true;
+            // cookie.Secure = false;
+            cookie.HttpOnly = true;
             cookie1.Secure = true;
             cookie1.HttpOnly = false;
             resp.Headers.AddCookies(new CookieHeaderValue[] { cookie,cookie1 });
@@ -100,12 +101,5 @@ public class CFSClassExample2 : Page
                 Response.Cookies[s].Secure = true;
             }
         }
-        //Snippet10 Retrieve Cookie object from Response object
-		/*public void Snippet10()
-        {
-            HttpCookie httpCookie10 = Response.Cookies[0];
-            httpCookie10.Secure = false;
-            httpCookie10.HttpOnly = false;
-        }*/
     }
 }

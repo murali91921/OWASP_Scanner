@@ -14,7 +14,7 @@ namespace CFSNSExample4
         public HttpResponseMessage Snippet1()
         {
             var resp = new HttpResponseMessage();
-            Microsoft.Net.Http.Headers.CookieHeaderValue cookie = new Microsoft.Net.Http.Headers.CookieHeaderValue("CookieName11", "CookieVal11");
+            System.Net.Http.Headers.CookieHeaderValue cookie = new System.Net.Http.Headers.CookieHeaderValue("CookieName11", "CookieVal11");
             CookieHeaderValue cookie1 = new CookieHeaderValue("CookieName12", "CookieVal12");
             cookie.Expires = DateTimeOffset.Now.AddDays(1);
             cookie.Path = "/";
@@ -34,7 +34,7 @@ namespace CFSNSExample4
                 Path = "/",
             };
             objCookieHeaderValue2.Secure = true;
-//            objCookieHeaderValue2.HttpOnly = true;
+            objCookieHeaderValue2.HttpOnly = true;
         }
 
         //Snippet 3

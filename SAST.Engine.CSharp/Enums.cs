@@ -42,7 +42,9 @@
         FAWeakCookie = 4,
         FAInsecureCookie = 5,
         FACookielessMode = 6,
-        FACrossAppRedirect = 7
+        FACrossAppRedirect = 7,
+        SecureFlag = 8,
+        HttpOnlyFlag = 9
     }
     public enum Severity
     {
