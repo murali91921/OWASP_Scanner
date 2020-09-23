@@ -11,10 +11,19 @@ using System.Text.RegularExpressions;
 
 namespace SAST.Engine.CSharp.Parser
 {
+    /// <summary>
+    /// This class will be used to parse & get the required information from XML config files
+    /// </summary>
     internal class DotnetParser
     {
         static readonly string ProjectPattern = "^Project\\(\"{(?<TypeId>[A-F0-9-]+)}\"\\) = \"(?<Name>.*?)\", \"(?<Path>.*?)\", \"{(?<Id>[A-F0-9-]+)}\""
             + @"(?<Sections>(.|\n|\r)*?)" + @"EndProject(\n|\r)";
+    
+        /// <summary>
+        /// This method will Parse the Solution File to find the Project File Paths
+        /// </summary>
+        /// <param name="solutionFilePath">File path of solution</param>
+        /// <returns>List Project File Paths</returns>
         internal static IEnumerable<string> ParseSolution(string solutionFilePath)
         {
             var list = new List<string>();
@@ -35,6 +44,15 @@ namespace SAST.Engine.CSharp.Parser
             }
             return list;
         }
+
+        /// <summary>
+        /// Get the attribute values in xml config file
+        /// </summary>
+        /// <param name="projectPath">File Path of Project</param>
+        /// <param name="nodePath">Xpath of node</param>
+        /// <param name="attributeName">Required attribute name</param>
+        /// <param name="extensions">Pass the file path extensions to filter </param>
+        /// <returns>List of filepath strings found under the nodepath & attribute</returns>
         internal static IEnumerable<string> GetAttributes(string projectPath, string nodePath, string attributeName, string[] extensions)
         {
             List<string> sourceFiles = new List<string>();
@@ -65,6 +83,5 @@ namespace SAST.Engine.CSharp.Parser
             }
             return sourceFiles;
         }
-
     }
 }

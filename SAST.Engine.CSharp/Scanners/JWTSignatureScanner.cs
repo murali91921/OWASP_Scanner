@@ -1,12 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.FindSymbols;
 
 namespace SAST.Engine.CSharp.Scanners
 {

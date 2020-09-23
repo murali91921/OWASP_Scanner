@@ -9,6 +9,9 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace SAST.Engine.CSharp
 {
+    /// <summary>
+    /// This class will implement Utilities.
+    /// </summary>
     internal static class Utils
     {
         internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
@@ -100,18 +103,27 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerSubType.HttpOnlyFlag, Enums.Severity.Low},
             {Enums.ScannerSubType.SecureFlag, Enums.Severity.Low}
         };
+
+        /// <summary>
+        /// This method will give the List of MetaDataReferences using Physical Assenmbly to MetaDatReference Object
+        /// </summary>
+        /// <param name="MetadataReferences"></param>
         internal static void LoadMetadata(out List<MetadataReference> MetadataReferences)
         {
             MetadataReferences = new List<MetadataReference>();
             string directory = AppDomain.CurrentDomain.BaseDirectory;
-            // Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            // Console.WriteLine();
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
                 if (File.Exists(assemblyFile))
                     MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
         }
 
+        /// <summary>
+        /// This method will check <paramref name="typeSymbol"/> is derived from any of <paramref name="baseTypes"/>
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <param name="baseTypes"></param>
+        /// <returns></returns>
         internal static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
             if (baseTypes == null && baseTypes.Count() == 0)
@@ -124,6 +136,13 @@ namespace SAST.Engine.CSharp
             }
             return false;
         }
+
+        /// <summary>
+        /// This method will check <paramref name="typeSymbol"/> is implemented from any of <paramref name="baseTypes"/>
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <param name="baseTypes"></param>
+        /// <returns></returns>
         internal static bool ImplementsFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
             if (baseTypes == null && baseTypes.Count() == 0)
@@ -133,6 +152,12 @@ namespace SAST.Engine.CSharp
             return false;
         }
 
+        /// <summary>
+        /// This method wii return true, if SYntasxNodes are exists in same Method. 
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
         internal static bool CheckSameMethod(SyntaxNode first, SyntaxNode second)
         {
             MethodDeclarationSyntax firstBlock = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
@@ -140,14 +165,22 @@ namespace SAST.Engine.CSharp
             return firstBlock.IsEquivalentTo(secondBlock);
         }
 
+        /// <summary>
+        /// This method wiil check whether the SyntaxNode is vulnerable or not
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <param name="callingSymbol"></param>
+        /// <param name="parameterNode"></param>
+        /// <returns></returns>
         public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null, SyntaxNode parameterNode = null)
         {
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.ToString() != "string" && type.ToString() != "System.String")
+                if (type.SpecialType==SpecialType.System_String)
                     return false;
-                string str = "=";
                 bool vulnerable = false;
                 ISymbol symbol = model.GetSymbolInfo(node).Symbol;
                 if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
@@ -194,8 +227,6 @@ namespace SAST.Engine.CSharp
                 }
                 return vulnerable;
             }
-            else if (node is ParameterSyntax)
-                return true;
             else if (node is InvocationExpressionSyntax invocation)
             {
                 IMethodSymbol symbol = model.GetSymbol(invocation.Expression) as IMethodSymbol;
@@ -210,34 +241,15 @@ namespace SAST.Engine.CSharp
                         {
                             SemanticModel invocationModel = model.Compilation.GetSemanticModel(location.SourceTree);
                             MethodDeclarationSyntax methodDeclaration = location.SourceTree.GetRoot().FindNode(location.SourceSpan) as MethodDeclarationSyntax;
-                            //bool sameObject = methodDeclaration.ParameterList.Parameters.First().Modifiers.Any(obj => obj.Kind() == SyntaxKind.OutKeyword || obj.Kind() == SyntaxKind.OutKeyword);
-                            //Filtering abstract methods and no paramater methods & if Extension method, parameter checking starts from Index 1.
-                            //int i = symbol.IsExtensionMethod ? 1 : 0;
-                            //if ((methodDeclaration.Body != null || methodDeclaration.ExpressionBody != null) && invocation.ArgumentList.Arguments.Count > i)
-                            //{
-                            //    foreach (var item in invocation.ArgumentList.Arguments)
-                            //    {
-                            //        if (item.Expression.ToString() == parameterNode.ToString())
-                            //        {
-                            //            //Parameters are retrieving from Array or from NameColon.
-                            //            if (item.NameColon == null)
-                            //                arrayList.Add(methodDeclaration.ParameterList.Parameters[i]);
-                            //            else
-                            //                arrayList.Add(methodDeclaration.ParameterList.Parameters.First(obj => obj.Identifier.ToString() == item.NameColon.Name.ToString()));
-                            //        }
-                            //        i++;
-                            //    }
-                            //}
                             if (methodDeclaration.Body != null)
                             {
                                 isVulnerable = false;
                                 var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
-                                //Atleast one Return statements exists, then set isVulnerable to True other wise methid may contain Exceptions;
+                                //Atleast one Return statements exists, then set isVulnerable to True, other wise method may contain Exceptions;
                                 if (returnStatements.Count() > 0)
                                     isVulnerable = true;
                                 foreach (var item in returnStatements)
                                 {
-                                    //item.Expression
                                     if (!IsVulnerable(item.Expression, invocationModel, solution, null, null))
                                     {
                                         //If any statement is not vulnerable, then treat the method as Safe & break the loop.
@@ -258,9 +270,10 @@ namespace SAST.Engine.CSharp
                 }
                 return isVulnerable;
             }
+            else if (node is ParameterSyntax)
+                return true;
             else
                 return false;
         }
-        public static List<ISymbol> VisitedSymbols = new List<ISymbol>();
     }
 }

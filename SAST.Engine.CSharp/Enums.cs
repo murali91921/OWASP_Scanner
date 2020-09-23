@@ -1,5 +1,8 @@
 ﻿namespace SAST.Engine.CSharp.Enums
 {
+    /// <summary>
+    /// Scanner Type Enum
+    /// </summary>
     public enum ScannerType
     {
         None = 0,
@@ -33,6 +36,10 @@
         ViewStateMac = 26,
         PasswordLockout = 27,
     }
+
+    /// <summary>
+    /// Scanner Sub Type Enum
+    /// </summary>
     public enum ScannerSubType
     {
         None = 0,
@@ -46,6 +53,10 @@
         SecureFlag = 8,
         HttpOnlyFlag = 9
     }
+
+    /// <summary>
+    /// Severity Levels
+    /// </summary>
     public enum Severity
     {
         Critical = 1,

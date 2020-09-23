@@ -10,7 +10,8 @@ using SAST.Engine.CSharp.Mapper;
 using SAST.Engine.CSharp.Core;
 using SAST.Engine.CSharp.Enums;
 using System.Linq;
-namespace ASTTask
+
+namespace SAST.Engine.CSharp.Scanners
 {
     internal class XssScanner : IScanner
     {

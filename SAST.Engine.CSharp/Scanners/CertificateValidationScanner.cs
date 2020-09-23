@@ -75,7 +75,7 @@ namespace SAST.Engine.CSharp.Scanners
                     return false;
                 var syntaxReference = methodSymbol.DeclaringSyntaxReferences.First();
                 SemanticModel methodModel = model.Compilation.GetSemanticModel(syntaxReference.SyntaxTree);
-                if (!_visitedMethodSymbols.Any(obj => obj.Equals(methodSymbol)))
+                if (!_visitedMethodSymbols.Any(obj => obj.Equals(methodSymbol, SymbolEqualityComparer.Default)))
                     return IsVulnerable(syntaxReference.GetSyntaxAsync().Result, methodModel);
             }
             else if (syntaxNode is MethodDeclarationSyntax methodDeclaration)
@@ -94,7 +94,7 @@ namespace SAST.Engine.CSharp.Scanners
                             {
                                 ISymbol calledsymbol = model.GetSymbol(invocation);
                                 // If invocation is Recursive call
-                                if (_visitedMethodSymbols.Any(obj => obj == calledsymbol))
+                                if (_visitedMethodSymbols.Any(obj => obj.Equals(calledsymbol, SymbolEqualityComparer.Default)))
                                     continue;
                             }
                             if (IsConditionalOrFalse(item.Expression, model))

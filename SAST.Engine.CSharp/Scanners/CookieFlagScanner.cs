@@ -4,8 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Enums;
-using SAST.Engine.CSharp.Mapper;
-using SAST.Engine.CSharp.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
