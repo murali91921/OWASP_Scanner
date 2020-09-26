@@ -45,6 +45,14 @@ namespace SAST.Engine.CSharp.Scanners
             "destinationBackupFileName"
         };
 
+        /// <summary>
+        /// This Scanner to find File Path Vulnerabilities 
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();

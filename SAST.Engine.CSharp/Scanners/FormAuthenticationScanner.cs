@@ -9,6 +9,12 @@ namespace SAST.Engine.CSharp.Scanners
     internal class FormAuthenticationScanner : IConfigScanner
     {
         const string Forms_Node = "configuration/system.web/authentication[@mode='Forms']/forms";
+
+        /// <summary>
+        /// This method will find the Form Authentication vulnerabilities
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
@@ -21,7 +27,7 @@ namespace SAST.Engine.CSharp.Scanners
         }
 
         /// <summary>
-        /// Protection will be weak when the value is not 'All'
+        /// This method will find Protection vulnerabilities in Forms Authentication Node.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
@@ -58,7 +64,7 @@ namespace SAST.Engine.CSharp.Scanners
         }
 
         /// <summary>
-        /// Default value of enableCrossAppRedirects is false, if enableCrossAppRedirects is True,then it is vulnerable.
+        /// This method will find Cross App Redirect vulnerabilities in Forms Authentication Node.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
@@ -94,7 +100,7 @@ namespace SAST.Engine.CSharp.Scanners
         }
 
         /// <summary>
-        /// Default value of is cookieless is UseDeviceProfile,which can allow URL based tracking. Add vulenrability in all cases except value of UseCookies
+        /// This method will find Cookie vulnerabilities in Forms Authentication Node.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
@@ -135,7 +141,7 @@ namespace SAST.Engine.CSharp.Scanners
         }
 
         /// <summary>
-        /// Default value is false, which is vulnerable & Add vulenrability if value set to true also.
+        /// This method will find SSL vulnerabilities in Forms Authentication Node.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>

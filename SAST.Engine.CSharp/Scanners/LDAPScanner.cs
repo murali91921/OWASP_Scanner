@@ -19,6 +19,7 @@ namespace SAST.Engine.CSharp.Scanners
         private static readonly string DirectorySearcher = "System.DirectoryServices.DirectorySearcher";
         private static readonly string LdapFilterEncode = "Microsoft.Security.Application.Encoder.LdapFilterEncode";
         private static readonly string filter = "System.DirectoryServices.DirectorySearcher.Filter";
+
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.model = model;
@@ -97,6 +98,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.Ldap);
         }
+
         public bool IsVulnerable(SyntaxNode node)
         {
             if (node is BinaryExpressionSyntax binaryExpression)

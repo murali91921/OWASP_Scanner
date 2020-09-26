@@ -10,6 +10,14 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class EmptyTryScanner : IScanner
     {
+        /// <summary>
+        /// This method will find Empty try block Vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             var emptyTryStatements = new List<SyntaxNode>();

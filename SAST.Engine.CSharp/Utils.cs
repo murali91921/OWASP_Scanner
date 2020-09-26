@@ -152,6 +152,15 @@ namespace SAST.Engine.CSharp
             return false;
         }
 
+        internal static bool ImplementsFrom(ITypeSymbol typeSymbol, string baseType)
+        {
+            if (string.IsNullOrWhiteSpace(baseType))
+                return false;
+            if (typeSymbol.AllInterfaces.Any(obj => obj.ToString() == baseType))
+                return true;
+            return false;
+        }
+
         /// <summary>
         /// This method wii return true, if SYntasxNodes are exists in same Method. 
         /// </summary>

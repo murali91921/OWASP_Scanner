@@ -19,16 +19,15 @@ namespace SAST.Engine.CSharp.Scanners
             "Decode",
             "DecodeToObject"
         };
-        private static readonly string[] IdentityModel_Tokens_NS = {
-            "Microsoft.IdentityModel.Tokens"
-        };
-        private static readonly string[] IJwtDecoder_Class = {
-            "JWT.IJwtDecoder"
-        };
-        private static readonly string[] JwtBuilder_Class = {
-            "JWT.JwtBuilder"
-        };
+        private static readonly string IdentityModel_Tokens = "Microsoft.IdentityModel.Tokens";
+        private static readonly string IJwtDecoder_Class = "JWT.IJwtDecoder";
 
+        /// <summary>
+        /// This method will FInd JWT Token vulnerabilities from assignments.
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="model"></param>
+        /// <param name="vulnerabilities"></param>
         private void FindTokenParameters(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities)
         {
             var assignments = syntaxNode.DescendantNodes().OfType<AssignmentExpressionSyntax>();
@@ -38,7 +37,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 var leftSymbol = model.GetSymbol(assignment.Left);
-                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() == "Microsoft.IdentityModel.Tokens"))
+                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() == IdentityModel_Tokens))
                     continue;
 
                 var constant = model.GetConstantValue(assignment.Right);
@@ -48,6 +47,12 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
+        /// <summary>
+        /// This method will find JWT Decode Method vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="model"></param>
+        /// <param name="vulnerabilities"></param>
         private void FindDecoders(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities)
         {
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
@@ -58,7 +63,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(item);
                 if (symbol == null)
                     continue;
-                if (!Utils.ImplementsFromAny(symbol.ContainingType, IJwtDecoder_Class))
+                if (!Utils.ImplementsFrom(symbol.ContainingType, IJwtDecoder_Class))
                     continue;
                 if (!DecodeMethods.Contains(symbol.Name))
                     continue;
@@ -77,6 +82,13 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
+        /// <summary>
+        /// This method will find JWT Builder vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="model"></param>
+        /// <param name="vulnerabilities"></param>
+        /// <param name="solution"></param>
         private void FindBuilders(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities, Solution solution)
         {
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
@@ -93,6 +105,13 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
+        /// <summary>
+        /// This will identify the <paramref name="syntaxNode"/> vulnerable or not
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         private bool IsVulnerable(SyntaxNode syntaxNode, SemanticModel model, Solution solution)
         {
             bool vulnerable = true;
@@ -131,16 +150,12 @@ namespace SAST.Engine.CSharp.Scanners
                     }
                     var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                     foreach (var referencedSymbol in referencedSymbols)
-                    {
                         foreach (var referenceLocation in referencedSymbol.Locations)
-                        {
                             if (referenceLocation.Location.SourceSpan.Start < syntaxNode.SpanStart)
                             {
                                 syntaxNode = referenceLocation.Location.SourceTree.GetRootAsync().Result.FindNode(referenceLocation.Location.SourceSpan);
                                 vulnerable = IsVulnerable(syntaxNode, model.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree), solution);
                             }
-                        }
-                    }
                     return vulnerable;
                 case SyntaxKind.VariableDeclarator:
                     var variableDeclarator = syntaxNode as VariableDeclaratorSyntax;
@@ -154,13 +169,11 @@ namespace SAST.Engine.CSharp.Scanners
                     {
                         var returnStatements = methodDeclaration.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
                         foreach (var item in returnStatements)
-                        {
                             if (!IsVulnerable(item.Expression, model, solution))
                             {
                                 vulnerable = false;
                                 break;
                             }
-                        }
                     }
                     else if (methodDeclaration.ExpressionBody != null)
                         vulnerable = IsVulnerable(methodDeclaration.ExpressionBody.Expression, model, solution);
@@ -171,13 +184,11 @@ namespace SAST.Engine.CSharp.Scanners
                     {
                         var returnStatements = localFunctionStatement.Body.DescendantNodes().OfType<ReturnStatementSyntax>();
                         foreach (var item in returnStatements)
-                        {
                             if (!IsVulnerable(item.Expression, model, solution))
                             {
                                 vulnerable = false;
                                 break;
                             }
-                        }
                     }
                     else if (localFunctionStatement.ExpressionBody != null)
                         vulnerable = IsVulnerable(localFunctionStatement.ExpressionBody.Expression, model, solution);
@@ -194,12 +205,20 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
+        /// <summary>
+        /// This method will find the JWT Signature Vulnerabilities 
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
 
             //Microsoft.IdentityModel.Tokens
-            //FindTokenParameters(syntaxNode, model, ref vulnerabilities);
+            FindTokenParameters(syntaxNode, model, ref vulnerabilities);
 
             //JWT.Net IJwtDecoder
             FindDecoders(syntaxNode, model, ref vulnerabilities);

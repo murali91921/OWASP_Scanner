@@ -23,7 +23,7 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Random.NextBytes"};
 
         /// <summary>
-        /// This method will find Vulnerabilities
+        /// This method will find Insecure Random Vulnerabilities
         /// </summary>
         /// <param name="syntaxNode"></param>
         /// <param name="filePath"></param>
@@ -40,8 +40,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(method);
                 if (symbol == null)
                     continue;
-                string symbolMethod = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
-                if (RandomMethods.Contains(symbolMethod))
+                if (RandomMethods.Contains(symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     lstVulnerableStatements.Add(method);
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.InsecureRandom);

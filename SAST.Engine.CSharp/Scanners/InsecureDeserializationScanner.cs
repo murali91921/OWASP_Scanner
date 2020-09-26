@@ -60,7 +60,7 @@ namespace SAST.Engine.CSharp.Scanners
         };
 
         /// <summary>
-        /// This method will find Vulnerabilities
+        /// This method will find Insecure Deserialization Vulnerabilities
         /// </summary>
         /// <param name="syntaxNode"></param>
         /// <param name="filePath"></param>
@@ -80,6 +80,10 @@ namespace SAST.Engine.CSharp.Scanners
             return vulnerabilities;
         }
 
+        /// <summary>
+        /// This method will find Insecure Settings by Attibute
+        /// </summary>
+        /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableAttributes()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
@@ -106,6 +110,10 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
 
+        /// <summary>
+        /// This method will find Insecure Setting by Serializer Properties Vulnerabilities
+        /// </summary>
+        /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableAssignments()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
@@ -127,6 +135,10 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
 
+        /// <summary>
+        /// This method will find the Insecure Serializer Object Creations
+        /// </summary>
+        /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableObjectCreations()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
@@ -151,6 +163,10 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
 
+        /// <summary>
+        /// This method will find the Insecure Deserialization Methods.
+        /// </summary>
+        /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableInvocations()
         {
             List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
