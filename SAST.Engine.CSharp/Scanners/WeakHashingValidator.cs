@@ -27,7 +27,9 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Security.Cryptography.HMACRIPEMD160",
             "System.Security.Cryptography.Rfc2898DeriveBytes"
             };
-        static readonly string[] ParameterlessHashings = { "System.Security.Cryptography.HMAC.Create" };
+        static readonly string[] ParameterlessHashings = {
+            "System.Security.Cryptography.HMAC.Create"
+        };
         static readonly string[] ParameteredHashings = {
             "System.Security.Cryptography.CryptoConfig.CreateFromName",
             "System.Security.Cryptography.HashAlgorithm.Create",
@@ -35,9 +37,20 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Security.Cryptography.AsymmetricAlgorithm.Create",
             "System.Security.Cryptography.HMAC.Create"
             };
-        static readonly string[] ParameterNames = { "SHA1", "MD5", "DSA", "HMACMD5", "HMACRIPEMD160", "RIPEMD160", "RIPEMD160Managed" };
-        static readonly string[] QualifiedPropertyNames = {"System.Security.Cryptography.HashAlgorithmName.MD5",
-            "System.Security.Cryptography.HashAlgorithmName.SHA1"};
+        static readonly string[] ParameterNames = {
+            "SHA1",
+            "MD5",
+            "DSA",
+            "HMACMD5",
+            "HMACRIPEMD160",
+            "RIPEMD160",
+            "RIPEMD160Managed"
+        };
+        static readonly string[] QualifiedPropertyNames = {
+            "System.Security.Cryptography.HashAlgorithmName.MD5",
+            "System.Security.Cryptography.HashAlgorithmName.SHA1"
+        };
+        
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
@@ -47,35 +60,35 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 if (item is ObjectCreationExpressionSyntax objectCreation)
                 {
-                    var typeInfo = model.GetTypeInfo(objectCreation);
-                    if (Utils.DerivesFromAny(typeInfo.ConvertedType, WeakTypes))
+                    var typeSymbol = model.GetTypeSymbol(objectCreation);
+                    if (Utils.DerivesFromAny(typeSymbol, WeakTypes))
                     {
                         if (objectCreation.ArgumentList == null)
                             lstVulnerableStatements.Add(objectCreation);
                         else
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
-                                var argSymbol = model.GetSymbolInfo(argument.Expression);
-                                if (argSymbol.Symbol != null && QualifiedPropertyNames.Any(name => name == argSymbol.Symbol.ToString()))
+                                var argSymbol = model.GetSymbol(argument.Expression);
+                                if (argSymbol != null && QualifiedPropertyNames.Contains(argSymbol.ToString()))
                                     lstVulnerableStatements.Add(objectCreation);
                             }
                     }
                 }
-                else
+                else if (item is InvocationExpressionSyntax invocation)
                 {
-                    InvocationExpressionSyntax invocation = item as InvocationExpressionSyntax;
-                    if (model.GetSymbolInfo((item as InvocationExpressionSyntax).Expression).Symbol is IMethodSymbol methodSymbol)
+                    if (model.GetSymbol(invocation) is IMethodSymbol methodSymbol)
                         if (Utils.DerivesFromAny(methodSymbol.ReturnType, WeakTypes) || CheckWeakHashingCreation(methodSymbol, invocation.ArgumentList))
                             lstVulnerableStatements.Add(item);
                 }
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakHashingConfig);
         }
+        
         private static bool CheckWeakHashingCreation(IMethodSymbol methodSymbol, ArgumentListSyntax argumentList)
         {
             if (argumentList != null && methodSymbol?.ContainingType != null && methodSymbol.Name != null)
             {
-                var methodFullName = $"{methodSymbol.ContainingType}.{methodSymbol.Name}";
+                var methodFullName = methodSymbol.ContainingType + methodSymbol.Name;
                 if (argumentList.Arguments.Count == 0)
                     return ParameterlessHashings.Contains(methodFullName);
                 if (argumentList.Arguments.Count > 1 || !argumentList.Arguments.First().Expression.IsKind(SyntaxKind.StringLiteralExpression))

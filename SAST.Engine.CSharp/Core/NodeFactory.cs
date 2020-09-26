@@ -42,7 +42,7 @@ namespace SAST.Engine.CSharp.Core
                 return IsVulnerable(returnStatement.Expression, model);
             else if (node is IdentifierNameSyntax)
             {
-                ITypeSymbol type = model.GetTypeInfo(node).Type;
+                ITypeSymbol type = model.GetTypeSymbol(node);
                 if (type == null || (type.SpecialType != SpecialType.System_String && type.ToString() != "System.IO.StringWriter"))
                     return false;
                 ISymbol symbol = model.GetSymbol(node);
@@ -104,9 +104,10 @@ namespace SAST.Engine.CSharp.Core
             else if (node is InvocationExpressionSyntax)
             {
                 var invocation = node as InvocationExpressionSyntax;
-                SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-                ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                ISymbol symbol = model.GetSymbol(invocation);
                 if (symbol == null)
+                    return false;
+                if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "System.Web.Mvc.Controller.View")
                     return false;
                 if (symbol.Name == "ToString" && symbol.ContainingType.ToString() == "System.IO.StringWriter")
                 {
@@ -133,9 +134,7 @@ namespace SAST.Engine.CSharp.Core
         {
             if (node is MemberAccessExpressionSyntax)
             {
-                ISymbol symbol = null;
-                SymbolInfo symbolInfo = model.GetSymbolInfo(node);
-                symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                ISymbol symbol = model.GetSymbol(node);
                 if (symbol == null)
                     return false;
                 string property = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
@@ -155,9 +154,7 @@ namespace SAST.Engine.CSharp.Core
         {
             if (node is null)
                 return false;
-            ISymbol symbol = null;
-            SymbolInfo symbolInfo = model.GetSymbolInfo(node);
-            symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+            ISymbol symbol = model.GetSymbol(node);
             if (symbol == null)
                 return false;
             string method = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();

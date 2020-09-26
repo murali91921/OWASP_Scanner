@@ -8,6 +8,9 @@ using System.Security.Cryptography;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This scanner was not developed thoroughly.
+    /// </summary>
     internal class WeakCipherModeScanner : IScanner
     {
         static readonly string CipherModeType = "System.Security.Cryptography.CipherMode";

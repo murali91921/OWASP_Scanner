@@ -99,7 +99,7 @@ namespace SAST.Engine.CSharp.Scanners
             var objectCreationExpressions = syntaxNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreationExpressions)
             {
-                ITypeSymbol typeSymbol = model.GetTypeInfo(objectCreation).Type as ITypeSymbol;
+                ITypeSymbol typeSymbol = model.GetTypeSymbol(objectCreation);
                 if (typeSymbol == null)
                     continue;
                 if (!Utils.DerivesFromAny(typeSymbol, CommandClasses))
@@ -117,7 +117,7 @@ namespace SAST.Engine.CSharp.Scanners
                                 argument = item;
                                 break;
                             }
-                    if (model.GetTypeInfo(argument.Expression).Type.ToString() == "string" || model.GetTypeInfo(argument.Expression).Type.ToString() == "System.String")
+                    if (model.GetTypeSymbol(argument.Expression).SpecialType == SpecialType.System_String)
                         lstVulnerableCheck.Add(argument.Expression);
                 }
                 if (objectCreation.Initializer != null)
@@ -131,26 +131,22 @@ namespace SAST.Engine.CSharp.Scanners
             var methods = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
             {
-                SymbolInfo symbolInfo = model.GetSymbolInfo(method);
-                IMethodSymbol symbol = null;
-                if (symbolInfo.Symbol != null)
-                    symbol = symbolInfo.Symbol as IMethodSymbol;
-                else if (symbolInfo.CandidateSymbols.Count() > 0)
-                    symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
+                IMethodSymbol symbol = model.GetSymbol(method) as IMethodSymbol;
                 if (symbol == null)
                     continue;
+
                 if (!CommandExecuteMethods.Any(obj => obj == symbol.ReceiverType.OriginalDefinition.ToString() + "." + symbol.Name.ToString()))
                     continue;
+
                 foreach (var argument in method.ArgumentList.Arguments)
                 {
-                    ITypeSymbol typeSymbol = model.GetTypeInfo(argument.Expression).Type;
-                    if (typeSymbol.ToString() == "string" || typeSymbol.ToString() == "System.String")
+                    ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
+                    if (typeSymbol.SpecialType != SpecialType.System_String)
+                        continue;
+                    if (argument.NameColon == null || CommandExecuteParameters.Any(param => param == argument.NameColon.Name.ToString()))
                     {
-                        if (argument.NameColon == null || CommandExecuteParameters.Any(param => param == argument.NameColon.Name.ToString()))
-                        {
-                            lstVulnerableCheck.Add(argument.Expression);
-                            break;
-                        }
+                        lstVulnerableCheck.Add(argument.Expression);
+                        break;
                     }
                 }
             }
@@ -158,9 +154,11 @@ namespace SAST.Engine.CSharp.Scanners
                 obj => !obj.Right.IsKind(SyntaxKind.ObjectCreationExpression)).ToList();
             foreach (var item in assignments)
             {
-                IPropertySymbol symbol = model.GetSymbolInfo(item.Left).Symbol as IPropertySymbol;
+                IPropertySymbol symbol = model.GetSymbol(item.Left) as IPropertySymbol;
+
                 if (symbol == null)
                     continue;
+
                 if (CommandTextProperties.Any(obj => obj == symbol.ToString()))
                     lstVulnerableCheck.Add((item as AssignmentExpressionSyntax).Right);
             }
@@ -171,61 +169,5 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.SqlInjection);
         }
-        //private bool IsVulnerable(SyntaxNode node, ISymbol callingSymbol = null)
-        //{
-        //    if (node is IdentifierNameSyntax)
-        //    {
-        //        ITypeSymbol type = model.GetTypeInfo(node).Type;
-        //        if (type.ToString() != "string" || type.ToString() != "System.String")
-        //            return false;
-
-        //        bool vulnerable = false;
-        //        ISymbol symbol = model.GetSymbolInfo(node).Symbol;
-        //        if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
-        //            return false;
-
-        //        var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-        //        foreach (var reference in references)
-        //        {
-        //            var currentNode = syntaxNode.FindNode(reference.Definition.Locations.First().SourceSpan);
-        //            vulnerable = IsVulnerable(currentNode);
-        //            foreach (var refLocation in reference.Locations)
-        //            {
-        //                currentNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
-        //                if (currentNode.SpanStart < node.SpanStart && Utils.CheckSameMethod(currentNode, node))
-        //                {
-        //                    var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
-        //                    if (assignment == null)
-        //                        continue;
-        //                    if (currentNode.SpanStart < assignment.Right.SpanStart)
-        //                        vulnerable = IsVulnerable(assignment.Right, symbol);
-        //                }
-        //            }
-        //        }
-        //        return vulnerable;
-        //    }
-        //    else if (node is BinaryExpressionSyntax)
-        //    {
-        //        var left = IsVulnerable((node as BinaryExpressionSyntax).Left, callingSymbol);
-        //        var right = IsVulnerable((node as BinaryExpressionSyntax).Right, callingSymbol);
-        //        return left || right;
-        //    }
-        //    else if (node is VariableDeclaratorSyntax && (node as VariableDeclaratorSyntax).Initializer != null)
-        //        return IsVulnerable((node as VariableDeclaratorSyntax).Initializer.Value);
-        //    else if (node is AssignmentExpressionSyntax)
-        //        return IsVulnerable((node as AssignmentExpressionSyntax).Right);
-        //    else if (node is InterpolatedStringExpressionSyntax)
-        //    {
-        //        bool vulnerable = false;
-        //        var contents = (node as InterpolatedStringExpressionSyntax).Contents.OfType<InterpolationSyntax>();
-        //        foreach (var item in contents)
-        //            vulnerable = vulnerable || IsVulnerable(item.Expression, callingSymbol);
-        //        return vulnerable;
-        //    }
-        //    else if (node is ParameterSyntax)
-        //        return true;
-        //    else
-        //        return false;
-        //}
     }
 }

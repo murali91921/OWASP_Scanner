@@ -31,7 +31,7 @@ namespace SAST.Engine.CSharp.Scanners
                 var objectCreationExpressions = classDeclare.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
                 foreach (var objectCreation in objectCreationExpressions)
                 {
-                    ISymbol symbol = model.GetSymbolInfo(objectCreation.Type).Symbol;
+                    ISymbol symbol = model.GetSymbol(objectCreation.Type);
                     if (symbol != null && symbol.ToString() == DirectorySearcher)
                     {
                         if (objectCreation.Initializer?.Expressions.Count > 0)
@@ -44,8 +44,8 @@ namespace SAST.Engine.CSharp.Scanners
                         if (objectCreation.ArgumentList?.Arguments.Count() > 0)
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
-                                ITypeSymbol argumentType = model.GetTypeInfo(argument.Expression).Type;
-                                if (argumentType.ToString() == "string" || argumentType.ToString() == "System.String" || argument.Expression is BinaryExpressionSyntax)
+                                ITypeSymbol argumentType = model.GetTypeSymbol(argument.Expression);
+                                if (argumentType.SpecialType == SpecialType.System_String || argument.Expression is BinaryExpressionSyntax)
                                     lstVulnerableCheck.Add(argument.Expression);
                             }
                     }
@@ -56,7 +56,7 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     if (assignment.Left is MemberAccessExpressionSyntax leftAssign)
                     {
-                        var leftSymbol = model.GetSymbolInfo(leftAssign).Symbol;
+                        var leftSymbol = model.GetSymbol(leftAssign);
                         if (leftSymbol != null && leftSymbol.ToString() == filter)
                             lstVulnerableCheck.Add(assignment.Right);
                     }
@@ -67,7 +67,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (item is IdentifierNameSyntax)
                 {
                     SyntaxNode vulnerable = null;
-                    ISymbol symbol = model.GetSymbolInfo(item).Symbol;
+                    ISymbol symbol = model.GetSymbol(item);
                     var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                     foreach (var reference in references)
                     {
@@ -75,7 +75,6 @@ namespace SAST.Engine.CSharp.Scanners
                         if ((definition as VariableDeclaratorSyntax).Initializer != null)
                             vulnerable = (definition as VariableDeclaratorSyntax).Initializer.Value;
                         foreach (var refLocation in reference.Locations)
-                        {
                             if (item.SpanStart >= refLocation.Location.SourceSpan.Start)
                             {
                                 var node = syntaxNode.FindNode(refLocation.Location.SourceSpan).Ancestors().FirstOrDefault(obj =>
@@ -83,9 +82,8 @@ namespace SAST.Engine.CSharp.Scanners
                                 if (node != null && node.Left.ToString() == item.ToString())
                                     vulnerable = node.Right;
                             }
-                        }
                     }
-                    if (IsVulnerable(vulnerable))
+                    if (vulnerable != null && IsVulnerable(vulnerable))
                         lstVulnerableStatements.Add(vulnerable.Ancestors().First(obj => obj.IsKind(SyntaxKind.ExpressionStatement)
                             || obj.IsKind(SyntaxKind.VariableDeclarator)));
 
@@ -109,7 +107,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             else if (node is InvocationExpressionSyntax)
             {
-                ISymbol symbol = model.GetSymbolInfo(node).Symbol;
+                ISymbol symbol = model.GetSymbol(node);
                 if (symbol == null)
                     return true;
                 return !(symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == LdapFilterEncode);

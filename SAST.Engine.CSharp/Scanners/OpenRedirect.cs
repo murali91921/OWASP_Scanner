@@ -17,21 +17,30 @@ namespace SAST.Engine.CSharp.Scanners
         Solution solution = null;
         List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
 
+        private static readonly string[] Response_ReceiverType = {
+            "System.Web.HttpResponse",
+            "Microsoft.AspNetCore.Http.Response",
+            "System.Web.Mvc.Controller" ,
+            "System.Web.HttpResponseBase",
+            "Microsoft.AspNetCore.Http.HttpResponse" ,
+            "Microsoft.AspNetCore.Mvc.Controller",
+            "Microsoft.AspNetCore.Mvc.ControllerBase"
+        };
+
+        private static readonly string[] Redirect_MethodNames = {
+            "RedirectPermanent",
+            "Redirect"
+        };
+
         public void FindOpenRedirect(InvocationExpressionSyntax item)
         {
-            IMethodSymbol symbol = null;
-            var symbolInfo = model.GetSymbolInfo(item);
-            if (symbolInfo.Symbol == null && symbolInfo.CandidateReason == CandidateReason.OverloadResolutionFailure)
-                symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
-            else
-                symbol = symbolInfo.Symbol as IMethodSymbol;
-            if (symbol != null && (symbol.Name == "Redirect" || symbol.Name == "RedirectPermanent")
-                && (symbol.ReceiverType.ToString() == "System.Web.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.Response"
-                    || symbol.ReceiverType.ToString() == "System.Web.Mvc.Controller" || symbol.ReceiverType.ToString() == "System.Web.HttpResponseBase"
-                    || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Http.HttpResponse" || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.Controller"
-                    || symbol.ReceiverType.ToString() == "Microsoft.AspNetCore.Mvc.ControllerBase"))
+            IMethodSymbol symbol = model.GetSymbol(item) as IMethodSymbol;
+            if (symbol == null)
+                return;
+            if (Redirect_MethodNames.Contains(symbol.Name) && Response_ReceiverType.Contains(symbol.ReceiverType.ToString())
+                && item.ArgumentList.Arguments.Count > 0)
             {
-                if (item.ArgumentList.Arguments.Count > 0 && IsVulnerable(item.ArgumentList.Arguments.First().Expression))
+                if (IsVulnerable(item.ArgumentList.Arguments.First().Expression))
                     lstVulnerableStatements.Add(item.Parent);
             }
         }
@@ -89,8 +98,8 @@ namespace SAST.Engine.CSharp.Scanners
                     if (Identifiers.Exists(obj => obj == syntaxNode))
                         return true;
                 }
-                SymbolInfo symbolInfo = model.GetSymbolInfo(syntaxNode);
-                var refSymbols = SymbolFinder.FindReferencesAsync(symbolInfo.Symbol, solution).Result;
+                ISymbol symbol = model.GetSymbol(syntaxNode);
+                var refSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                 foreach (var referencedSymbol in refSymbols)
                 {
                     foreach (var referencedLocation in referencedSymbol.Locations)

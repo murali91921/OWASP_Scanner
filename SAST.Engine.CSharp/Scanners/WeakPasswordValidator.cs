@@ -28,8 +28,7 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     foreach (var attribute in attributeList.Attributes)
                     {
-                        ITypeSymbol type = model.GetTypeInfo(attribute).Type;
-                        //Console.WriteLine(type);
+                        ITypeSymbol type = model.GetTypeSymbol(attribute);
                         if (type != null && type.ToString() == "System.ComponentModel.DataAnnotations.DataType"
                                 && attribute.ArgumentList != null && attribute.ArgumentList.Arguments.First().ToString() == "DataType.Password")
                             IsPassword = true;
@@ -68,8 +67,8 @@ namespace SAST.Engine.CSharp.Scanners
                         //IsPassword = false;
                         IsWeak = true;
                         //tempIdentity = null;
-                        var typeInfo = model.GetTypeInfo(item);
-                        if (typeInfo.Type != null && typeInfo.Type.ToString() == "Microsoft.Extensions.DependencyInjection.IServiceCollection")
+                        var typeSymbol = model.GetTypeSymbol(item);
+                        if (typeSymbol != null && typeSymbol.ToString() == "Microsoft.Extensions.DependencyInjection.IServiceCollection")
                         {
                             //Console.WriteLine("Type");
                             // var passwordOptions = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Identity.IdentityOptions");
@@ -78,9 +77,9 @@ namespace SAST.Engine.CSharp.Scanners
                             string typeOfOptions = string.Empty;
                             if (typeArguments.Count() > 0)
                             {
-                                var typeOfOptionsTypeInfo = model.GetTypeInfo(typeArguments.First().Arguments.First());
-                                if (typeOfOptionsTypeInfo.Type != null)
-                                    typeOfOptions = model.GetTypeInfo(typeArguments.First().Arguments.First()).Type.ToString();
+                                var typeOfOptionsTypeInfo = model.GetTypeSymbol(typeArguments.First().Arguments.First());
+                                if (typeOfOptionsTypeInfo != null)
+                                    typeOfOptions = model.GetTypeSymbol(typeArguments.First().Arguments.First()).ToString();
                             }
                             if (typeOfOptions == "Microsoft.AspNetCore.Identity.IdentityOptions")
                             {

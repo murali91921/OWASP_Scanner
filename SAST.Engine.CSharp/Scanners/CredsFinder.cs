@@ -11,6 +11,11 @@ using System.Text.RegularExpressions;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This Scanner to find Hardcoded Credential Vulnerabilities.<br></br>
+    /// For references <see href="https://github.com/dxa4481/truffleHogRegexes/blob/master/truffleHogRegexes/regexes.json"/>,<br></br>
+    /// <see href="https://github.com/l4yton/RegHex"/>
+    /// </summary>
     internal class CredsFinder : IScanner
     {
         static readonly string[] SecretKeywords = new string[] {
@@ -18,8 +23,6 @@ namespace SAST.Engine.CSharp.Scanners
             @"\w*secret\w*",
             @"\w*key\w*",
             @".*(api|gitlab|github|slack|google|client)_?(key|token|secret)$"};
-        // https://github.com/dxa4481/truffleHogRegexes/blob/master/truffleHogRegexes/regexes.json
-        // https://github.com/l4yton/RegHex
         static readonly Dictionary<string, string> secretPatterns = new Dictionary<string, string>{
             {"Slack Token 32","(xox[p|b|o|a]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})"},
             {"RSA private key","-----BEGIN RSA PRIVATE KEY-----"},
@@ -72,59 +75,63 @@ namespace SAST.Engine.CSharp.Scanners
         SemanticModel model;
         Solution solution;
         SyntaxNode syntaxNode;
-        public void FindHardcodeStringNodes(VariableDeclaratorSyntax item)
+
+        /// <summary>
+        /// Finding the Hardcoded strings in <paramref name="variableDeclarator"/>
+        /// </summary>
+        /// <param name="variableDeclarator"></param>
+        private void FindHardcodeStringNodes(VariableDeclaratorSyntax variableDeclarator)
         {
+            // Finding sensitive variable names
+            // Variable name should matches with keywords, and variable value is not empty,and expression should have Literal("").
+            ISymbol symbol = model.GetDeclaredSymbol(variableDeclarator);
+            if (symbol != null)
             {
-                // Finding sensitive variable names
-                // Variable name should matches with keywords, and variable value is not empty,and expression  should have Literal("").
-                ISymbol symbol = model.GetDeclaredSymbol(item);
-                if (symbol != null)
+                if (symbol.ContainingType.SpecialType != SpecialType.System_String)
+                    return;
+                if (variableDeclarator.Initializer != null && variableDeclarator.Initializer is EqualsValueClauseSyntax equalsValue
+                && equalsValue.Value is LiteralExpressionSyntax literalExpression)
                 {
-                    bool isString = symbol is IFieldSymbol && ((symbol as IFieldSymbol).Type.ToString() == "string" || (symbol as IFieldSymbol).Type.ToString() == "System.String");
-                    if (!isString)
-                        isString = symbol is ILocalSymbol && ((symbol as ILocalSymbol).Type.ToString() == "string" || (symbol as ILocalSymbol).Type.ToString() == "System.String");
-                    if (isString)
+                    if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
+                        if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
+                            secretStrings.Add(variableDeclarator);
+                }
+                var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
+                foreach (var reference in references)
+                {
+                    foreach (var referenceLocation in reference.Locations)
                     {
-                        if (item.Initializer != null && item.Initializer is EqualsValueClauseSyntax equalsValue
-                        && equalsValue.Value is LiteralExpressionSyntax literalExpression)
+                        string stringValue = string.Empty;
+                        var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
+                        if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
                         {
-                            if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
-                                if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
-                                    secretStrings.Add(item);
+                            stringValue = literal.ToString();
+                            if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
+                                if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
+                                    secretStrings.Add(presentStatement);
                         }
-                        var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-                        foreach (var reference in references)
+                        else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
                         {
-                            foreach (var referenceLocation in reference.Locations)
+                            if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
+                            || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
                             {
-                                string stringValue = string.Empty;
-                                var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
-                                if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
-                                {
-                                    stringValue = literal.ToString();
-                                    if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                        if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
-                                            secretStrings.Add(presentStatement);
-                                }
-                                else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
-                                {
-                                    if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
-                                    || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
-                                    {
-                                        stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
-                                        if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                            if (IsSecretVariable(symbol.Name))
-                                                secretStrings.Add(presentStatement);
-                                    }
-                                }
+                                stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
+                                if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
+                                    if (IsSecretVariable(symbol.Name))
+                                        secretStrings.Add(presentStatement);
                             }
                         }
                     }
                 }
             }
         }
-        //Check string variable name matches with secret keywords patterns
-        public static bool IsSecretVariable(string variable)
+
+        /// <summary>
+        /// This method will check <paramref name="variable"/> is matches with patterns
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        private static bool IsSecretVariable(string variable)
         {
             foreach (var SecretKeywordItem in SecretKeywords)
                 if (Regex.IsMatch(variable, SecretKeywordItem, RegexOptions.IgnoreCase))
@@ -132,8 +139,12 @@ namespace SAST.Engine.CSharp.Scanners
             return false;
         }
 
-        //Check string value is matches with secret patterns
-        public static bool IsSecretValue(string stringValue)
+        /// <summary>
+        /// This method will check <paramref name="stringValue"/> is matches with Patterns
+        /// </summary>
+        /// <param name="stringValue"></param>
+        /// <returns></returns>
+        private static bool IsSecretValue(string stringValue)
         {
             foreach (var pattern in secretPatterns)
                 if (Regex.IsMatch(stringValue, pattern.Value))
@@ -141,9 +152,14 @@ namespace SAST.Engine.CSharp.Scanners
             return false;
         }
 
+        /// <summary>
+        /// This method will returns text in <paramref name="commentNode"/>
+        /// </summary>
+        /// <param name="commentNode"></param>
+        /// <returns></returns>
         private string FindCommentText(SyntaxTrivia commentNode)
         {
-            string commentText = "";
+            string commentText = string.Empty;
             switch (commentNode.Kind())
             {
                 case SyntaxKind.SingleLineCommentTrivia:
@@ -157,7 +173,11 @@ namespace SAST.Engine.CSharp.Scanners
             return commentText;
         }
 
-        //Finding non-empty single/multi line comments in source code
+        /// <summary>
+        /// This method will return Comment Nodes in <paramref name="rootNode"/>
+        /// </summary>
+        /// <param name="rootNode"></param>
+        /// <returns>List of Comment Trivia</returns>
         private List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
         {
             List<SyntaxTrivia> hardcodeComments = new List<SyntaxTrivia>();
@@ -173,6 +193,14 @@ namespace SAST.Engine.CSharp.Scanners
             return hardcodeComments;
         }
 
+        /// <summary>
+        /// This method will find Vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
             this.model = model;

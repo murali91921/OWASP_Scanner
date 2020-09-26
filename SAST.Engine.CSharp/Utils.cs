@@ -179,10 +179,10 @@ namespace SAST.Engine.CSharp
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.SpecialType==SpecialType.System_String)
+                if (type.SpecialType != SpecialType.System_String)
                     return false;
                 bool vulnerable = false;
-                ISymbol symbol = model.GetSymbolInfo(node).Symbol;
+                ISymbol symbol = model.GetSymbol(node);
                 if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
                     return false;
                 var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;

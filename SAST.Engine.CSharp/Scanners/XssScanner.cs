@@ -106,8 +106,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 var methodsWithParameters = classItem.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>()
                     .Where(method => !method.ParameterList.Parameters.Count.Equals(0))
-                    .Where(method => method.Modifiers.ToString().Equals("public"))
-                    /*.Where(method => method.ReturnType.ToString().Equals("string"))*/;
+                    .Where(method => method.Modifiers.ToString().Equals("public"));
                 foreach (MethodDeclarationSyntax method in methodsWithParameters)
                 {
                     bool verbExists = false;
@@ -120,7 +119,7 @@ namespace SAST.Engine.CSharp.Scanners
                             TypeInfo typeInfo = model.GetTypeInfo(attribute.Name);
                             if (typeInfo.Type == null)
                                 continue;
-                            if (HttpVerbAttributes.Any(obj => obj == typeInfo.Type.ToString()))
+                            if (HttpVerbAttributes.Contains(typeInfo.Type.ToString()))
                                 verbExists = true;
                             if (verbExists)
                                 break;
@@ -166,8 +165,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 foreach (var invocation in classItem.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>())
                 {
-                    SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-                    IMethodSymbol symbol = (symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault()) as IMethodSymbol;
+                    IMethodSymbol symbol = model.GetSymbol(invocation) as IMethodSymbol;
                     if (symbol == null)
                         continue;
                     if (!WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
@@ -177,7 +175,7 @@ namespace SAST.Engine.CSharp.Scanners
                         var argumentType = model.GetTypeInfo(argument.Expression);
                         if (argumentType.Type == null)
                             continue;
-                        if (argumentType.Type.ToString() == "string" || argumentType.Type.ToString() == "System.String")
+                        if (argumentType.Type.SpecialType == SpecialType.System_String)
                             lstVulnerableCheck.Add(argument.Expression);
                         else if (argumentType.Type.ToString() == "char[]" && argument.Expression is InvocationExpressionSyntax)
                         {
@@ -187,7 +185,7 @@ namespace SAST.Engine.CSharp.Scanners
                                 TypeInfo typeInfo = model.GetTypeInfo(currentExpression);
                                 if (typeInfo.Type == null)
                                     continue;
-                                if (typeInfo.Type.ToString() == "string" || typeInfo.Type.ToString() == "System.String")
+                                if (typeInfo.Type.SpecialType == SpecialType.System_String)
                                     lstVulnerableCheck.Add(currentExpression.Expression);
                             }
                         }
@@ -195,15 +193,14 @@ namespace SAST.Engine.CSharp.Scanners
                 }
                 foreach (var assignment in classItem.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>())
                 {
-                    SymbolInfo symbolInfo = model.GetSymbolInfo(assignment.Left);
-                    ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                    ISymbol symbol = model.GetSymbol(assignment.Left);
                     if (symbol == null)
                     {
                         var member = assignment.Left as MemberAccessExpressionSyntax;
                         if (member == null)
                             continue;
-                        symbolInfo = model.GetSymbolInfo(member.Expression);
-                        symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+
+                        symbol = model.GetSymbol(member.Expression);
                         if (symbol == null)
                             continue;
                         else if (WebFormsControlProperties.Any(obj => obj == symbol.ToString() + "." + member.Name))
@@ -225,7 +222,6 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private bool IsVulnerable(SyntaxNode syntaxNode, SemanticModel model, ISymbol callingSymbol = null)
         {
-            SymbolInfo symbolInfo;
             ISymbol symbol = null;
             bool isVulnerable = false;
             switch (syntaxNode.Kind())
@@ -234,11 +230,11 @@ namespace SAST.Engine.CSharp.Scanners
                     TypeInfo typeInfo = model.GetTypeInfo(syntaxNode);
                     if (typeInfo.Type == null)
                         return false;
-                    if (typeInfo.Type.ToString() != "string" && typeInfo.Type.ToString() != "System.String"
-                        && typeInfo.Type.ToString() != "System.Object" && typeInfo.Type.ToString() != "object")
+
+                    if (typeInfo.Type.SpecialType != SpecialType.System_String && typeInfo.Type.SpecialType != SpecialType.System_Object)
                         return false;
-                    symbolInfo = model.GetSymbolInfo(syntaxNode);
-                    symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+
+                    symbol = model.GetSymbol(syntaxNode);
                     if (symbol == null)
                         return false;
                     var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
@@ -261,10 +257,10 @@ namespace SAST.Engine.CSharp.Scanners
                     return isVulnerable;
                 case SyntaxKind.InvocationExpression:
                     isVulnerable = false;
-                    symbolInfo = model.GetSymbolInfo(syntaxNode);
-                    symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                    symbol = model.GetSymbol(syntaxNode);
                     if (symbol == null)
                         return false;
+
                     var invocation = syntaxNode as InvocationExpressionSyntax;
                     if (DataRetrievalMethods.Any(method => method == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                         return true;

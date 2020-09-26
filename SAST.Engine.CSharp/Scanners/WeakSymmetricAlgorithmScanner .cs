@@ -40,8 +40,7 @@ namespace SAST.Engine.CSharp.Scanners
                 }
                 else if (item is ObjectCreationExpressionSyntax objectCreation)
                 {
-                    TypeInfo typeInfo = model.GetTypeInfo(item);
-                    if (Utils.DerivesFromAny(typeInfo.Type, WeakAlgorithmTypes))
+                    if (Utils.DerivesFromAny(model.GetTypeSymbol(item), WeakAlgorithmTypes))
                         lstVulnerableStatements.Add(item);
                 }
             }

@@ -32,8 +32,7 @@ namespace SAST.Engine.CSharp.Scanners
                 var invocations = methodDeclaration.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
                 foreach (var invocation in invocations)
                 {
-                    SymbolInfo symbolInfo = model.GetSymbolInfo(invocation);
-                    ISymbol invocationSymbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                    ISymbol invocationSymbol = model.GetSymbol(invocation);
                     if (invocationSymbol == null)
                         continue;
                     if (invocationSymbol.ContainingType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlTextReader.Read")
@@ -52,15 +51,14 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, vulnerableNodes, Enums.ScannerType.XXE);
         }
-        
+
         private bool IsVulnerableXmlTextReader(InvocationExpressionSyntax invocationExpression)
         {
             bool vulnerable = false;
             if ((invocationExpression.Expression as MemberAccessExpressionSyntax).Expression is IdentifierNameSyntax identifierName)
             {
                 vulnerable = true;
-                SymbolInfo symbolInfo = model.GetSymbolInfo(identifierName);
-                ISymbol xmlTextReaderSymbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                ISymbol xmlTextReaderSymbol = model.GetSymbol(identifierName);
                 var referencedSymbols = SymbolFinder.FindReferencesAsync(xmlTextReaderSymbol, solution).Result;
                 foreach (var referencedSymbol in referencedSymbols)
                 {
@@ -76,13 +74,12 @@ namespace SAST.Engine.CSharp.Scanners
                             continue;
                         if (currentNode.SpanStart < assignment.Right.SpanStart)
                         {
-                            symbolInfo = model.GetSymbolInfo(assignment.Left);
-                            ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                            ISymbol symbol = model.GetSymbol(assignment.Left);
                             if (symbol == null)
                                 continue;
-                            if (symbol.Name.ToString() == "ProhibitDtd")
+                            if (symbol.Name == "ProhibitDtd")
                                 vulnerable = assignment.Right.Kind() == SyntaxKind.FalseLiteralExpression;
-                            else if (symbol.Name.ToString() == "DtdProcessing")
+                            else if (symbol.Name == "DtdProcessing")
                                 vulnerable = (assignment.Right as MemberAccessExpressionSyntax).Name.ToString() == "Parse";
                         }
                     }
@@ -124,8 +121,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             else if (settingNode is IdentifierNameSyntax)
             {
-                SymbolInfo symbolInfo = model.GetSymbolInfo(settingNode);
-                ISymbol settingSymbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                ISymbol settingSymbol = model.GetSymbol(settingNode);
                 var referencedSymbols = SymbolFinder.FindReferencesAsync(settingSymbol, solution).Result;
                 foreach (var refSymbol in referencedSymbols)
                 {
@@ -147,8 +143,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             else if (settingNode is AssignmentExpressionSyntax assignmentExpression)
             {
-                SymbolInfo symbolInfo = model.GetSymbolInfo(assignmentExpression.Left);
-                ISymbol symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+                ISymbol symbol = model.GetSymbol(assignmentExpression.Left);
                 if (symbol == null)
                     return false;
                 else if (symbol.ToString() == "System.Xml.XmlReaderSettings")

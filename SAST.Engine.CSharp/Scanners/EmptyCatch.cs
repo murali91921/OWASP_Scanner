@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This Scanner to find Empty Catch Vulnerabilities 
+    /// </summary>
     internal class EmptyCatchScanner : IScanner
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)

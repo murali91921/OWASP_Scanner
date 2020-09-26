@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This Scanner to find Certificate Validation Vulnerabilities 
+    /// </summary>
     internal class CertificateValidationScanner : IScanner
     {
         private static readonly string[] CallbackDelegates = {
@@ -22,25 +25,42 @@ namespace SAST.Engine.CSharp.Scanners
         /// </summary>
         private HashSet<ISymbol> _visitedMethodSymbols = new HashSet<ISymbol>();
 
+        /// <summary>
+        /// This method will find the Vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
             var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignmentExpressions)
             {
-                if (!assignment.ToString().Contains("ServerCertificateValidationCallback") && !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
+                if (!assignment.ToString().Contains("ServerCertificateValidationCallback") 
+                    && !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
                     continue;
+
                 ISymbol symbol = model.GetSymbol(assignment.Left);
                 if (symbol == null)
                     continue;
-                if (!CallbackDelegates.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
+
+                if (!CallbackDelegates.Contains(symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                     continue;
+
                 if (IsVulnerable(assignment.Right, model))
-                    syntaxNodes.Add(assignment);
+                    vulnerabilities.Add(assignment);
             }
-            return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CertificateValidation);
+            return Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.CertificateValidation);
         }
 
+        /// <summary>
+        /// Get the expression of SyntaxNode for ParenthesizedLambdaExpressionSyntax,AnonymousMethodExpressionSyntax
+        /// </summary>
+        /// <param name="rightNode"></param>
+        /// <returns></returns>
         private SyntaxNode GetBody(SyntaxNode rightNode)
         {
             if (rightNode == null)
@@ -63,6 +83,12 @@ namespace SAST.Engine.CSharp.Scanners
             return body;
         }
 
+        /// <summary>
+        /// This method will verify whether <paramref name="syntaxNode"/> is vulnerable or not.
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private bool IsVulnerable(SyntaxNode syntaxNode, SemanticModel model)
         {
             bool returnConditionalOrFalse = false;
@@ -105,11 +131,8 @@ namespace SAST.Engine.CSharp.Scanners
                         }
                     }
                     else if (!(methodDeclaration.ExpressionBody is null))
-                    {
                         returnConditionalOrFalse = IsConditionalOrFalse(methodDeclaration.ExpressionBody.Expression, model);
-                    }
                     _visitedMethodSymbols.Remove(callingsymbol);
-                    //return returnConditionalOrFalse;
                 }
             }
             else if (syntaxNode is PropertyDeclarationSyntax propertyDeclaration)
@@ -126,10 +149,6 @@ namespace SAST.Engine.CSharp.Scanners
                                 returnConditionalOrFalse = true;
                                 break;
                             }
-                        //if (!returnConditionalOrFalse)
-                        //{
-                        //    var catchClauses = getAccessor.Body.DescendantNodesAndSelf().OfType<CatchClauseSyntax>();
-                        //}
                     }
                     else if (!(getAccessor.ExpressionBody is null))
                         returnConditionalOrFalse = IsConditionalOrFalse(getAccessor.ExpressionBody.Expression, model);
@@ -139,6 +158,13 @@ namespace SAST.Engine.CSharp.Scanners
                 returnConditionalOrFalse = IsConditionalOrFalse(syntaxNode, model);
             return !returnConditionalOrFalse;
         }
+        
+        /// <summary>
+        /// This mwthod will verify <paramref name="expression"/> is Conditional Expression or False Literal Expression
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private bool IsConditionalOrFalse(SyntaxNode expression, SemanticModel model)
         {
             expression = GetBody(expression);

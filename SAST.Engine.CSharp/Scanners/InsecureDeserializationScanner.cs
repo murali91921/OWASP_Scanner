@@ -12,6 +12,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This Scanner to find Insecure Deserialization Vulnerabilities 
+    /// </summary>
     internal class InsecureDeserializationScanner : IScanner
     {
         SyntaxNode _syntaxNode;
@@ -56,6 +59,14 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Resources.ResourceReader"
         };
 
+        /// <summary>
+        /// This method will find Vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             _model = model;

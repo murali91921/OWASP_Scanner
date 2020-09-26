@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
 {
+    /// <summary>
+    /// This Scanner to find Cross Site Request Forgery Vulnerabilities 
+    /// </summary>
     internal class CsrfScanner : IScanner
     {
         //POST, GET, PUT, PATCH, and DELETE
@@ -30,25 +33,50 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Web.Mvc.AllowAnonymousAttribute",
             "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute"};
 
-        private bool CheckHttbVerb(ITypeSymbol typeSymbol)
+        /// <summary>
+        /// This will verify <paramref name="typeSymbol"/> is HttpVerb Attribute or not
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <returns></returns>
+        private bool CheckHttbVerbAttribute(ITypeSymbol typeSymbol)
         {
             if (typeSymbol != null)
                 return HttpVerbAttributes.Any(obj => obj == typeSymbol.ToString());
             return false;
         }
+
+        /// <summary>
+        /// This will verify <paramref name="typeSymbol"/> is AllowAnonynous Attribute or not
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <returns></returns>
         private bool CheckAnonymousAttribute(ITypeSymbol typeSymbol)
         {
             if (typeSymbol != null)
                 return AnonymousAttribute.Any(obj => obj == typeSymbol.ToString());
             return false;
         }
+
+        /// <summary>
+        /// This will verify <paramref name="typeSymbol"/> is ValidateAntiForgery Attribute or not.
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <returns></returns>
         private bool CheckCsrfAttribute(ITypeSymbol typeSymbol)
         {
             if (typeSymbol != null)
                 return CsrfTokenAttributes.Any(obj => obj == typeSymbol.ToString());
             return false;
         }
-        IEnumerable<VulnerabilityDetail> IScanner.FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
+        /// <summary>
+        /// This method will find the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
+        public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             var attributeClassDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
@@ -59,9 +87,9 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     foreach (var attribute in attributeList.Attributes)
                     {
-                        TypeInfo typeInfo = model.GetTypeInfo(attribute);
-                        if (typeInfo.Type != null && typeInfo.Type is ITypeSymbol)
-                            IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeInfo.Type) || IsCsrfAttributeExistsInClass;
+                        ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
+                        if (typeSymbol != null)
+                            IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeSymbol) || IsCsrfAttributeExistsInClass;
                         if (IsCsrfAttributeExistsInClass)
                             break;
                     }
@@ -77,7 +105,7 @@ namespace SAST.Engine.CSharp.Scanners
                         // Action method should be PUBLIC
                         if (!method.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)))
                             break;
-                        var returnTypeSymbol = model.GetSymbolInfo(method.ReturnType).Symbol;
+                        var returnTypeSymbol = model.GetSymbol(method.ReturnType);
                         {
                             bool hasHttpVerb = false;
                             bool hasCsrfAttribute = false;
@@ -86,12 +114,12 @@ namespace SAST.Engine.CSharp.Scanners
                             {
                                 foreach (var attribute in attributeList.Attributes)
                                 {
-                                    TypeInfo typeInfo = model.GetTypeInfo(attribute);
-                                    if (typeInfo.Type != null)
+                                    ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
+                                    if (typeSymbol!= null)
                                     {
-                                        hasHttpVerb = CheckHttbVerb(typeInfo.Type) || hasHttpVerb;
-                                        hasCsrfAttribute = CheckCsrfAttribute(typeInfo.Type) || hasCsrfAttribute;
-                                        hasAnonymousAttribute = CheckAnonymousAttribute(typeInfo.Type) || hasAnonymousAttribute;
+                                        hasHttpVerb = CheckHttbVerbAttribute(typeSymbol) || hasHttpVerb;
+                                        hasCsrfAttribute = CheckCsrfAttribute(typeSymbol) || hasCsrfAttribute;
+                                        hasAnonymousAttribute = CheckAnonymousAttribute(typeSymbol) || hasAnonymousAttribute;
                                     }
                                 }
                             }

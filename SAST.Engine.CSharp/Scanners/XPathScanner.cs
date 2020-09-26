@@ -46,22 +46,17 @@ namespace SAST.Engine.CSharp.Scanners
             var methods = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
             {
-                SymbolInfo symbolInfo = model.GetSymbolInfo(method);
-                IMethodSymbol symbol = null;
-                if (symbolInfo.Symbol != null)
-                    symbol = symbolInfo.Symbol as IMethodSymbol;
-                else if (symbolInfo.CandidateSymbols.Count() > 0)
-                    symbol = symbolInfo.CandidateSymbols.First() as IMethodSymbol;
+                IMethodSymbol symbol = model.GetSymbol(method) as IMethodSymbol;
                 if (symbol == null)
                     continue;
                 if (!MethodsToCheck.Any(obj => obj == symbol.ReceiverType.OriginalDefinition.ToString() + "." + symbol.Name.ToString()))
                     continue;
                 foreach (var argument in method.ArgumentList.Arguments)
                 {
-                    ITypeSymbol typeSymbol = model.GetTypeInfo(argument.Expression).Type;
+                    ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
                     if (typeSymbol == null)
                         continue;
-                    if (typeSymbol.ToString() == "string" || typeSymbol.ToString() == "System.String")
+                    if (typeSymbol.SpecialType == SpecialType.System_String)
                     {
                         lstVulnerableCheck.Add(argument.Expression);
                         break;
@@ -80,14 +75,12 @@ namespace SAST.Engine.CSharp.Scanners
         {
             if (node is IdentifierNameSyntax)
             {
-                ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type == null || type.ToString() != "string" && type.ToString() != "System.String")
+                ITypeSymbol type = model.GetTypeSymbol(node);
+                if (type == null || type.SpecialType != SpecialType.System_String)
                     return false;
                 bool vulnerable = false;
-                ISymbol symbol = model.GetSymbolInfo(node).Symbol;
-                if (symbol == null)
-                    return false;
-                if (symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
+                ISymbol symbol = model.GetSymbol(node);
+                if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
                     return false;
                 var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                 foreach (var reference in references)

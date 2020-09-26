@@ -25,6 +25,10 @@ namespace SAST.Engine.CSharp.Scanners
      * Parameter is passing to method by Object Creation -> no initializer
      * Parameter is passing to method by Object Creation, initializer
      */
+
+    /// <summary>
+    /// This Scanner to find Cookie Flag Vulnerabilities 
+    /// </summary>
     internal class CookieFlagScanner : IScanner, IConfigScanner
     {
         const string HttpCookies_Node = "configuration/system.web/httpCookies";
@@ -38,6 +42,11 @@ namespace SAST.Engine.CSharp.Scanners
 
         #region IConfigScanner
 
+        /// <summary>
+        /// This method will find the Cookie Flag Vulnerabilities
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             bool isSecure = false, isHttpOnly = false;
@@ -87,6 +96,14 @@ namespace SAST.Engine.CSharp.Scanners
 
         #region IScanner
 
+        /// <summary>
+        /// This method will find the Cookie Flag vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
