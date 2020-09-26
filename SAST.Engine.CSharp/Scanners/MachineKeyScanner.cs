@@ -23,24 +23,20 @@ namespace SAST.Engine.CSharp.Scanners
                     if (element.Name.Equals("validationKey", StringComparison.InvariantCultureIgnoreCase) ||
                         element.Name.Equals("decryptionKey", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        vulnerable = !element.Value.Contains("AutoGenerate");
-                        break;
+                        if (!element.Value.Contains("AutoGenerate"))
+                            vulnerabilities.Add(
+                                new VulnerabilityDetail()
+                                {
+                                    FilePath = filePath,
+                                    CodeSnippet = element.OuterXml.Trim(),
+                                    LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString()
+                                            : string.Empty,
+                                    Type = Enums.ScannerType.MachineKeyClearText
+                                });
                     }
                 }
                 while (element.MoveToNextAttribute());
             }
-            if (vulnerable)
-                vulnerabilities = new List<VulnerabilityDetail>()
-                    {
-                        new VulnerabilityDetail()
-                        {
-                            FilePath = filePath,
-                            CodeSnippet = element.OuterXml.Trim(),
-                            LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString()
-                                : string.Empty,
-                            Type = Enums.ScannerType.MachineKeyClearText
-                        }
-                    };
             return vulnerabilities;
         }
     }
