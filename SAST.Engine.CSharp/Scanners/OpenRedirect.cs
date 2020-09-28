@@ -32,19 +32,14 @@ namespace SAST.Engine.CSharp.Scanners
             "Redirect"
         };
 
-        public void FindOpenRedirect(InvocationExpressionSyntax item)
-        {
-            IMethodSymbol symbol = model.GetSymbol(item) as IMethodSymbol;
-            if (symbol == null)
-                return;
-            if (Redirect_MethodNames.Contains(symbol.Name) && Response_ReceiverType.Contains(symbol.ReceiverType.ToString())
-                && item.ArgumentList.Arguments.Count > 0)
-            {
-                if (IsVulnerable(item.ArgumentList.Arguments.First().Expression))
-                    lstVulnerableStatements.Add(item.Parent);
-            }
-        }
-
+        /// <summary>
+        /// This method will find Open Redirect Vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.model = model;
@@ -56,7 +51,12 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.OpenRedirect);
         }
 
-        internal bool IsVulnerable(SyntaxNode argument)
+        /// <summary>
+        /// This method will identify <paramref name="argument"/> is vulnerable or not.
+        /// </summary>
+        /// <param name="argument"></param>
+        /// <returns></returns>
+        private bool IsVulnerable(SyntaxNode argument)
         {
             switch (argument.Kind())
             {
@@ -72,7 +72,12 @@ namespace SAST.Engine.CSharp.Scanners
             return true;
         }
 
-        internal bool IsAddExpression(SyntaxNode syntaxNode)
+        /// <summary>
+        /// Determines if <paramref name="syntaxNode"/> is AddExpression
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <returns></returns>
+        private bool IsAddExpression(SyntaxNode syntaxNode)
         {
             if (syntaxNode.IsKind(SyntaxKind.AddExpression))
             {
@@ -85,7 +90,12 @@ namespace SAST.Engine.CSharp.Scanners
             return false;
         }
 
-        internal bool IsConditionExpression(SyntaxNode syntaxNode)
+        /// <summary>
+        /// Determines if <paramref name="syntaxNode"/> is Conditional Expression
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <returns></returns>
+        private bool IsConditionExpression(SyntaxNode syntaxNode)
         {
             if (syntaxNode is InvocationExpressionSyntax)
                 return true;
@@ -118,6 +128,23 @@ namespace SAST.Engine.CSharp.Scanners
             else if (syntaxNode is ConditionalExpressionSyntax)
                 return true;
             return false;
+        }
+
+        /// <summary>
+        /// This method will find Open Redirect vulnerabilities in <paramref name="item"/>
+        /// </summary>
+        /// <param name="item"></param>
+        private void FindOpenRedirect(InvocationExpressionSyntax item)
+        {
+            IMethodSymbol symbol = model.GetSymbol(item) as IMethodSymbol;
+            if (symbol == null)
+                return;
+            if (Redirect_MethodNames.Contains(symbol.Name) && Response_ReceiverType.Contains(symbol.ReceiverType.ToString())
+                && item.ArgumentList.Arguments.Count > 0)
+            {
+                if (IsVulnerable(item.ArgumentList.Arguments.First().Expression))
+                    lstVulnerableStatements.Add(item.Parent);
+            }
         }
     }
 }

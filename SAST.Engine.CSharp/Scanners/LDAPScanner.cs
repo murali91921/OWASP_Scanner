@@ -15,14 +15,22 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class LDAPScanner : IScanner
     {
-        SemanticModel model;
+        private SemanticModel _model;
         private static readonly string DirectorySearcher = "System.DirectoryServices.DirectorySearcher";
         private static readonly string LdapFilterEncode = "Microsoft.Security.Application.Encoder.LdapFilterEncode";
         private static readonly string filter = "System.DirectoryServices.DirectorySearcher.Filter";
 
+        /// <summary>
+        /// This method will find the LDAP vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            this.model = model;
+            this._model = model;
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();
 
@@ -99,7 +107,12 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.Ldap);
         }
 
-        public bool IsVulnerable(SyntaxNode node)
+        /// <summary>
+        /// This method will identify <paramref name="node"/> is vulnerable or not.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private bool IsVulnerable(SyntaxNode node)
         {
             if (node is BinaryExpressionSyntax binaryExpression)
             {
@@ -109,7 +122,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             else if (node is InvocationExpressionSyntax)
             {
-                ISymbol symbol = model.GetSymbol(node);
+                ISymbol symbol = _model.GetSymbol(node);
                 if (symbol == null)
                     return true;
                 return !(symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == LdapFilterEncode);
@@ -118,22 +131,6 @@ namespace SAST.Engine.CSharp.Scanners
                 return false;
             else
                 return true;
-        }
-
-        public List<SyntaxNode> VulnerableNodes(SyntaxNode node)
-        {
-            List<SyntaxNode> lstNode = new List<SyntaxNode>();
-            if (node.IsKind(SyntaxKind.IdentifierName) || node.IsKind(SyntaxKind.InvocationExpression) || node.IsKind(SyntaxKind.SimpleMemberAccessExpression))
-                lstNode.Add(node);
-            else
-                foreach (var item in node.ChildNodes())
-                {
-                    if (item.IsKind(SyntaxKind.IdentifierName) || item.IsKind(SyntaxKind.InvocationExpression) || item.IsKind(SyntaxKind.SimpleMemberAccessExpression))
-                        lstNode.Add(item);
-                    else
-                        lstNode.AddRange(VulnerableNodes(item));
-                }
-            return lstNode;
         }
     }
 }

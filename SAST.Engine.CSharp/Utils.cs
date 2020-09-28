@@ -137,6 +137,27 @@ namespace SAST.Engine.CSharp
             return false;
         }
 
+
+        /// <summary>
+        /// This method will check <paramref name="typeSymbol"/> is derived from <paramref name="baseType"/>
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <param name="baseType"></param>
+        /// <returns></returns>
+        internal static bool DerivesFrom(ITypeSymbol typeSymbol, string baseType)
+        {
+            if (string.IsNullOrWhiteSpace(baseType))
+                return false;
+            while (typeSymbol != null)
+            {
+                if (baseType.Equals(typeSymbol.ToString()))
+                    return true;
+                typeSymbol = typeSymbol.BaseType?.ConstructedFrom;
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// This method will check <paramref name="typeSymbol"/> is implemented from any of <paramref name="baseTypes"/>
         /// </summary>
@@ -152,6 +173,12 @@ namespace SAST.Engine.CSharp
             return false;
         }
 
+        /// <summary>
+        /// This method will check <paramref name="typeSymbol"/> is implemented from <paramref name="baseType"/>
+        /// </summary>
+        /// <param name="typeSymbol"></param>
+        /// <param name="baseType"></param>
+        /// <returns></returns>
         internal static bool ImplementsFrom(ITypeSymbol typeSymbol, string baseType)
         {
             if (string.IsNullOrWhiteSpace(baseType))

@@ -164,6 +164,11 @@ namespace SAST.Engine.CSharp.Scanners
             return vulnerable;
         }
 
+        /// <summary>
+        /// Determines <paramref name="node"/> is NullLiteral.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
         private bool IsNullObject(SyntaxNode node) => node.Kind() == SyntaxKind.NullLiteralExpression;
     }
 }

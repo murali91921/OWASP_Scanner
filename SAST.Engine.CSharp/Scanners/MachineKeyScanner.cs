@@ -8,10 +8,15 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class MachineKeyScanner : IConfigScanner
     {
-        const string Forms_Node = "configuration/system.web/authentication[@mode='Forms']/forms";
+        private const string Forms_Node = "configuration/system.web/authentication[@mode='Forms']/forms";
+ 
+        /// <summary>
+        /// This method will find Machine key Vulnerabilities.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
-            bool vulnerable = false;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             XPathDocument doc = new XPathDocument(filePath);
             XPathNavigator element = doc.CreateNavigator().SelectSingleNode(Forms_Node);

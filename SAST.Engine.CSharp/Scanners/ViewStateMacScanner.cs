@@ -12,7 +12,7 @@ namespace SAST.Engine.CSharp.Scanners
         const string Pages_Node = "configuration/system.web/pages";
 
         /// <summary>
-        /// Default value is true, so when enableViewStateMac is set to false, consider as vulnerable.
+        /// This method will find ViewstateMac Vulnerabilities.
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>

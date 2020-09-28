@@ -35,16 +35,13 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Data.SQLite.SQLiteDataAdapter",
             "System.Web.UI.WebControls.SqlDataSource",
             };
-
-        private static string[] SqlDataSourceClass = { "System.Web.UI.WebControls.SqlDataSource" };
-
+        private static string SqlDataSourceClass = "System.Web.UI.WebControls.SqlDataSource";
         private static string[] CommandTextParameters = {
             "CommandText",
             "selectCommandText",
             "cmdText",
             "selectCommand"
             };
-
         private static string[] CommandExecuteMethods = {
             "System.Data.Linq.DataContext.ExecuteCommand",
             "System.Data.Linq.DataContext.ExecuteQuery",
@@ -64,13 +61,11 @@ namespace SAST.Engine.CSharp.Scanners
             "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteNonQuery",
             "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteDataSet",
         };
-
         private static string[] CommandExecuteParameters = {
             "query",
             "command",
             "commandText"
         };
-
         private static string[] CommandTextProperties = {
             "System.Data.Common.DbCommand.CommandText",
             "System.Data.IDbCommand.CommandText",
@@ -89,6 +84,14 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Web.UI.WebControls.SqlDataSourceView.DeleteCommand"
         };
 
+        /// <summary>
+        /// This method will find the SQL Injection Vulnerabilities
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.model = model;
@@ -102,12 +105,14 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(objectCreation);
                 if (typeSymbol == null)
                     continue;
+
                 if (!Utils.DerivesFromAny(typeSymbol, CommandClasses))
                     continue;
+
                 if (objectCreation.ArgumentList != null && objectCreation.ArgumentList.Arguments.Count > 0)
                 {
                     var argument = objectCreation.ArgumentList.Arguments.First();
-                    if (Utils.DerivesFromAny(typeSymbol, SqlDataSourceClass) && argument.NameColon == null)
+                    if (Utils.DerivesFrom(typeSymbol, SqlDataSourceClass) && argument.NameColon == null)
                         argument = objectCreation.ArgumentList.Arguments.Last();
 
                     if (argument.NameColon != null)
@@ -162,11 +167,11 @@ namespace SAST.Engine.CSharp.Scanners
                 if (CommandTextProperties.Any(obj => obj == symbol.ToString()))
                     lstVulnerableCheck.Add((item as AssignmentExpressionSyntax).Right);
             }
+
             foreach (var item in lstVulnerableCheck)
-            {
                 if (Utils.IsVulnerable(item, model, solution))
                     lstVulnerableStatements.Add(item.Parent);
-            }
+
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.SqlInjection);
         }
     }

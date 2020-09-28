@@ -36,7 +36,7 @@ namespace SAST.Engine.CSharp
         public static string ToLineString(this LinePosition linePosition) => (linePosition.Line + 1) + "," + (linePosition.Character + 1);
 
         /// <summary>
-        /// This Method will give the ISymbol for <paramref name="node"/>
+        /// This Method will give ISymbol for <paramref name="node"/>
         /// </summary>
         /// <param name="model"></param>
         /// <param name="node"></param>

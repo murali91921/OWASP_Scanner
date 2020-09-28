@@ -41,7 +41,8 @@ namespace SAST.Engine.CSharp.Mapper
                         FilePath = filePath,
                         CodeSnippet = item.ToString(),
                         LineNumber = GetLineNumber(item),
-                        Type = ScannerType.InsecureCookie,
+                        Type = scannerType,
+                        SubType = scannerSubType
                     });
                 }
             return vulnerabilityList;
