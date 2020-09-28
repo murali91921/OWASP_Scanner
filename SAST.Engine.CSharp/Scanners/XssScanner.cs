@@ -67,6 +67,14 @@ namespace SAST.Engine.CSharp.Scanners
             };
         Solution solution;
 
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.solution = solution;
@@ -97,6 +105,12 @@ namespace SAST.Engine.CSharp.Scanners
             return vulnerabilities;
         }
 
+        /// <summary>
+        /// This method will filter the syntaxNodes in <paramref name="classItem"/> which can cause vulnerables.
+        /// </summary>
+        /// <param name="classItem"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private List<SyntaxNode> FindCauseVulnerabililties(ClassDeclarationSyntax classItem, SemanticModel model)
         {
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();

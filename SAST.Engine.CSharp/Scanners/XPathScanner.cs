@@ -19,6 +19,7 @@ namespace SAST.Engine.CSharp.Scanners
         SemanticModel model = null;
         Solution solution = null;
         SyntaxNode syntaxNode = null;
+
         private static string[] MethodsToCheck = {
             "System.Xml.XmlDocument.SelectSingleNode",
             "System.Xml.XmlDocument.SelectNodes",
@@ -36,6 +37,15 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Xml.XPath.Extensions.XPathSelectElements",
             "System.Xml.XPath.Extensions.XPathEvaluate"
         };
+
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.solution = solution;
@@ -71,6 +81,12 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.XPath);
         }
 
+        /// <summary>
+        /// Determines <paramref name="node"/> is vulnerable or not.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="callingSymbol"></param>
+        /// <returns></returns>
         private bool IsVulnerable(SyntaxNode node, ISymbol callingSymbol = null)
         {
             if (node is IdentifierNameSyntax)

@@ -50,7 +50,15 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Security.Cryptography.HashAlgorithmName.MD5",
             "System.Security.Cryptography.HashAlgorithmName.SHA1"
         };
-        
+
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
@@ -84,6 +92,12 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakHashingConfig);
         }
         
+        /// <summary>
+        /// Determines <paramref name="methodSymbol"/> have WeakHashing or not.
+        /// </summary>
+        /// <param name="methodSymbol"></param>
+        /// <param name="argumentList"></param>
+        /// <returns></returns>
         private static bool CheckWeakHashingCreation(IMethodSymbol methodSymbol, ArgumentListSyntax argumentList)
         {
             if (argumentList != null && methodSymbol?.ContainingType != null && methodSymbol.Name != null)

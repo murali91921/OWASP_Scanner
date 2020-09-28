@@ -20,6 +20,14 @@ namespace SAST.Engine.CSharp.Scanners
         Solution solution = null;
         SyntaxNode syntaxNode = null;
 
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this.model = model;
@@ -52,6 +60,11 @@ namespace SAST.Engine.CSharp.Scanners
             return Map.ConvertToVulnerabilityList(filePath, vulnerableNodes, Enums.ScannerType.XXE);
         }
 
+        /// <summary>
+        /// Determines <paramref name="invocationExpression"/> is vulnerable by XMLTextReader or not.
+        /// </summary>
+        /// <param name="invocationExpression"></param>
+        /// <returns></returns>
         private bool IsVulnerableXmlTextReader(InvocationExpressionSyntax invocationExpression)
         {
             bool vulnerable = false;
@@ -88,6 +101,11 @@ namespace SAST.Engine.CSharp.Scanners
             return vulnerable;
         }
 
+        /// <summary>
+        /// Determines <paramref name="invocation"/> is vulnerable by XMLReader or not.
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <returns></returns>
         private bool IsVulnerableXmlReader(InvocationExpressionSyntax invocation)
         {
             bool vulnerable = false;
@@ -96,12 +114,18 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol argumentSymbol = model.GetTypeInfo(argument.Expression).Type;
                 if (argumentSymbol == null || argumentSymbol.ToString() != "System.Xml.XmlReaderSettings")
                     continue;
-                vulnerable = IsVulnerableSettings(argument.Expression, invocation.Span);
+                vulnerable = IsVulnerableSettings(argument.Expression);
             }
             return vulnerable;
         }
 
-        private bool IsVulnerableSettings(SyntaxNode settingNode, TextSpan textSpan)
+        /// <summary>
+        /// Determines <paramref name="settingNode"/> is have vulnerable settings or not
+        /// </summary>
+        /// <param name="settingNode"></param>
+        /// <param name="textSpan"></param>
+        /// <returns></returns>
+        private bool IsVulnerableSettings(SyntaxNode settingNode)
         {
             bool vulnerable = false;
             if (settingNode is null || IsNullObject(settingNode))
@@ -115,7 +139,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (item is AssignmentExpressionSyntax assign)
                     {
                         if (assign.Left.ToString().Contains("DtdProcessing") || assign.Left.ToString().Contains("ProhibitDtd"))
-                            vulnerable = IsVulnerableSettings(assign, assign.Span);
+                            vulnerable = IsVulnerableSettings(assign);
                     }
                 }
             }
@@ -126,7 +150,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var refSymbol in referencedSymbols)
                 {
                     vulnerable = IsVulnerableSettings(refSymbol.Definition.Locations.First().SourceTree.GetRoot().FindNode(
-                        refSymbol.Definition.Locations.First().SourceSpan), refSymbol.Definition.Locations.First().SourceSpan);
+                        refSymbol.Definition.Locations.First().SourceSpan));
                     foreach (var refLocation in refSymbol.Locations)
                     {
                         if (refLocation.Location.SourceSpan.Start >= settingNode.SpanStart)
@@ -137,7 +161,7 @@ namespace SAST.Engine.CSharp.Scanners
                         var assignment = currentNode.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                         if (assignment == null || currentNode.SpanStart >= assignment.Right.SpanStart)
                             continue;
-                        vulnerable = IsVulnerableSettings(assignment, assignment.Span);
+                        vulnerable = IsVulnerableSettings(assignment);
                     }
                 }
             }
@@ -147,25 +171,19 @@ namespace SAST.Engine.CSharp.Scanners
                 if (symbol == null)
                     return false;
                 else if (symbol.ToString() == "System.Xml.XmlReaderSettings")
-                    return IsVulnerableSettings(assignmentExpression.Right, assignmentExpression.Span);
+                    return IsVulnerableSettings(assignmentExpression.Right);
                 else if (symbol.ToString() == "System.Xml.XmlReaderSettings.DtdProcessing")
                     return (assignmentExpression.Right as MemberAccessExpressionSyntax).Name.ToString() == "Parse";
-                else if (symbol.ToString() == "System.Xml.XmlReaderSettings.ProhibitDtd")
-                {
-                    if (assignmentExpression.Right is LiteralExpressionSyntax)
-                        return assignmentExpression.Right.Kind() == SyntaxKind.FalseLiteralExpression;
-                }
+                else if (symbol.ToString() == "System.Xml.XmlReaderSettings.ProhibitDtd" && (assignmentExpression.Right is LiteralExpressionSyntax))
+                    return assignmentExpression.Right.Kind() == SyntaxKind.FalseLiteralExpression;
             }
-            else if (settingNode is VariableDeclaratorSyntax variableDeclarator)
-            {
-                if (variableDeclarator.Initializer != null)
-                    vulnerable = IsVulnerableSettings(variableDeclarator.Initializer.Value, variableDeclarator.Span);
-            }
+            else if (settingNode is VariableDeclaratorSyntax variableDeclarator && variableDeclarator.Initializer != null)
+                vulnerable = IsVulnerableSettings(variableDeclarator.Initializer.Value);
             return vulnerable;
         }
 
         /// <summary>
-        /// Determines <paramref name="node"/> is NullLiteral.
+        /// Determines <paramref name="node"/> is NullLiteral or not.
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>

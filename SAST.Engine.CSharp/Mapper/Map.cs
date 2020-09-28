@@ -8,7 +8,7 @@ namespace SAST.Engine.CSharp.Mapper
     public static class Map
     {
         /// <summary>
-        /// COnvert the SyntaxNode to VulnerabilityDetail objects
+        /// Convert the SyntaxNode to VulnerabilityDetail objects
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="filePath">File Path of source file</param>
@@ -47,28 +47,6 @@ namespace SAST.Engine.CSharp.Mapper
                 }
             return vulnerabilityList;
         }
-
-        //internal static void ConvertFromSASTCookie<T>(string filePath, List<SASTCookie> astCookie, List<VulnerabilityDetail> vulnerabilityList)
-        //{
-        //    foreach (var item in astCookie)
-        //    {
-        //        string missing = "";
-        //        if (!item.IsHttpOnly)
-        //            missing = "HttpOnly";
-        //        if (!item.IsSecure)
-        //            missing = string.IsNullOrEmpty(missing) ? "Secure" : (missing + ", Secure");
-        //        missing += " Flag(s) missing ";
-
-        //        vulnerabilityList.Add(new VulnerabilityDetail
-        //        {
-        //            FilePath = filePath,
-        //            CodeSnippet = item.CookieStatement.ToString(),
-        //            LineNumber = GetLineNumber(item.CookieStatement),
-        //            Type = ScannerType.InsecureCookie,
-        //            Description = missing
-        //        });
-        //    }
-        //}
 
         /// <summary>
         /// Get the Line Number of SyntaxNode or Token

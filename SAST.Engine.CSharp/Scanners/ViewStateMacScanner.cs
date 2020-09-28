@@ -12,7 +12,7 @@ namespace SAST.Engine.CSharp.Scanners
         const string Pages_Node = "configuration/system.web/pages";
 
         /// <summary>
-        /// This method will find ViewstateMac Vulnerabilities.
+        /// Determines ViewstateMac Vulnerabilities.
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>

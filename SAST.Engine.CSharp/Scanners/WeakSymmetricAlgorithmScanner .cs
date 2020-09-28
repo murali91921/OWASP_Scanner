@@ -14,13 +14,20 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Security.Cryptography.DESCryptoServiceProvider",
             "System.Security.Cryptography.RC2CryptoServiceProvider"
         };
-
         private static readonly string[] WeakAlgorithmMethods = {
             "System.Security.Cryptography.DES.Create",
             "System.Security.Cryptography.RC2.Create",
             "System.Security.Cryptography.TripleDES.Create"
         };
 
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();

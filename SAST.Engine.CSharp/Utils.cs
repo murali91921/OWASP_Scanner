@@ -137,7 +137,6 @@ namespace SAST.Engine.CSharp
             return false;
         }
 
-
         /// <summary>
         /// This method will check <paramref name="typeSymbol"/> is derived from <paramref name="baseType"/>
         /// </summary>
@@ -156,7 +155,6 @@ namespace SAST.Engine.CSharp
             }
             return false;
         }
-
 
         /// <summary>
         /// This method will check <paramref name="typeSymbol"/> is implemented from any of <paramref name="baseTypes"/>
@@ -189,7 +187,7 @@ namespace SAST.Engine.CSharp
         }
 
         /// <summary>
-        /// This method wii return true, if SYntasxNodes are exists in same Method. 
+        /// This method will return true, If both SyntaxNodes in same Method. 
         /// </summary>
         /// <param name="first"></param>
         /// <param name="second"></param>

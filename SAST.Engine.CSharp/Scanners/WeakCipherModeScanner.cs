@@ -13,8 +13,17 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class WeakCipherModeScanner : IScanner
     {
-        static readonly string CipherModeType = "System.Security.Cryptography.CipherMode";
+        //static readonly string CipherModeType = "System.Security.Cryptography.CipherMode";
         static readonly string[] WeakCipherModes = { "ECB", "CBC", "OFB" };
+        
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             return new List<VulnerabilityDetail>();
