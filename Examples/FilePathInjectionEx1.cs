@@ -10,44 +10,44 @@ namespace Example
             sw.Close();
             byte[] bytes = new byte[int.MaxValue];
             //Directory.Exists(srcfile);
-            FileInfo fileInfo = new FileInfo(srcfile);
+            FileInfo fileInfo = new FileInfo(srcfile);   //Unsafe
             //destFile = "\Temp.txt";
-            destFile = cleanInput(destFile);
+            //destFile = cleanInput(destFile);
             //destFile = cleanInput(out destFile);
             //destFile = destFile.cleanInput("sub");
-            fileInfo.CopyTo(destFile);
-            fileInfo.MoveTo(destFile);
-            fileInfo.Replace(destFile, destBackupFile);
-            fileInfo.Replace(destinationBackupFileName: destBackupFile, destinationFileName: destFile);
-            File.AppendAllLines(destFile, null);
+            fileInfo.CopyTo(destFile);	//Unsafe
+            fileInfo.MoveTo(destFile);	//Unsafe
+            fileInfo.Replace(destFile, destBackupFile);//Unsafe
+            fileInfo.Replace(destinationBackupFileName: destBackupFile, destinationFileName: destFile);//Unsafe
+            File.AppendAllLines(destFile, null);//Unsafe
             //File.AppendAllLinesAsync(destFile,null);
-            File.AppendAllText(destFile, "");
+            File.AppendAllText(destFile, "");//Unsafe
             //File.AppendAllTextAsync(destFile,"")
-            File.AppendText(destFile);
-            File.Copy(srcfile, destFile);
-            File.Copy(destFileName: destFile, sourceFileName: srcfile);
-            File.Create(destFile);
-            File.CreateText(destFile);
-            File.Delete(destFile);
-            File.Exists(destFile);
-            File.Move(srcfile, destFile);
-            File.Move(destFileName: srcfile, sourceFileName: destFile);
-            File.Open(destFile, FileMode.Open);
-            File.OpenRead(destFile);
-            File.OpenText(destFile);
-            File.OpenWrite(destFile);
-            File.ReadAllBytes(destFile);
+            File.AppendText(destFile);//Unsafe
+            File.Copy(srcfile, destFile);//Unsafe
+            File.Copy(destFileName: destFile, sourceFileName: srcfile);//Unsafe
+            File.Create(destFile);//Unsafe
+            File.CreateText(destFile);//Unsafe
+            File.Delete(destFile);//Unsafe
+            File.Exists(destFile);//Unsafe
+            File.Move(srcfile, destFile);//Unsafe
+            File.Move(destFileName: srcfile, sourceFileName: destFile);//Unsafe
+            File.Open(destFile, FileMode.Open);//Unsafe
+            File.OpenRead(destFile);//Unsafe
+            File.OpenText(destFile);//Unsafe
+            File.OpenWrite(destFile);//Unsafe
+            File.ReadAllBytes(destFile);//Unsafe
             //File.ReadAllBytesAsync(destFile);
-            File.ReadAllLines(destFile);
+            File.ReadAllLines(destFile);//Unsafe
             //File.ReadAllLinesAsync(destFile);
-            File.ReadAllText(destFile);
+            File.ReadAllText(destFile);//Unsafe
             //File.ReadAllTextAsync(destFile);
-            File.ReadLines(destFile);
-            File.WriteAllBytes(destFile, bytes);
+            File.ReadLines(destFile);//Unsafe
+            File.WriteAllBytes(destFile, bytes);//Unsafe
             //File.WriteAllBytesAsync(destFile, bytes);
-            File.WriteAllLines(destFile, null);
+            File.WriteAllLines(destFile, null);//Unsafe
             //File.WriteAllLinesAsync(destFile, bytes);
-            File.WriteAllText(destFile, "");
+            File.WriteAllText(destFile, "");//Unsafe
             //File.WriteAllTextAsync(destFile);
         }
         static string cleanInput(string str)

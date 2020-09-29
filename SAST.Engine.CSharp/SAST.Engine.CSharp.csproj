@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <!--<PackageReference Include="HtmlAgilityPack" Version="1.11.24" />-->
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.7.0" />
