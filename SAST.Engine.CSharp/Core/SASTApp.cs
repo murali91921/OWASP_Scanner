@@ -97,7 +97,7 @@ namespace SAST.Engine.CSharp.Core
                 if (parentProject.FilePath == null)
                     continue;
                 //Finding the ProjectReferences in Project File
-                IEnumerable<string> projectReferencePaths = DotnetParser.GetAttributes(parentProject.FilePath, "/Project/ItemGroup/ProjectReference", "Include", Utils.ProjectFileExtensions);
+                IEnumerable<string> projectReferencePaths = XMLParser.GetAttributes(parentProject.FilePath, "/Project/ItemGroup/ProjectReference", "Include", Utils.ProjectFileExtensions);
                 if (projectReferencePaths == null || projectReferencePaths.Count() == 0)
                     continue;
                 List<ProjectReference> references = new List<ProjectReference>();
@@ -163,8 +163,8 @@ namespace SAST.Engine.CSharp.Core
                 //Adding the Project to workspace Solution.
                 Solution solution = workspace.CurrentSolution.AddProject(projectInfo);
                 List<string> sourceFilePaths = new List<string>();
-                sourceFilePaths.AddRange(DotnetParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
-                sourceFilePaths.AddRange(DotnetParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
+                sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
+                sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
                 workspace.TryApplyChanges(solution);
                 //Loading the source Files (.cs,.config ) to add them in Project.
                 LoadSourceFiles(projectInfo.Id, sourceFilePaths);
@@ -183,7 +183,7 @@ namespace SAST.Engine.CSharp.Core
             if (!File.Exists(solutionPath) || string.IsNullOrWhiteSpace(File.ReadAllText(solutionPath)))
                 return false;
             //Finding the projects from Solution File
-            var projects = DotnetParser.ParseSolution(solutionPath);
+            var projects = SolutionParser.ParseSolution(solutionPath);
             if (projects.Count() == 0)
                 return false;
             //Create solution & adding to workspace

@@ -15,7 +15,6 @@
     <EmbeddedResource Remove="Configuration\**" />
     <None Remove="Configuration\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="AssemblyResources.Designer.cs" />
     <Compile Remove="Contract\IScanSyntaxNode.cs" />
