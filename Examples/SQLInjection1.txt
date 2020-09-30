@@ -6,18 +6,20 @@ class SqlServerExample1
 {
     static void UnsafeCode(string name, decimal price)
     {
-        string printQuery="";
         string connectionString = "Data Source=(local);Initial Catalog=Northwind;Integrated Security=true;";
         string queryString = $"SELECT ProductID, UnitPrice, Name from dbo.products WHERE Name = '{name}' and UnitPrice >= {price}";
-        queryString = "SELECT ProductID, UnitPrice, Name from dbo.products WHERE Name = '" + name + "' and UnitPrice >= " + price;
-        queryString = "SELECT ProductID, UnitPrice, Name from dbo.products WHERE Name = @name and UnitPrice >= @price ";
-        printQuery = queryString;
-        using (SqlConnection connection = new SqlConnection(connectionString))
+        
+		using (SqlConnection connection = new SqlConnection(connectionString))
         {
             if(queryString.Length > 10)
                 return;
             SqlCommand command = new SqlCommand(queryString, connection);
-            command.CommandText = queryString;
+		queryString = "SELECT ProductID, UnitPrice, Name from dbo.products WHERE Name = '" + name + "' and UnitPrice >= " + price;
+            command = new SqlCommand(queryString, connection);
+        queryString = "SELECT ProductID, UnitPrice, Name from dbo.products WHERE Name = @name and UnitPrice >= @price ";
+                
+
+		command.CommandText = queryString;
             try
             {
                 connection.Open();
