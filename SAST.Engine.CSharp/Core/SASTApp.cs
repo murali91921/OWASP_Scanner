@@ -8,6 +8,7 @@ using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Scanners;
 using SAST.Engine.CSharp.Parser;
 using Microsoft.CodeAnalysis.CSharp;
+using Antlr4.Runtime;
 
 namespace SAST.Engine.CSharp.Core
 {
@@ -112,6 +113,7 @@ namespace SAST.Engine.CSharp.Core
             //Applying the changes made.
             workspace.TryApplyChanges(solution);
         }
+
         /// <summary>
         /// Loading the source Files into workspace Project.
         /// </summary>
@@ -266,6 +268,19 @@ namespace SAST.Engine.CSharp.Core
                     foreach (var document in project.Documents)
                     {
                         IScanner scanner = GetScanner(scannerType);
+                        //static void Main(string[] args)
+                        //{
+                        //    string input = "log(10 + A1 * 35 + (5.4 - 7.4))";
+                        //    AntlrInputStream inputStream = new AntlrInputStream(input);
+                        //    HTMLLexer spreadsheetLexer = new HTMLLexer(inputStream);
+                        //    CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
+                        //    HTMLParser spreadsheetParser = new HTMLParser(commonTokenStream);
+                        //    HTMLParser.HtmlDocumentContext context = spreadsheetParser.htmlDocument();
+                        //    HTMLVisitor visitor = new SpreadsheetVisitor();
+
+                        //    Console.WriteLine(visitor.Visit(expressionContext));
+                        //}
+
                         if (scanner == null)
                             continue;
                         vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
@@ -308,6 +323,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CertificateValidation => new CertificateValidationScanner(),
                 ScannerType.JWTValidation => new JWTSignatureScanner(),
                 ScannerType.PasswordLockout => new PasswordLockoutScanner(),
+                ScannerType.Authorize => new AuthorizeScanner(),
                 _ => null,
             };
         }

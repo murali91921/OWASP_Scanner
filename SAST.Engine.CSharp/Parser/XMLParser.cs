@@ -55,6 +55,12 @@ namespace SAST.Engine.CSharp.Parser
             return sourceFiles;
         }
 
+        /// <summary>
+        /// Creates Navigator in the <paramref name="filePath"/> by searching <paramref name="node"/>
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="node"></param>
+        /// <returns>null if any exception occurs or node is not available in <paramref name="filePath"/></returns>
         internal static XPathNavigator CreateNavigator(string filePath, string node)
         {
             XPathNavigator element = null;
