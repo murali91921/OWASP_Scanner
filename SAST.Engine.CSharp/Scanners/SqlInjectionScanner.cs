@@ -15,10 +15,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SqlInjectionScanner : IScanner
     {
-        SemanticModel model;
-        Solution solution;
-        SyntaxNode syntaxNode;
-
         private static string[] CommandClasses = {
             "System.Data.Common.DbCommand",
             "System.Data.IDbCommand",
@@ -94,9 +90,6 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            this.model = model;
-            this.syntaxNode = syntaxNode;
-            this.solution = solution;
             List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
             HashSet<SyntaxNode> lstVulnerableCheck = new HashSet<SyntaxNode>();
             var objectCreationExpressions = syntaxNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();

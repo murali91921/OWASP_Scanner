@@ -20,7 +20,7 @@ namespace SAST.Engine.CSharp.Scanners
             "DecodeToObject"
         };
         private static readonly string IdentityModel_Tokens = "Microsoft.IdentityModel.Tokens";
-        private static readonly string IJwtDecoder_Class = "JWT.IJwtDecoder";
+        private static readonly string IJwtDecoder_Interface = "JWT.IJwtDecoder";
 
         /// <summary>
         /// This method will FInd JWT Token vulnerabilities from assignments.
@@ -58,12 +58,12 @@ namespace SAST.Engine.CSharp.Scanners
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocations)
             {
-                if (!DecodeMethods.Any(obj => item.ToString().Contains(obj)))
+                if (!DecodeMethods.Any(obj => item.Expression.ToString().Contains(obj)))
                     continue;
-                ISymbol symbol = model.GetSymbol(item);
+                ISymbol symbol = model.GetSymbol(item.Expression);
                 if (symbol == null)
                     continue;
-                if (!Utils.ImplementsFrom(symbol.ContainingType, IJwtDecoder_Class))
+                if (!Utils.ImplementsFrom(symbol.ContainingType, IJwtDecoder_Interface))
                     continue;
                 if (!DecodeMethods.Contains(symbol.Name))
                     continue;
@@ -225,7 +225,7 @@ namespace SAST.Engine.CSharp.Scanners
 
             //JWT.Net JwtBuilder
             FindBuilders(syntaxNode, model, ref vulnerabilities, solution);
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.JWTValidation);
+            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities.OrderBy(obj => obj.Span).ToList(), Enums.ScannerType.JWTValidation);
         }
     }
 }
