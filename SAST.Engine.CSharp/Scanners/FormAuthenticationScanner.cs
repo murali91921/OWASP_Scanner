@@ -1,4 +1,5 @@
 ﻿using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -18,11 +19,13 @@ namespace SAST.Engine.CSharp.Scanners
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            XPathDocument xPathDocument = new XPathDocument(filePath);
-            FindWeakProtection(filePath, xPathDocument, ref vulnerabilities);
-            FindCrossAppRedirect(filePath, xPathDocument, ref vulnerabilities);
-            FindCookielessMode(filePath, xPathDocument, ref vulnerabilities);
-            FindRequireSsl(filePath, xPathDocument, ref vulnerabilities);
+            XPathNavigator element = XMLParser.CreateNavigator(filePath, Forms_Node);
+            if (element == null)
+                return vulnerabilities;
+            FindWeakProtection(filePath, element, ref vulnerabilities);
+            FindCrossAppRedirect(filePath, element, ref vulnerabilities);
+            FindCookielessMode(filePath, element, ref vulnerabilities);
+            FindRequireSsl(filePath, element, ref vulnerabilities);
             return vulnerabilities;
         }
 
@@ -32,9 +35,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindWeakProtection(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
+        private void FindWeakProtection(string filePath, XPathNavigator element, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = false;
@@ -69,9 +71,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindCrossAppRedirect(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
+        private void FindCrossAppRedirect(string filePath, XPathNavigator element, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = false;
@@ -105,9 +106,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindCookielessMode(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
+        private void FindCookielessMode(string filePath, XPathNavigator element, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = true;
@@ -146,9 +146,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="filePath"></param>
         /// <param name="xPathDocument"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindRequireSsl(string filePath, XPathDocument xPathDocument, ref List<VulnerabilityDetail> vulnerabilities)
+        private void FindRequireSsl(string filePath, XPathNavigator element, ref List<VulnerabilityDetail> vulnerabilities)
         {
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 bool vulnerable = true;

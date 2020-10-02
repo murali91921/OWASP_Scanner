@@ -1,4 +1,5 @@
 ﻿using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -9,7 +10,7 @@ namespace SAST.Engine.CSharp.Scanners
     internal class MachineKeyScanner : IConfigScanner
     {
         private const string Forms_Node = "configuration/system.web/authentication[@mode='Forms']/forms";
- 
+
         /// <summary>
         /// This method will find Machine key Vulnerabilities.
         /// </summary>
@@ -18,8 +19,7 @@ namespace SAST.Engine.CSharp.Scanners
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            XPathDocument doc = new XPathDocument(filePath);
-            XPathNavigator element = doc.CreateNavigator().SelectSingleNode(Forms_Node);
+            XPathNavigator element = XMLParser.CreateNavigator(filePath, Forms_Node);
             if (element != null && element.HasAttributes)
             {
                 element.MoveToFirstAttribute();

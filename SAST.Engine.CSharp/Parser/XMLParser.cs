@@ -54,5 +54,19 @@ namespace SAST.Engine.CSharp.Parser
             }
             return sourceFiles;
         }
+
+        internal static XPathNavigator CreateNavigator(string filePath, string node)
+        {
+            XPathNavigator element = null;
+            try
+            {
+                XPathDocument doc = new XPathDocument(filePath);
+                element = doc.CreateNavigator().SelectSingleNode(node);
+            }
+            catch
+            {
+            }
+            return element;
+        }
     }
 }

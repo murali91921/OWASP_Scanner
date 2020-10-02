@@ -1,4 +1,5 @@
 ﻿using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -18,9 +19,7 @@ namespace SAST.Engine.CSharp.Scanners
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            XPathDocument xPathDocument = new XPathDocument(filePath);
-
-            XPathNavigator element = xPathDocument.CreateNavigator().SelectSingleNode(HttpRuntime_Node);
+            XPathNavigator element = XMLParser.CreateNavigator(filePath, HttpRuntime_Node);
             if (element != null && element.HasAttributes)
             {
                 element.MoveToFirstAttribute();

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Enums;
+using SAST.Engine.CSharp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,42 +53,49 @@ namespace SAST.Engine.CSharp.Scanners
             bool isSecure = false, isHttpOnly = false;
             //string returnStatement = string.Empty;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            XPathDocument doc = new XPathDocument(filePath);
-            XPathNavigator element = doc.CreateNavigator().SelectSingleNode(HttpCookies_Node);
-            if (element != null)
+            try
             {
-                if (element.HasAttributes)
+
+                XPathNavigator element = XMLParser.CreateNavigator(filePath, HttpCookies_Node);
+                if (element != null)
                 {
-                    element.MoveToFirstAttribute();
-                    do
+                    if (element.HasAttributes)
                     {
-                        if (element.Name.Equals("httpOnlyCookies", StringComparison.InvariantCultureIgnoreCase))
-                            isHttpOnly = bool.Parse(element.Value);
-                        else if (element.Name.Equals("requireSSL", StringComparison.InvariantCultureIgnoreCase))
-                            isSecure = bool.Parse(element.Value);
+                        element.MoveToFirstAttribute();
+                        do
+                        {
+                            if (element.Name.Equals("httpOnlyCookies", StringComparison.InvariantCultureIgnoreCase))
+                                isHttpOnly = bool.Parse(element.Value);
+                            else if (element.Name.Equals("requireSSL", StringComparison.InvariantCultureIgnoreCase))
+                                isSecure = bool.Parse(element.Value);
+                        }
+                        while (element.MoveToNextAttribute());
+                        element.MoveToParent();
                     }
-                    while (element.MoveToNextAttribute());
-                    element.MoveToParent();
-                }
-                if (!isHttpOnly || !isSecure)
-                {
-                    string missing = "";
-                    if (!isHttpOnly)
-                        missing = "HttpOnly";
-                    if (!isSecure)
-                        missing = string.IsNullOrEmpty(missing) ? "Secure" : (missing + ", Secure");
-                    missing += " Flag(s) missing ";
-                    //returnStatement = string.Format(returnStatement, missing);
-                    var vulnerability = new VulnerabilityDetail()
+                    if (!isHttpOnly || !isSecure)
                     {
-                        FilePath = filePath,
-                        CodeSnippet = element.OuterXml.Trim(),
-                        LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString() : string.Empty,
-                        Type = ScannerType.InsecureCookie,
-                        Description = missing
-                    };
-                    vulnerabilities = new List<VulnerabilityDetail>() { vulnerability };
+                        string missing = "";
+                        if (!isHttpOnly)
+                            missing = "HttpOnly";
+                        if (!isSecure)
+                            missing = string.IsNullOrEmpty(missing) ? "Secure" : (missing + ", Secure");
+                        missing += " Flag(s) missing ";
+                        //returnStatement = string.Format(returnStatement, missing);
+                        var vulnerability = new VulnerabilityDetail()
+                        {
+                            FilePath = filePath,
+                            CodeSnippet = element.OuterXml.Trim(),
+                            LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString() : string.Empty,
+                            Type = ScannerType.InsecureCookie,
+                            Description = missing
+                        };
+                        vulnerabilities = new List<VulnerabilityDetail>() { vulnerability };
+                    }
                 }
+            }
+            catch
+            {
+
             }
             return vulnerabilities;
         }

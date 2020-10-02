@@ -115,7 +115,14 @@ namespace SAST.Engine.CSharp
             string[] assemblyPaths = Directory.GetFiles(Path.Combine(directory, "Resources"));
             foreach (var assemblyFile in assemblyPaths)
                 if (File.Exists(assemblyFile))
-                    MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
+                {
+                    try
+                    {
+                        MetadataReferences.Add(MetadataReference.CreateFromFile(assemblyFile));
+                    }
+                    catch
+                    { }
+                }
         }
 
         /// <summary>
@@ -196,7 +203,7 @@ namespace SAST.Engine.CSharp
         {
             MethodDeclarationSyntax firstBlock = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
             MethodDeclarationSyntax secondBlock = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            return firstBlock.IsEquivalentTo(secondBlock);
+            return firstBlock.Equals(secondBlock);
         }
 
         /// <summary>
@@ -213,7 +220,7 @@ namespace SAST.Engine.CSharp
             if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeInfo(node).Type;
-                if (type.SpecialType != SpecialType.System_String)
+                if (type == null || type.SpecialType != SpecialType.System_String)
                     return false;
                 bool vulnerable = false;
                 ISymbol symbol = model.GetSymbol(node);
