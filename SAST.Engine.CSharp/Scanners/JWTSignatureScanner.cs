@@ -97,7 +97,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!item.ToString().Contains("Decode"))
                     continue;
                 ISymbol symbol = model.GetSymbol(item);
-                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "JWT.JwtBuilder.Decode")
+                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "JWT.Builder.JwtBuilder.Decode")
                     continue;
                 //bool vulnerable = true;
                 if (IsVulnerable((item.Expression as MemberAccessExpressionSyntax).Expression, model, solution))
