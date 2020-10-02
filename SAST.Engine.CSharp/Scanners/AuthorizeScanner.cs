@@ -30,6 +30,14 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Web.Mvc.AllowAnonymousAttribute",
         };
 
+        /// <summary>
+        /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
+        /// </summary>
+        /// <param name="syntaxNode"></param>
+        /// <param name="filePath"></param>
+        /// <param name="model"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -57,6 +65,12 @@ namespace SAST.Engine.CSharp.Scanners
             return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.Authorize);
         }
 
+        /// <summary>
+        /// Determines whether <paramref name="methodDeclaration"/> is vulnerable or not.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="methodDeclaration"></param>
+        /// <returns></returns>
         private bool IsVulnerable(SemanticModel model, MethodDeclarationSyntax methodDeclaration)
         {
             if (!methodDeclaration.Modifiers.Any(obj => obj.IsKind(SyntaxKind.PublicKeyword)))
