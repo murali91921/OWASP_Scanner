@@ -12,8 +12,11 @@
 
   <ItemGroup>
     <Compile Remove="Configuration\**" />
+    <Compile Remove="Parser\HTMLParser\**" />
     <EmbeddedResource Remove="Configuration\**" />
+    <EmbeddedResource Remove="Parser\HTMLParser\**" />
     <None Remove="Configuration\**" />
+    <None Remove="Parser\HTMLParser\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AssemblyResources.Designer.cs" />
@@ -107,6 +110,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Microsoft.Security.Application.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\mscorlib.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Newtonsoft.Json.dll">
