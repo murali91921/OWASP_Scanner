@@ -67,15 +67,15 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (!DecodeMethods.Contains(symbol.Name))
                     continue;
-                bool vulnerable = true;
+                bool vulnerable = false;
                 foreach (var argument in item.ArgumentList.Arguments)
                 {
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
                     if (typeSymbol.SpecialType != SpecialType.System_Boolean)
                         continue;
                     var constant = model.GetConstantValue(argument.Expression);
-                    if (constant.HasValue && constant.Value is bool value && value)
-                        vulnerable = false;
+                    if (constant.HasValue && constant.Value is bool value && !value)
+                        vulnerable = true;
                 }
                 if (vulnerable)
                     vulnerabilities.Add(item);
