@@ -36,6 +36,7 @@
         ViewStateMac = 26,
         PasswordLockout = 27,
         Authorize = 28,
+        CorsAllowAnyOrigin = 29,
     }
 
     /// <summary>
