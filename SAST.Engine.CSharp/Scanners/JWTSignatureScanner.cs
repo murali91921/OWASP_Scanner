@@ -71,7 +71,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var argument in item.ArgumentList.Arguments)
                 {
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
-                    if (typeSymbol.SpecialType != SpecialType.System_Boolean)
+                    if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_Boolean)
                         continue;
                     var constant = model.GetConstantValue(argument.Expression);
                     if (constant.HasValue && constant.Value is bool value && !value)
