@@ -193,6 +193,9 @@
     <None Update="Resources\System.Security.Cryptography.Algorithms.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Security.Cryptography.Csp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Security.Cryptography.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

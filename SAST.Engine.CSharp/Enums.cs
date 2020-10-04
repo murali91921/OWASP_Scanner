@@ -25,7 +25,7 @@
         FormsAuthentication = 15,
         MachineKeyClearText = 16,
         WeakSymmetricAlgorithm = 17,
-        WeakCipherMode = 18,
+        WeakCipherModePadding = 18,
         InsecureDeserialization = 19,
         CommandInjection = 20,
         FilePathInjection = 21,

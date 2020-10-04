@@ -316,7 +316,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.XSS => new XssScanner(),
                 ScannerType.XXE => new XxeScanner(),
                 ScannerType.WeakSymmetricAlgorithm => new WeakSymmetricAlgorithmScanner(),
-                ScannerType.WeakCipherMode => new WeakCipherModeScanner(),
+                ScannerType.WeakCipherModePadding => new WeakCipherModeScanner(),
                 ScannerType.InsecureDeserialization => new InsecureDeserializationScanner(),
                 ScannerType.CommandInjection => new CommandInjectionScanner(),
                 ScannerType.FilePathInjection => new FilePathInjectionScanner(),
