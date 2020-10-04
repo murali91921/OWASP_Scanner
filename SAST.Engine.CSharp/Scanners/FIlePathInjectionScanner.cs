@@ -62,7 +62,14 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(item);
                 if (typeSymbol == null || typeSymbol.ToString() != "System.IO.FileInfo")
                     continue;
-                syntaxNodes.Add(item);
+                if (item.ArgumentList != null && item.ArgumentList.Arguments.Count == 1)
+                {
+                    typeSymbol = model.GetTypeSymbol(item.ArgumentList.Arguments[0].Expression);
+                    if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
+                        continue;
+                    if (Utils.IsVulnerable(item.ArgumentList.Arguments[0].Expression, model, solution))
+                        syntaxNodes.Add(item);
+                }
             }
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
