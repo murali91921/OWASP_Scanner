@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using SAST.Engine.CSharp.Enums;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 
 namespace SAST.Engine.CSharp.Mapper
 {
@@ -21,7 +21,10 @@ namespace SAST.Engine.CSharp.Mapper
             var vulnerabilityList = new List<VulnerabilityDetail>();
             if (syntaxList == null || syntaxList.Count == 0)
                 return vulnerabilityList;
+
             if (syntaxList is List<SyntaxNode> syntaxNodeList)
+            {
+                syntaxNodeList = syntaxNodeList.OrderBy(obj => obj.Span).ToList();
                 foreach (var item in syntaxNodeList)
                 {
                     vulnerabilityList.Add(new VulnerabilityDetail
@@ -33,7 +36,10 @@ namespace SAST.Engine.CSharp.Mapper
                         SubType = scannerSubType
                     });
                 }
+            }
             else if (syntaxList is List<SyntaxTrivia> syntaxTriviaList)
+            {
+                syntaxTriviaList = syntaxTriviaList.OrderBy(obj => obj.Span).ToList();
                 foreach (var item in syntaxTriviaList)
                 {
                     vulnerabilityList.Add(new VulnerabilityDetail
@@ -45,6 +51,7 @@ namespace SAST.Engine.CSharp.Mapper
                         SubType = scannerSubType
                     });
                 }
+            }
             return vulnerabilityList;
         }
 

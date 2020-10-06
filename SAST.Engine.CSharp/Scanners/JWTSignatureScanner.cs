@@ -225,7 +225,7 @@ namespace SAST.Engine.CSharp.Scanners
 
             //JWT.Net JwtBuilder
             FindBuilders(syntaxNode, model, ref vulnerabilities, solution);
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities.OrderBy(obj => obj.Span).ToList(), Enums.ScannerType.JWTValidation);
+            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.JWTValidation);
         }
     }
 }

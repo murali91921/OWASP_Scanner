@@ -49,6 +49,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\BouncyCastle.Crypto.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\fastJSON.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -130,9 +133,6 @@
     <None Update="Resources\System.ComponentModel.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\System.Core.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\System.Data.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -193,10 +193,16 @@
     <None Update="Resources\System.Security.Cryptography.Algorithms.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Security.Cryptography.Cng.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Security.Cryptography.Csp.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\System.Security.Cryptography.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\System.Security.Cryptography.OpenSsl.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\System.Security.Cryptography.Primitives.dll">

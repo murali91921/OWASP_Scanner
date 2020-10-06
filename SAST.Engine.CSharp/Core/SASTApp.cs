@@ -324,7 +324,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.JWTValidation => new JWTSignatureScanner(),
                 ScannerType.PasswordLockout => new PasswordLockoutScanner(),
                 ScannerType.Authorize => new AuthorizeScanner(),
-                ScannerType.CorsAllowAnyOrigin=> new CorsScanner(),
+                ScannerType.CorsAllowAnyOrigin => new CorsScanner(),
+                ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
                 _ => null,
             };
         }
