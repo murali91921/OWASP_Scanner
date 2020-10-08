@@ -67,9 +67,21 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (!DecodeMethods.Contains(symbol.Name))
                     continue;
+                if (item.ArgumentList.Arguments.Count == 1)
+                {
+                    vulnerabilities.Add(item);
+                    continue;
+                }
+
                 bool vulnerable = false;
+                int i = -1;
                 foreach (var argument in item.ArgumentList.Arguments)
                 {
+                    i++;
+                    if (argument.NameColon != null && argument.NameColon.Name.ToString() != "verify")
+                        continue;
+                    if (argument.NameColon == null && i != 2)
+                        continue;
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
                     if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_Boolean)
                         continue;
