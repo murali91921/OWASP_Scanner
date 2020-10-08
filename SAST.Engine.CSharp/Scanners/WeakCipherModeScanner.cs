@@ -12,10 +12,14 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class WeakCipherModeScanner : IScanner
     {
-        private static string AesManaged_Class = "System.Security.Cryptography.AesManaged";
         private static string RSAEncryptPadding_Class = "System.Security.Cryptography.RSAEncryptionPadding";
+        private static string[] Rijndael_AesManaged_Class = {
+            "System.Security.Cryptography.AesManaged",
+            "System.Security.Cryptography.RijndaelManaged"
+        };
         private static string[] RSAEncrypt_Methods = {
             "System.Security.Cryptography.RSACryptoServiceProvider.Encrypt",
+            "System.Security.Cryptography.RSACryptoServiceProvider.TryEncrypt",
             "System.Security.Cryptography.RSA.Encrypt",
             "System.Security.Cryptography.RSA.TryEncrypt"
         };
@@ -39,7 +43,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(item);
                 if (typeSymbol == null)
                     continue;
-                if (typeSymbol.ToString() == AesManaged_Class)
+                if (Rijndael_AesManaged_Class.Contains(typeSymbol.ToString()))
                     syntaxNodes.Add(item);
             }
 
@@ -49,16 +53,25 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 if (!invocation.Expression.ToString().Contains("Encrypt"))
                     continue;
-
-                ISymbol symbol = model.GetSymbol(invocation);
+                if (!invocation.Expression.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression))
+                    continue;
+                var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
+                ISymbol symbol = model.GetSymbol(memberAccess.Expression);
                 if (symbol == null)
                     continue;
+                ITypeSymbol memberAccessType = symbol is ILocalSymbol local ? local.Type
+                    : symbol is IFieldSymbol field ? field.Type
+                    : symbol is IPropertySymbol property ? property.Type : null;
 
-                if (!RSAEncrypt_Methods.Contains(symbol.ContainingType.ToString() + "." + symbol.Name))
+                if (memberAccessType == null)
+                    continue;
+
+                if (!RSAEncrypt_Methods.Contains(memberAccessType.ToString() + "." + memberAccess.Name))
                     continue;
 
                 foreach (var item in invocation.ArgumentList.Arguments)
                 {
+                    ISymbol argSymbol = model.GetSymbol(item.Expression);
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(item.Expression);
                     if (typeSymbol == null)
                         continue;
@@ -66,15 +79,18 @@ namespace SAST.Engine.CSharp.Scanners
                     {
                         var optional = model.GetConstantValue(item.Expression);
                         if (optional.HasValue && optional.Value is bool value && !value)
+                        {
                             syntaxNodes.Add(item);
+                            break;
+                        }
                     }
-                    else if (typeSymbol.ToString() == RSAEncryptPadding_Class)
+                    else if (item.Expression is MemberAccessExpressionSyntax memberAccessExpression
+                        && memberAccessExpression.Name.ToString() == "Pkcs1")
                     {
-                        symbol = model.GetSymbol(item.Expression);
-                        if (symbol == null)
+                        typeSymbol = model.GetTypeSymbol(memberAccessExpression.Expression);
+                        if (typeSymbol == null)
                             continue;
-
-                        if (symbol.ToString() == RSAEncryptPadding_Class + ".Pkcs1")
+                        if (typeSymbol.ToString() == RSAEncryptPadding_Class)
                             syntaxNodes.Add(item);
                     }
                 }
