@@ -9,6 +9,8 @@ using SAST.Engine.CSharp.Scanners;
 using SAST.Engine.CSharp.Parser;
 using Microsoft.CodeAnalysis.CSharp;
 using Antlr4.Runtime;
+using System.Xml.XPath;
+using System.Xml;
 
 namespace SAST.Engine.CSharp.Core
 {
@@ -17,7 +19,8 @@ namespace SAST.Engine.CSharp.Core
     /// </summary>
     public class SASTApp : ISASTApp
     {
-        AdhocWorkspace workspace;
+        List<AdhocWorkspace> workspaces;
+        AdhocWorkspace currentWorkspace;
         static List<MetadataReference> metadataReferences;
 
         /// <summary>
@@ -26,9 +29,24 @@ namespace SAST.Engine.CSharp.Core
         static SASTApp() => Utils.LoadMetadata(out metadataReferences);
 
         /// <summary>
-        /// Load the all the Csharp Files into Memory.
+        /// Load the all the Csharp Files in the <paramref name="folderName"/> into Memory.
         /// </summary>
-        /// <param name="filePaths">File Paths of Solution, Projects or Chsarp source files</param>
+        /// <param name="folderName">Folder Path of Solution, Projects or Chsarp source files</param>
+        /// <returns></returns>
+        public bool LoadFolder(string folderPath)
+        {
+            if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+                return false;
+            IEnumerable<string> sourcefiles = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories);
+            if (sourcefiles.Count() > 0)
+                return LoadFiles(sourcefiles.ToArray());
+            return false;
+        }
+
+        /// <summary>
+        /// Load the all the Solutions, Projects, Csharp Files in the <paramref name="filePaths"/> into Memory.
+        /// </summary>
+        /// <param name="filePaths">File Path of Solution, Projects or Chsarp source files</param>
         /// <returns></returns>
         public bool LoadFiles(string[] filePaths)
         {
@@ -36,20 +54,37 @@ namespace SAST.Engine.CSharp.Core
                 return false;
             if (!filePaths.Any(file => !string.IsNullOrEmpty(file) && Utils.AvailableExtensions.Any(ext => Path.GetExtension(file).ToLower() == ext)))
                 return false;
-            workspace = new AdhocWorkspace();
             if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".sln"))
             {
                 var solutionFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".sln").ToArray();
-                if (solutionFiles.Count() > 1)
+                if (solutionFiles.Count() == 0)
                     return false;
-                return LoadSolution(solutionFiles[0]);
+                else
+                {
+                    workspaces = new List<AdhocWorkspace>();
+                    foreach (var item in solutionFiles)
+                    {
+                        currentWorkspace = new AdhocWorkspace();
+                        LoadSolution(item);
+                        workspaces.Add(currentWorkspace);
+                    }
+                    return true;
+                }
             }
             else if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".csproj"))
             {
+                currentWorkspace = new AdhocWorkspace();
                 var projectFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".csproj").ToArray();
                 SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Default);
-                workspace.AddSolution(solutionInfo);
-                return LoadProjects(projectFiles);
+                currentWorkspace.AddSolution(solutionInfo);
+                if (LoadProjects(projectFiles))
+                {
+                    workspaces = new List<AdhocWorkspace>();
+                    workspaces.Add(currentWorkspace);
+                    return true;
+                }
+                else
+                    return false;
             }
             else
             {
@@ -67,13 +102,16 @@ namespace SAST.Engine.CSharp.Core
                 }
                 if (files.Count() == 0)
                     return false;
+                currentWorkspace = new AdhocWorkspace();
                 SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Default);
-                workspace.AddSolution(solutionInfo);
+                currentWorkspace.AddSolution(solutionInfo);
                 ProjectInfo projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Default, Path.GetRandomFileName(), Path.GetRandomFileName(),
                     LanguageNames.CSharp);
-                workspace.AddProject(projectInfo);
+                currentWorkspace.AddProject(projectInfo);
                 LoadSourceFiles(projectInfo.Id, files);
                 ResolveReferences();
+                workspaces = new List<AdhocWorkspace>();
+                workspaces.Add(currentWorkspace);
                 return true;
             }
         }
@@ -83,12 +121,12 @@ namespace SAST.Engine.CSharp.Core
         /// </summary>
         private void ResolveReferences()
         {
-            if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.ProjectIds.Count() == 0)
+            if (currentWorkspace == null || currentWorkspace.CurrentSolution == null || currentWorkspace.CurrentSolution.ProjectIds.Count() == 0)
                 return;
             //Finding atleast one Dependency exists between projects or not.
-            bool dependencyMayExists = workspace.CurrentSolution.ProjectIds.Count() > 1;
+            bool dependencyMayExists = currentWorkspace.CurrentSolution.ProjectIds.Count() > 1;
 
-            Solution solution = workspace.CurrentSolution;
+            Solution solution = currentWorkspace.CurrentSolution;
             foreach (var parentProject in solution.Projects)
             {
                 //Adding required assemblies to Project.
@@ -111,7 +149,7 @@ namespace SAST.Engine.CSharp.Core
                 }
             }
             //Applying the changes made.
-            workspace.TryApplyChanges(solution);
+            currentWorkspace.TryApplyChanges(solution);
         }
 
         /// <summary>
@@ -126,7 +164,7 @@ namespace SAST.Engine.CSharp.Core
                 return false;
             if (sourceFiles == null || sourceFiles.Count() == 0)
                 return false;
-            Solution solution = workspace.CurrentSolution;
+            Solution solution = currentWorkspace.CurrentSolution;
             foreach (var source in sourceFiles)
             {
                 //Checking source file exists or no & file have content or not.
@@ -142,7 +180,7 @@ namespace SAST.Engine.CSharp.Core
                 catch
                 { }
             }
-            workspace.TryApplyChanges(solution);
+            currentWorkspace.TryApplyChanges(solution);
             return true;
         }
 
@@ -163,15 +201,15 @@ namespace SAST.Engine.CSharp.Core
                 ProjectInfo projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Default, Path.GetFileNameWithoutExtension(projectPath), Path.GetFileNameWithoutExtension(projectPath),
                     LanguageNames.CSharp, projectPath);
                 //Adding the Project to workspace Solution.
-                Solution solution = workspace.CurrentSolution.AddProject(projectInfo);
+                Solution solution = currentWorkspace.CurrentSolution.AddProject(projectInfo);
                 List<string> sourceFilePaths = new List<string>();
                 sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
                 sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
-                workspace.TryApplyChanges(solution);
+                currentWorkspace.TryApplyChanges(solution);
                 //Loading the source Files (.cs,.config ) to add them in Project.
                 LoadSourceFiles(projectInfo.Id, sourceFilePaths);
-                ResolveReferences();
             }
+            ResolveReferences();
             return true;
         }
 
@@ -190,7 +228,7 @@ namespace SAST.Engine.CSharp.Core
                 return false;
             //Create solution & adding to workspace
             SolutionInfo solutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Default, solutionPath);
-            workspace.AddSolution(solutionInfo);
+            currentWorkspace.AddSolution(solutionInfo);
             //Loading the Projects into Solution.
             return LoadProjects(projects.ToArray());
         }
@@ -201,40 +239,15 @@ namespace SAST.Engine.CSharp.Core
         /// <returns>List of Vulnerabilities</returns>
         public IEnumerable<VulnerabilityDetail> ScanAll()
         {
-            if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.Projects == null || workspace.CurrentSolution.Projects.Count() == 0)
+            if (workspaces == null || workspaces.Count == 0)
                 return null;
-            else
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
             {
-                List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-                foreach (Project project in workspace.CurrentSolution.Projects)
-                {
-                    //Scans the Additional Document using Configuration Scanner
-                    if (project.AdditionalDocuments.Count() > 0)
-                        foreach (var item in project.AdditionalDocuments)
-                            foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
-                                if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
-                                {
-                                    IConfigScanner configScanner = GetConfigScanner(scannerType);
-                                    if (configScanner == null)
-                                        continue;
-                                    vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
-                                }
-                    //Scans the Charp source Codes using IScanner
-                    if (project.Documents != null)
-                        foreach (var document in project.Documents)
-                            foreach (var scannerType in Enum.GetValues(typeof(ScannerType)).Cast<ScannerType>())
-                            {
-                                IScanner scanner = GetScanner(scannerType);
-                                if (scanner == null)
-                                    continue;
-                                vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
-                                    document.GetSemanticModelAsync().Result, workspace.CurrentSolution));
-                            }
-                    else
-                        break;
-                }
-                return vulnerabilities;
+                IEnumerable<VulnerabilityDetail> currentVulnerabilities = Scan(scannerType);
+                vulnerabilities.AddRange(currentVulnerabilities);
             }
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -244,50 +257,52 @@ namespace SAST.Engine.CSharp.Core
         /// <returns>List of Vulnerabilities</returns>
         public IEnumerable<VulnerabilityDetail> Scan(ScannerType scannerType)
         {
-            if (workspace == null || workspace.CurrentSolution == null || workspace.CurrentSolution.Projects == null || workspace.CurrentSolution.Projects.Count() == 0)
+            if (workspaces == null || workspaces.Count == 0)
                 return null;
-            if (scannerType == ScannerType.Invalid || scannerType == ScannerType.None)
-                return new List<VulnerabilityDetail>();
+
+
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
-            foreach (Project project in workspace.CurrentSolution.Projects)
+            foreach (var workspace in workspaces)
             {
-                if (project.AdditionalDocuments.Count() > 0)
+                foreach (Project project in workspace.CurrentSolution.Projects)
                 {
-                    foreach (var item in project.AdditionalDocuments)
+                    if (project.AdditionalDocuments.Count() > 0)
                     {
-                        if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
+                        foreach (var item in project.AdditionalDocuments)
                         {
-                            IConfigScanner configScanner = GetConfigScanner(scannerType);
-                            if (configScanner == null)
-                                continue;
-                            vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
+                            if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
+                            {
+                                IConfigScanner configScanner = GetConfigScanner(scannerType);
+                                if (configScanner == null)
+                                    continue;
+                                vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
+                            }
+                            //if ((Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower())))
+                            //{
+                            //    string input = File.ReadAllText(item.FilePath);
+                            //    XmlDocument doc = new XmlDocument();
+                            //    doc.Load(item.FilePath);
+                            //    XPathDocument doc = new XPathDocument(item.FilePath);
+                            //    var navigator= doc.CreateNavigator();
+                            //    while (navigator.MoveToNext())
+                            //    {
+                            //        Console.WriteLine(navigator.ToString());
+                            //    }
+                            //}
                         }
                     }
+                    if (project.Documents != null)
+                        foreach (var document in project.Documents)
+                        {
+                            IScanner scanner = GetScanner(scannerType);
+                            if (scanner == null)
+                                continue;
+                            vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
+                                document.GetSemanticModelAsync().Result, workspace.CurrentSolution));
+                        }
+                    else
+                        break;
                 }
-                if (project.Documents != null)
-                    foreach (var document in project.Documents)
-                    {
-                        IScanner scanner = GetScanner(scannerType);
-                        //static void Main(string[] args)
-                        //{
-                        //    string input = "log(10 + A1 * 35 + (5.4 - 7.4))";
-                        //    AntlrInputStream inputStream = new AntlrInputStream(input);
-                        //    HTMLLexer spreadsheetLexer = new HTMLLexer(inputStream);
-                        //    CommonTokenStream commonTokenStream = new CommonTokenStream(spreadsheetLexer);
-                        //    HTMLParser spreadsheetParser = new HTMLParser(commonTokenStream);
-                        //    HTMLParser.HtmlDocumentContext context = spreadsheetParser.htmlDocument();
-                        //    HTMLVisitor visitor = new SpreadsheetVisitor();
-
-                        //    Console.WriteLine(visitor.Visit(expressionContext));
-                        //}
-
-                        if (scanner == null)
-                            continue;
-                        vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
-                            document.GetSemanticModelAsync().Result, workspace.CurrentSolution));
-                    }
-                else
-                    break;
             }
             return vulnerabilities;
         }

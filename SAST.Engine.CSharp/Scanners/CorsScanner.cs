@@ -21,6 +21,7 @@ namespace SAST.Engine.CSharp.Scanners
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
             var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
+            //System.Console.WriteLine(filePath);
             foreach (var item in invocations)
             {
                 if (!item.ToString().Contains("AllowAnyOrigin"))

@@ -14,7 +14,7 @@ namespace SAST.Engine.CSharp
     /// </summary>
     internal static class Utils
     {
-        internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
+        internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".txt", ".html", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
         internal static readonly string[] SourceCodeFileExtensions = { ".cs", ".txt" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx", ".html" };
@@ -207,9 +207,21 @@ namespace SAST.Engine.CSharp
         /// <returns></returns>
         internal static bool CheckSameMethod(SyntaxNode first, SyntaxNode second)
         {
-            MethodDeclarationSyntax firstBlock = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            MethodDeclarationSyntax secondBlock = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-            return firstBlock.Equals(secondBlock);
+            var firstMethod = first.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            var secondMethod = second.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            if (firstMethod != null && secondMethod != null)
+                return firstMethod.Equals(secondMethod);
+
+            var firstConstructor = first.AncestorsAndSelf().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
+            var secondConstructor = second.AncestorsAndSelf().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
+            if (firstConstructor != null && secondConstructor != null)
+                return firstConstructor.Equals(secondConstructor);
+
+            var firstProp = first.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
+            var secondProp = second.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
+            if (firstProp != null && secondProp != null)
+                return firstProp.Equals(secondProp);
+            return false;
         }
 
         /// <summary>
@@ -322,5 +334,12 @@ namespace SAST.Engine.CSharp
             else
                 return false;
         }
+        //static C2<int> c2 = new C2<int>();
     }
+    //class C1<T>
+    //{
+    //}
+    //class C2<T> : C1<C2<C2<T>>> // Noncompliant
+    //{
+    //}
 }

@@ -56,28 +56,35 @@ namespace SAST.Engine.CSharp.Scanners
             var methods = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
             {
-                IMethodSymbol symbol = model.GetSymbol(method) as IMethodSymbol;
+                if (!(method.Expression is MemberAccessExpressionSyntax memberAccessExpression))
+                    continue;
+                ITypeSymbol symbol = model.GetTypeSymbol(memberAccessExpression.Expression) as ITypeSymbol;
                 if (symbol == null)
                     continue;
-                if (!MethodsToCheck.Any(obj => obj == symbol.ReceiverType.OriginalDefinition.ToString() + "." + symbol.Name.ToString()))
+                if (!MethodsToCheck.Any(obj => obj == symbol.ToString() + "." + memberAccessExpression.Name.ToString()))
                     continue;
                 foreach (var argument in method.ArgumentList.Arguments)
                 {
-                    ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
-                    if (typeSymbol == null)
-                        continue;
-                    if (typeSymbol.SpecialType == SpecialType.System_String)
+                    if (IsVulnerable(argument.Expression))
                     {
-                        lstVulnerableCheck.Add(argument.Expression);
+                        lstVulnerableStatements.Add(argument);
                         break;
                     }
+                    //ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
+                    //if (typeSymbol == null)
+                    //    continue;
+                    //if (typeSymbol.SpecialType == SpecialType.System_String)
+                    //{
+                    //    lstVulnerableCheck.Add(argument.Expression);
+                    //    break;
+                    //}
                 }
             }
-            foreach (var item in lstVulnerableCheck)
-            {
-                if (IsVulnerable(item))
-                    lstVulnerableStatements.Add(item.Parent);
-            }
+            //foreach (var item in lstVulnerableCheck)
+            //{
+            //    if (IsVulnerable(item))
+            //        lstVulnerableStatements.Add(item.Parent);
+            //}
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.XPath);
         }
 
