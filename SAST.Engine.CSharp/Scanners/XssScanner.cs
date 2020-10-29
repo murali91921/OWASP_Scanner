@@ -4,16 +4,18 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using static System.Console;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp;
 using SAST.Engine.CSharp.Mapper;
 using SAST.Engine.CSharp.Core;
 using SAST.Engine.CSharp.Enums;
 using System.Linq;
+using SAST.Engine.CSharp.Parser;
 
 namespace SAST.Engine.CSharp.Scanners
 {
-    internal class XssScanner : IScanner
+    internal class XssScanner : IScanner, ICSHtmlScanner
     {
         private static string[] DataRetrievalMethods = {
             "System.Data.Common.DbDataReader.GetString",
@@ -66,6 +68,60 @@ namespace SAST.Engine.CSharp.Scanners
                 "System.Web.UI.Control.ID"
             };
         Solution solution;
+
+        public IEnumerable<VulnerabilityDetail> FindVulnerabilities(string filePath)
+        {
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            string[] content = CSHtmlParser.GetContent(filePath);
+            if (content == null || content.Length == 0)
+                return vulnerabilities;
+
+            string[] sourceExpr = {
+                @"\@Html\.Raw\(((?<Value>[A-Za-z0-9.]+))\)",
+                @"\@MvcHtmlString\.Create\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.CheckBox\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.CheckBoxFor\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.RadioButton\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.Raw\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.Raw\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.Raw\(((?<Value>[A-Za-z0-9.]+))\)",
+                //@"\@Html\.Raw\(((?<Value>[A-Za-z0-9.]+))\)"
+
+                //"RadioButtonFor", "DropDownList", "DropDownListFor",
+                //"Hidden", "HiddenFor", "Password", "PasswordFor",
+                //"Editor", "EditorFor", "EditorForModel","EnumDropDownListFor",
+                //"ListBox", "ListBoxFor
+            };
+            string[] EncodeMethods = {
+                "System.Web.HttpUtility.HtmlEncode",
+                "HttpUtility.HtmlEncode",
+                "Html.Encode"
+            };
+            int lineNum = 0;
+            foreach (var line in content)
+            {
+                lineNum++;
+                foreach (var expression in sourceExpr)
+                {
+                    var matches = Regex.Matches(line, expression);
+                    foreach (Match match in matches)
+                    {
+                        if (match == null)
+                            continue;
+                        if (!EncodeMethods.Any(obj => match.Groups["Value"].Value.Contains(obj)))
+                            vulnerabilities.Add(new VulnerabilityDetail()
+                            {
+                                CodeSnippet = match.Groups["Value"].Value,
+                                FilePath = filePath,
+                                LineNumber = lineNum + "," + match.Groups["Value"].Index,
+                                Type = ScannerType.XSS,
+                                SubType = ScannerSubType.None
+                            });
+                    }
+                }
+            }
+            return vulnerabilities;
+        }
 
         /// <summary>
         /// Determines the vulnerabilities in <paramref name="syntaxNode"/>

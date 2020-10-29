@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>ASTTask</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>  
+  <ItemGroup>
     <Compile Remove="bin\**" />
     <Compile Remove="Examples\**" />
     <Compile Remove="modules\**" />
@@ -17,29 +15,19 @@
     <None Remove="Examples\**" />
     <None Remove="modules\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="ASTNode.cs" />
     <Compile Remove="Rename.cs" />
     <Compile Remove="SyntaxNodeAnalyzerFactory.cs" />
     <Compile Remove="Utils.cs" />
   </ItemGroup>
-
   <ItemGroup>
+    <PackageReference Include="JWT" Version="7.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.6" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-
-    <!--<PackageReference Include="Microsoft.Build" Version="16.6.0" ExcludeAssets="runtime"  />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.6.0" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" ExcludeAssets="runtime" Version="1.2.6" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.6.0" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.6.0" ExcludeAssets="runtime" />-->
-
-
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\SAST.Engine.CSharp\SAST.Engine.CSharp.csproj" />
   </ItemGroup>
-
 </Project>

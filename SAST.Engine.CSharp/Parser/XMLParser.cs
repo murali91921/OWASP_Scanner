@@ -24,11 +24,11 @@ namespace SAST.Engine.CSharp.Parser
         /// <param name="attributeName">Required attribute name</param>
         /// <param name="extensions">Pass the file path extensions to filter </param>
         /// <returns>List of filepath strings found under the nodepath & attribute</returns>
-        internal static IEnumerable<string> GetAttributes(string projectPath, string nodePath, string attributeName, string[] extensions)
+        internal static IEnumerable<string> GetAttributes(string projectPath, string nodePath, string attributeName, string[] extensions = null)
         {
-            List<string> sourceFiles = new List<string>();
+            List<string> values = new List<string>();
             if (!File.Exists(projectPath) || string.IsNullOrWhiteSpace(File.ReadAllText(projectPath)))
-                return sourceFiles;
+                return values;
             XmlTextReader reader = new XmlTextReader(projectPath)
             {
                 Namespaces = false
@@ -41,18 +41,26 @@ namespace SAST.Engine.CSharp.Parser
                 nodes.Current.MoveToFirstAttribute();
                 do
                 {
-                    if (nodes.Current.Name.Equals(attributeName, System.StringComparison.OrdinalIgnoreCase)
+                    if (extensions == null || string.IsNullOrEmpty(attributeName))
+                    {
+                        values.Add(nodes.Current.InnerXml);
+                        break;
+                    }
+
+                    if (extensions != null && !string.IsNullOrEmpty(attributeName)
+                        && nodes.Current.Name.Equals(attributeName, System.StringComparison.OrdinalIgnoreCase)
                         && extensions.Any(obj => obj == (Path.GetExtension(nodes.Current.Value.ToLower()))))
                     {
                         string sourceFilePath = Path.GetFullPath(nodes.Current.Value, Path.GetDirectoryName(projectPath));
                         if (File.Exists(sourceFilePath) && !string.IsNullOrWhiteSpace(File.ReadAllText(sourceFilePath)))
-                            sourceFiles.Add(sourceFilePath);
+                            values.Add(sourceFilePath);
                         break;
                     }
+
                 }
                 while (nodes.Current.MoveToNextAttribute());
             }
-            return sourceFiles;
+            return values;
         }
 
         /// <summary>

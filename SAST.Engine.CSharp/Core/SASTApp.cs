@@ -54,24 +54,38 @@ namespace SAST.Engine.CSharp.Core
                 return false;
             if (!filePaths.Any(file => !string.IsNullOrEmpty(file) && Utils.AvailableExtensions.Any(ext => Path.GetExtension(file).ToLower() == ext)))
                 return false;
-            if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".sln"))
+
+            workspaces = new List<AdhocWorkspace>();
+            if (filePaths.Any(file => file.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
             {
                 var solutionFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".sln").ToArray();
                 if (solutionFiles.Count() == 0)
                     return false;
-                else
+
+                //workspaces = new List<AdhocWorkspace>();
+                foreach (var item in solutionFiles)
                 {
-                    workspaces = new List<AdhocWorkspace>();
-                    foreach (var item in solutionFiles)
-                    {
-                        currentWorkspace = new AdhocWorkspace();
-                        LoadSolution(item);
-                        workspaces.Add(currentWorkspace);
-                    }
-                    return true;
+                    currentWorkspace = new AdhocWorkspace();
+                    LoadSolution(item);
+                    workspaces.Add(currentWorkspace);
                 }
+
+                foreach (var workspace in workspaces)
+                {
+                    foreach (var project in workspace.CurrentSolution.Projects)
+                    {
+                        var documentPaths = project.Documents.Select(obj => obj.FilePath);
+                        var tempPaths = filePaths.ToList();
+                        tempPaths.RemoveAll(obj => documentPaths.Contains(obj));
+                        tempPaths.Remove(project.FilePath);
+                        filePaths = tempPaths.ToArray();
+                    }
+                }
+                if (filePaths.Length == 0)
+                    return true;
             }
-            else if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".csproj"))
+
+            if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".csproj"))
             {
                 currentWorkspace = new AdhocWorkspace();
                 var projectFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".csproj").ToArray();
@@ -79,19 +93,27 @@ namespace SAST.Engine.CSharp.Core
                 currentWorkspace.AddSolution(solutionInfo);
                 if (LoadProjects(projectFiles))
                 {
-                    workspaces = new List<AdhocWorkspace>();
+                    //workspaces = new List<AdhocWorkspace>();
+                    foreach (var project in currentWorkspace.CurrentSolution.Projects)
+                    {
+                        var documentPaths = project.Documents.Select(obj => obj.FilePath);
+                        var tempPaths = filePaths.ToList();
+                        tempPaths.RemoveAll(obj => documentPaths.Contains(obj));
+                        tempPaths.Remove(project.FilePath);
+                        filePaths = tempPaths.ToArray();
+                    }
                     workspaces.Add(currentWorkspace);
                     return true;
                 }
                 else
                     return false;
             }
-            else
+
+            if (filePaths.Any(file =>
+                Utils.ConfigurationFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
+                Utils.SourceCodeFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
+                Utils.MarkupFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase))))
             {
-                if (!(filePaths.Any(file => Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(file).ToLower())) ||
-                    filePaths.Any(file => Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(file).ToLower())) ||
-                    filePaths.Any(file => Utils.SourceCodeFileExtensions.Any(ext => ext == Path.GetExtension(file).ToLower()))))
-                    return false;
                 List<string> files = new List<string>();
                 foreach (var item in filePaths)
                 {
@@ -110,10 +132,11 @@ namespace SAST.Engine.CSharp.Core
                 currentWorkspace.AddProject(projectInfo);
                 LoadSourceFiles(projectInfo.Id, files);
                 ResolveReferences();
-                workspaces = new List<AdhocWorkspace>();
                 workspaces.Add(currentWorkspace);
                 return true;
             }
+            else
+                return workspaces.Count > 0;
         }
 
         /// <summary>
@@ -203,8 +226,30 @@ namespace SAST.Engine.CSharp.Core
                 //Adding the Project to workspace Solution.
                 Solution solution = currentWorkspace.CurrentSolution.AddProject(projectInfo);
                 List<string> sourceFilePaths = new List<string>();
-                sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
-                sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
+
+                //Checking for NetStandard, NetCore because if Project targeting NetStandard, NetCore, we should include all directories under Project Directory
+                IEnumerable<string> frameworks = XMLParser.GetAttributes(projectPath, "/Project/PropertyGroup/TargetFramework", null, null);
+                if (frameworks == null || frameworks.Count() == 0)
+                {
+                    sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Compile", "Include", Utils.SourceCodeFileExtensions));
+                    sourceFilePaths.AddRange(XMLParser.GetAttributes(projectPath, "/Project/ItemGroup/Content", "Include", Utils.MarkupFileExtensions.Union(Utils.ConfigurationFileExtensions).ToArray()));
+                }
+                else
+                {
+                    string directory = Path.GetDirectoryName(projectPath);
+                    foreach (var item in Utils.SourceCodeFileExtensions)
+                    {
+                        sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item,SearchOption.AllDirectories));
+                    }
+                    foreach (var item in Utils.MarkupFileExtensions)
+                    {
+                        sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
+                    }
+                    foreach (var item in Utils.ConfigurationFileExtensions)
+                    {
+                        sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
+                    }
+                }
                 currentWorkspace.TryApplyChanges(solution);
                 //Loading the source Files (.cs,.config ) to add them in Project.
                 LoadSourceFiles(projectInfo.Id, sourceFilePaths);
@@ -260,7 +305,6 @@ namespace SAST.Engine.CSharp.Core
             if (workspaces == null || workspaces.Count == 0)
                 return null;
 
-
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             foreach (var workspace in workspaces)
             {
@@ -277,18 +321,13 @@ namespace SAST.Engine.CSharp.Core
                                     continue;
                                 vulnerabilities.AddRange(configScanner.FindVulnerabilties(item.FilePath));
                             }
-                            //if ((Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower())))
-                            //{
-                            //    string input = File.ReadAllText(item.FilePath);
-                            //    XmlDocument doc = new XmlDocument();
-                            //    doc.Load(item.FilePath);
-                            //    XPathDocument doc = new XPathDocument(item.FilePath);
-                            //    var navigator= doc.CreateNavigator();
-                            //    while (navigator.MoveToNext())
-                            //    {
-                            //        Console.WriteLine(navigator.ToString());
-                            //    }
-                            //}
+                            else if ((Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower())))
+                            {
+                                ICSHtmlScanner cSHtmlScanner = GetCshtmlScanner(scannerType);
+                                if (cSHtmlScanner == null)
+                                    continue;
+                                vulnerabilities.AddRange(cSHtmlScanner.FindVulnerabilities(item.FilePath));
+                            }
                         }
                     }
                     if (project.Documents != null)
@@ -363,5 +402,20 @@ namespace SAST.Engine.CSharp.Core
                 _ => null,
             };
         }
+
+        /// <summary>
+        /// This wiil create the required ICSHtmlScanner object based on ScannerType
+        /// </summary>
+        /// <param name="scannerType"></param>
+        /// <returns>ICSHtmlScanner object</returns>
+        private ICSHtmlScanner GetCshtmlScanner(ScannerType scannerType)
+        {
+            return scannerType switch
+            {
+                ScannerType.XSS => new XssScanner(),
+                _ => null,
+            };
+        }
+
     }
 }

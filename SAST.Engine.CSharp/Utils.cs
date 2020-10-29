@@ -14,10 +14,10 @@ namespace SAST.Engine.CSharp
     /// </summary>
     internal static class Utils
     {
-        internal static readonly string[] AvailableExtensions = { ".txt", ".cs", ".cshtml", ".txt", ".html", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
-        internal static readonly string[] SourceCodeFileExtensions = { ".cs", ".txt" };
+        internal static readonly string[] AvailableExtensions = { ".cs", ".cshtml", ".html", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
+        internal static readonly string[] SourceCodeFileExtensions = { ".cs" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
-        internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".aspx", ".ascx", ".html" };
+        internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".html", ".aspx", ".ascx" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
         internal static readonly Dictionary<Enums.ScannerSubType, string> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerSubType, string>{
             {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
