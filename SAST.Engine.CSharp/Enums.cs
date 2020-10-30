@@ -16,7 +16,7 @@
         WeakPasswordConfig = 6,
         WeakHashingConfig = 7,
         Csrf = 8,
-        Ldap = 9,
+        LdapInjection = 9,
         InsecureRandom = 10,
         SqlInjection = 11,
         XPath = 12,
@@ -38,7 +38,8 @@
         Authorize = 28,
         CorsAllowAnyOrigin = 29,
         WeakCryptoKeyLength = 30,
-        SerializationType = 31
+        SerializationType = 31,
+        LdapSecureConnection = 32
     }
 
     /// <summary>

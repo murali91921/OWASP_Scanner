@@ -104,7 +104,7 @@ namespace SAST.Engine.CSharp.Scanners
                             || obj.IsKind(SyntaxKind.VariableDeclarator)));
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.Ldap);
+            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.LdapInjection);
         }
 
         /// <summary>

@@ -361,7 +361,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.HardcodePassword => new CredsFinder(),
                 ScannerType.InsecureCookie => new CookieFlagScanner(),
                 ScannerType.InsecureRandom => new InsecureRandomScanner(),
-                ScannerType.Ldap => new LDAPScanner(),
+                ScannerType.LdapInjection => new LDAPScanner(),
                 ScannerType.OpenRedirect => new OpenRedirectScanner(),
                 ScannerType.SqlInjection => new SqlInjectionScanner(),
                 ScannerType.WeakHashingConfig => new WeakHashingValidator(),
@@ -381,6 +381,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CorsAllowAnyOrigin => new CorsScanner(),
                 ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
                 ScannerType.SerializationType => new SerializationTypeScanner(),
+                ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 _ => null,
             };
         }

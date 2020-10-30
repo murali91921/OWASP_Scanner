@@ -38,7 +38,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HardcodePassword, "Hard coded credentials"},
             {Enums.ScannerType.InsecureCookie, "Cookie missing flag(s)"},
             {Enums.ScannerType.InsecureRandom, "Weak random generation"},
-            {Enums.ScannerType.Ldap, "Ldap injection"},
+            {Enums.ScannerType.LdapInjection, "Ldap injection"},
             {Enums.ScannerType.OpenRedirect, "Open redirect"},
             {Enums.ScannerType.SqlInjection, "Sql injection"},
             {Enums.ScannerType.WeakHashingConfig, "Weak hashing configuration"},
@@ -62,7 +62,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.Authorize, "Authorize attribute missing"},
             {Enums.ScannerType.CorsAllowAnyOrigin, "Cors Allow Origin Wildcard"},
             {Enums.ScannerType.WeakCryptoKeyLength, "Cryptographic keys should be robust"},
-            {Enums.ScannerType.SerializationType, "Insecure Deserialization Type"},
+            {Enums.ScannerType.SerializationType, "Insecure Deserialization type"},
+            {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -71,7 +72,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
             //{Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
             {Enums.ScannerType.InsecureRandom, Enums.Severity.Medium},
-            {Enums.ScannerType.Ldap, Enums.Severity.High},
+            {Enums.ScannerType.LdapInjection, Enums.Severity.High},
             {Enums.ScannerType.OpenRedirect, Enums.Severity.Medium},
             {Enums.ScannerType.SqlInjection, Enums.Severity.Critical},
             {Enums.ScannerType.WeakHashingConfig, Enums.Severity.Medium},
@@ -96,6 +97,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CorsAllowAnyOrigin, Enums.Severity.Medium},
             {Enums.ScannerType.WeakCryptoKeyLength, Enums.Severity.Medium},
             {Enums.ScannerType.SerializationType, Enums.Severity.High},
+            {Enums.ScannerType.LdapSecureConnection, Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
