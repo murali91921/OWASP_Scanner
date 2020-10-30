@@ -3,10 +3,11 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using SAST.Engine.CSharp.Core;
+using System.Xml.Serialization;
 
 namespace SAST.Engine.CSharp.Tests
 {
-    class Program
+    public class Program
     {
         //static void ScanFiles(string[] projectPaths)
         //{
@@ -55,14 +56,14 @@ namespace SAST.Engine.CSharp.Tests
         //        Console.WriteLine("Unable to load the files");
         //}
 
-        static string[] GetExamples(string path)
-        {
-            FileAttributes fileAttributes = File.GetAttributes(path);
-            if (!fileAttributes.HasFlag(FileAttributes.Directory))
-                return new string[] { path };
-            else
-                return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly).ToArray();
-        }
+        //static string[] GetExamples(string path)
+        //{
+        //    FileAttributes fileAttributes = File.GetAttributes(path);
+        //    if (!fileAttributes.HasFlag(FileAttributes.Directory))
+        //        return new string[] { path };
+        //    else
+        //        return Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly).ToArray();
+        //}
 
         static void Main(string[] args)
         {
@@ -85,13 +86,13 @@ namespace SAST.Engine.CSharp.Tests
             {
                 SASTApp sASTApp = new SASTApp();
                 if (sASTApp.LoadFolder(path))
-                    vulnerabilities = sASTApp.Scan(Enums.ScannerType.XSS);
+                    vulnerabilities = sASTApp.Scan(Enums.ScannerType.SerializationType);
             }
             else if (File.Exists(path))
             {
                 SASTApp sASTApp = new SASTApp();
                 if (sASTApp.LoadFiles(new string[] { path }))
-                    vulnerabilities = sASTApp.ScanAll();
+                    vulnerabilities = sASTApp.Scan(Enums.ScannerType.SerializationType);
             }
             if (vulnerabilities != null)
                 foreach (var item in vulnerabilities)

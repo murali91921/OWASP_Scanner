@@ -37,7 +37,8 @@
         PasswordLockout = 27,
         Authorize = 28,
         CorsAllowAnyOrigin = 29,
-        WeakCryptoKeyLength = 30
+        WeakCryptoKeyLength = 30,
+        SerializationType = 31
     }
 
     /// <summary>

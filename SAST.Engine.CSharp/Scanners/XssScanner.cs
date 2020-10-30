@@ -115,7 +115,7 @@ namespace SAST.Engine.CSharp.Scanners
                                 FilePath = filePath,
                                 LineNumber = lineNum + "," + match.Groups["Value"].Index,
                                 Type = ScannerType.XSS,
-                                SubType = ScannerSubType.None
+                                SubType = ScannerSubType.DomXSS
                             });
                     }
                 }

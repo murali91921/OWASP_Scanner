@@ -380,6 +380,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.Authorize => new AuthorizeScanner(),
                 ScannerType.CorsAllowAnyOrigin => new CorsScanner(),
                 ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
+                ScannerType.SerializationType => new SerializationTypeScanner(),
                 _ => null,
             };
         }

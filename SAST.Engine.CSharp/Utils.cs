@@ -62,6 +62,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.Authorize, "Authorize attribute missing"},
             {Enums.ScannerType.CorsAllowAnyOrigin, "Cors Allow Origin Wildcard"},
             {Enums.ScannerType.WeakCryptoKeyLength, "Cryptographic keys should be robust"},
+            {Enums.ScannerType.SerializationType, "Insecure Deserialization Type"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -94,6 +95,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.Authorize, Enums.Severity.Medium},
             {Enums.ScannerType.CorsAllowAnyOrigin, Enums.Severity.Medium},
             {Enums.ScannerType.WeakCryptoKeyLength, Enums.Severity.Medium},
+            {Enums.ScannerType.SerializationType, Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
