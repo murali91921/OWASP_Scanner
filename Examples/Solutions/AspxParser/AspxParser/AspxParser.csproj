@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Company></Company>
+    <Authors></Authors>
+    <Product />
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  
+  <Import Condition="Exists('$(SolutionDir)AspxParser.props')" Project="$(SolutionDir)AspxParser.props" />
+  
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
+  </ItemGroup>
+
+</Project>
