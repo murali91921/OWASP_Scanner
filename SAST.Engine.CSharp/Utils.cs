@@ -64,6 +64,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakCryptoKeyLength, "Cryptographic keys should be robust"},
             {Enums.ScannerType.SerializationType, "Insecure Deserialization type"},
             {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
+            {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -98,6 +99,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.WeakCryptoKeyLength, Enums.Severity.Medium},
             {Enums.ScannerType.SerializationType, Enums.Severity.High},
             {Enums.ScannerType.LdapSecureConnection, Enums.Severity.High},
+            {Enums.ScannerType.RegexInjection, Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
@@ -237,7 +239,8 @@ namespace SAST.Engine.CSharp
         /// <param name="callingSymbol"></param>
         /// <param name="parameterNode"></param>
         /// <returns></returns>
-        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null, SyntaxNode parameterNode = null)
+        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null,
+            SyntaxNode parameterNode = null, Enums.ScannerType scannerType = Enums.ScannerType.None)
         {
             if (node is IdentifierNameSyntax)
             {
@@ -295,6 +298,10 @@ namespace SAST.Engine.CSharp
                 IMethodSymbol symbol = model.GetSymbol(invocation.Expression) as IMethodSymbol;
                 if (symbol == null)
                     return true;
+                //Checking if sanitized for Regular Expression
+                if (scannerType == Enums.ScannerType.RegexInjection)
+                    return symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "System.Text.RegularExpressions.Regex.Escape";
+                
                 bool isVulnerable = false;
                 if (symbol.Locations.Count() > 0)
                 {

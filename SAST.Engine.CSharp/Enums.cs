@@ -39,7 +39,8 @@
         CorsAllowAnyOrigin = 29,
         WeakCryptoKeyLength = 30,
         SerializationType = 31,
-        LdapSecureConnection = 32
+        LdapSecureConnection = 32,
+        RegexInjection = 33
     }
 
     /// <summary>

@@ -382,6 +382,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
+                ScannerType.RegexInjection => new RegexInjectionScanner(),
                 _ => null,
             };
         }
