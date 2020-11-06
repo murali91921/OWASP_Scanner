@@ -39,29 +39,10 @@ namespace VulnerableApp
             };
             serializeSettings.TypeNameHandling = GetHandling("");
 
-
-            //Unsafe 3
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer = new JavaScriptSerializer(new SimpleTypeResolver());
-            var resolver = new SimpleTypeResolver();
-            serializer = new JavaScriptSerializer(null);
-            serializer = new JavaScriptSerializer(resolver);
-
-            // Unsafe 4
-            Stream stream = new MemoryStream();
-            BinaryFormatter binary = new BinaryFormatter();
-            binary.Deserialize(stream);
-            binary.UnsafeDeserialize(stream, null);
-            binary.UnsafeDeserializeMethodResponse(stream, null, null);
-            binary.DeserializeMethodResponse(stream, null, null);
-
             // Unsafe 5
             BinaryMessageFormatter binaryMessage = new System.Messaging.BinaryMessageFormatter();
             binaryMessage.Read(new Message());
 
-            // Unsafe 6
-            SoapFormatter soapFormatter = new SoapFormatter();
-            soapFormatter.Deserialize(new MemoryStream());
 
             // Unsafe 7
             System.Web.UI.ObjectStateFormatter formatter = new System.Web.UI.ObjectStateFormatter();
@@ -71,19 +52,6 @@ namespace VulnerableApp
             // Unsafe 8
             XmlObjectSerializer xmlObjectSerializer = null;
             xmlObjectSerializer.ReadObject(new MemoryStream());
-
-            // Unsafe 9
-            NetDataContractSerializer netDataContractSerializer = new NetDataContractSerializer();
-            netDataContractSerializer.Deserialize(new MemoryStream());
-            netDataContractSerializer.ReadObject(new MemoryStream());
-
-            // Unsafe 10
-            DataContractSerializer dataContractSerializer = new DataContractSerializer(typeof(InsecureDeserialize));
-            dataContractSerializer.ReadObject(new MemoryStream());
-            dataContractSerializer.ReadObject(XmlDictionaryReader.Create(""));
-            dataContractSerializer.ReadObject(XmlDictionaryReader.Create(""), false);
-            dataContractSerializer.ReadObject(XmlReader.Create(""));
-            dataContractSerializer.ReadObject(XmlReader.Create(""), false);
 
             // Unsafe 11
             DataContractJsonSerializer dataContractJsonSerializer = new DataContractJsonSerializer(typeof(InsecureDeserialize));
@@ -105,10 +73,6 @@ namespace VulnerableApp
             // Unsafe 13
             System.Messaging.XmlMessageFormatter xmlMessageFormatter = new XmlMessageFormatter();
             xmlMessageFormatter.Read(new System.Messaging.Message());
-            System.Web.UI.LosFormatter losFormatter = new System.Web.UI.LosFormatter();
-            losFormatter.Deserialize(new MemoryStream());
-            losFormatter.Deserialize(TextReader.Null);
-            losFormatter.Deserialize("");
 
             // Unsafe 14
             System.Resources.ResourceReader resourceReader = new System.Resources.ResourceReader("");
