@@ -52,7 +52,6 @@ namespace SAST.Engine.CSharp.Scanners
             "ServiceStack.Text.XmlSerializer.DeserializeFromStream"
         };
         private static readonly string[] _insecureObjectCreation = {
-            //"System.Runtime.Serialization.DataContractSerializer", It was safe
             "System.Runtime.Serialization.Json.DataContractJsonSerializer",
             "System.Xml.Serialization.XmlSerializer",
             "System.Resources.ResourceReader"
@@ -121,16 +120,36 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in assignments)
             {
                 ISymbol symbol = _model.GetSymbol(item.Left);
-                if (symbol == null || symbol.ToString() != "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling")
+                //SoapServerFormatterSinkProvider
+                if (symbol == null)
                     continue;
-                ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
-                if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
-                    continue;
-                Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
-                if (!value.HasValue)
-                    vulnerabilities.Add(item);
-                else if ((int)value.Value != 0)
-                    vulnerabilities.Add(item);
+                if (symbol.ToString() == "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling")
+                {
+                    ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
+                    if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
+                        continue;
+                    Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
+                    if (!value.HasValue)
+                        vulnerabilities.Add(item);
+                    else if ((int)value.Value != 0)
+                        vulnerabilities.Add(item);
+                }
+                else if (symbol.ToString() == "System.Runtime.Remoting.Channels.SoapServerFormatterSinkProvider.TypeFilterLevel"
+                    || symbol.ToString() == "System.Runtime.Remoting.Channels.BinaryServerFormatterSinkProvider.TypeFilterLevel"
+                    || symbol.ToString() == "System.Runtime.Remoting.Channels.SoapServerFormatterSink.TypeFilterLevel"
+                    || symbol.ToString() == "System.Runtime.Remoting.Channels.BinaryServerFormatterSink.TypeFilterLevel")
+                    
+                {
+                    ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
+                    if (typeSymbol == null || typeSymbol.ToString() != "System.Runtime.Serialization.Formatters.TypeFilterLevel")
+                        continue;
+                    Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
+                    if (!value.HasValue)
+                        vulnerabilities.Add(item);
+                    else if ((int)value.Value == 3)
+                        vulnerabilities.Add(item);
+                }
+
             }
             return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
         }
@@ -389,14 +408,16 @@ namespace SAST.Engine.CSharp.Scanners
  **4. System.Runtime.Serialization.NetDataContractSerializer – Deserialize, ReadObject
  **5. System.Web.UI.LosFormatter – Deserialize
  *6. Pending System.Workflow.ComponentModel.Activity – Load
- *7. Pending SoapServerFormatterSinkProvider,
- *SoapClientFormatterSinkProvider,
- *BinaryServerFormatterSinkProvider,
- *BinaryClientFormatterSinkProvider,
- *SoapClientFormatterSink,
+ 
+ **7. SoapServerFormatterSinkProvider,
+ *-----------SoapClientFormatterSinkProvider,
+ **BinaryServerFormatterSinkProvider,
+ *-----------BinaryClientFormatterSinkProvider,
+ *-----------SoapClientFormatterSink,
  *SoapServerFormatterSink,
- *BinaryClientFormatterSink,
+ *-----------BinaryClientFormatterSink,
  *BinaryServerFormatterSink – unsafe if used across an insecure channel or if used to talk to an untrusted party
+ 
  *8.Done System.Resource.ResourceReader – unsafe if used to read an untrusted resource string or stream
  *9. Not found Dll to resolve. Microsoft.Web.Design.Remote.ProxyObject – DecodeValue, DecodeSerializedObject
  *10.Done System.Web.Script.Serialization.JavaScriptSerializer – unsafe if used to deserialize an untrusted stream with a JavaScriptTypeResolver set
