@@ -178,6 +178,9 @@
     <None Update="Resources\System.Runtime.Extensions.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Runtime.Remoting.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Runtime.Serialization.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
