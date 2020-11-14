@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using SAST.Engine.CSharp.Core;
-using System.Xml.Serialization;
 
 namespace SAST.Engine.CSharp.Tests
 {
@@ -31,7 +29,7 @@ namespace SAST.Engine.CSharp.Tests
             else if (File.Exists(path))
                 sASTApp.LoadFiles(new string[] { path });
             
-            vulnerabilities = sASTApp.Scan(Enums.ScannerType.RegexInjection);
+            vulnerabilities = sASTApp.Scan(Enums.ScannerType.HttpRequestValidation);
             if (vulnerabilities != null)
                 foreach (var item in vulnerabilities)
                     Console.WriteLine("\n" + item);

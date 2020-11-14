@@ -383,6 +383,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 ScannerType.RegexInjection => new RegexInjectionScanner(),
+                ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),                
                 _ => null,
             };
         }

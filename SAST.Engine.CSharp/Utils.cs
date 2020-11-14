@@ -65,6 +65,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SerializationType, "Insecure Deserialization type"},
             {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
             {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
+            {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},

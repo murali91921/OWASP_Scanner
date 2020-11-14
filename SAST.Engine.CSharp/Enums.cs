@@ -40,7 +40,8 @@
         WeakCryptoKeyLength = 30,
         SerializationType = 31,
         LdapSecureConnection = 32,
-        RegexInjection = 33
+        RegexInjection = 33,
+        HttpRequestValidation = 34,
     }
 
     /// <summary>
