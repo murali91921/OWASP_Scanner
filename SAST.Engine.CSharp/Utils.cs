@@ -66,6 +66,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
             {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
             {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
+            {Enums.ScannerType.SerializationConstructor, "Serialization Constructor should be secured"},
+
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -101,6 +103,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SerializationType, Enums.Severity.High},
             {Enums.ScannerType.LdapSecureConnection, Enums.Severity.High},
             {Enums.ScannerType.RegexInjection, Enums.Severity.High},
+            {Enums.ScannerType.HttpRequestValidation,Enums.Severity.High},
+            {Enums.ScannerType.SerializationConstructor,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
@@ -302,7 +306,7 @@ namespace SAST.Engine.CSharp
                 //Checking if sanitized for Regular Expression
                 if (scannerType == Enums.ScannerType.RegexInjection)
                     return symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "System.Text.RegularExpressions.Regex.Escape";
-                
+
                 bool isVulnerable = false;
                 if (symbol.Locations.Count() > 0)
                 {
@@ -346,12 +350,5 @@ namespace SAST.Engine.CSharp
             else
                 return false;
         }
-        //static C2<int> c2 = new C2<int>();
     }
-    //class C1<T>
-    //{
-    //}
-    //class C2<T> : C1<C2<C2<T>>> // Noncompliant
-    //{
-    //}
 }

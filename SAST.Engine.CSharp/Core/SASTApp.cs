@@ -239,7 +239,7 @@ namespace SAST.Engine.CSharp.Core
                     string directory = Path.GetDirectoryName(projectPath);
                     foreach (var item in Utils.SourceCodeFileExtensions)
                     {
-                        sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item,SearchOption.AllDirectories));
+                        sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
                     }
                     foreach (var item in Utils.MarkupFileExtensions)
                     {
@@ -383,7 +383,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 ScannerType.RegexInjection => new RegexInjectionScanner(),
-                ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),                
+                ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
+                ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
                 _ => null,
             };
         }
