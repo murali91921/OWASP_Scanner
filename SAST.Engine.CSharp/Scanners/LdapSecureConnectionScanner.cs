@@ -60,7 +60,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var assignmentExpression in assignmentExpressions)
             {
                 ISymbol symbol = model.GetSymbol(assignmentExpression.Left);
-                if (symbol.ToString() != AuthenticationType_Prop)
+                if (symbol == null || symbol.ToString() != AuthenticationType_Prop)
                     continue;
                 if (IsVulnerable(model, assignmentExpression.Right))
                     syntaxNodes.Add(assignmentExpression.Right);
