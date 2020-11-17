@@ -67,6 +67,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
             {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
             {Enums.ScannerType.SerializationConstructor, "Serialization Constructor should be secured"},
+            {Enums.ScannerType.HardcodedIpAddress, "Hardcoded IP Address"},
+            
 
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
@@ -105,6 +107,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RegexInjection, Enums.Severity.High},
             {Enums.ScannerType.HttpRequestValidation,Enums.Severity.High},
             {Enums.ScannerType.SerializationConstructor,Enums.Severity.High},
+            {Enums.ScannerType.HardcodedIpAddress,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

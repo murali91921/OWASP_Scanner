@@ -42,7 +42,8 @@
         LdapSecureConnection = 32,
         RegexInjection = 33,
         HttpRequestValidation = 34,
-        SerializationConstructor = 35
+        SerializationConstructor = 35,
+        HardcodedIpAddress = 36
     }
 
     /// <summary>
