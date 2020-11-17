@@ -36,6 +36,7 @@ namespace SAST.Engine.CSharp.Parser
             XPathDocument document = new XPathDocument(reader);
             XPathNavigator navigator = document.CreateNavigator();
             XPathNodeIterator nodes = navigator.Select(nodePath);
+            string projectpath = Path.GetDirectoryName(Path.GetFullPath(projectPath));
             while (nodes.MoveNext())
             {
                 nodes.Current.MoveToFirstAttribute();
@@ -51,7 +52,7 @@ namespace SAST.Engine.CSharp.Parser
                         && nodes.Current.Name.Equals(attributeName, System.StringComparison.OrdinalIgnoreCase)
                         && extensions.Any(obj => obj == (Path.GetExtension(nodes.Current.Value.ToLower()))))
                     {
-                        string sourceFilePath = Path.GetFullPath(nodes.Current.Value, Path.GetDirectoryName(projectPath));
+                        string sourceFilePath = Path.GetFullPath(nodes.Current.Value, projectpath);
                         if (File.Exists(sourceFilePath) && !string.IsNullOrWhiteSpace(File.ReadAllText(sourceFilePath)))
                             values.Add(sourceFilePath);
                         break;

@@ -18,7 +18,7 @@ namespace SAST.Engine.CSharp.Parser
     {
         private static readonly string ProjectPattern = "^Project\\(\"{(?<TypeId>[A-F0-9-]+)}\"\\) = \"(?<Name>.*?)\", \"(?<Path>.*?)\", \"{(?<Id>[A-F0-9-]+)}\""
             + @"(?<Sections>(.|\n|\r)*?)" + @"EndProject(\n|\r)";
-    
+
         /// <summary>
         /// This method will Parse the Solution File to find the Project File Paths
         /// </summary>
@@ -33,13 +33,14 @@ namespace SAST.Engine.CSharp.Parser
             if (string.IsNullOrWhiteSpace(slnText))
                 return list;
             var matches = Regex.Matches(slnText, ProjectPattern, RegexOptions.Multiline);
+            string solutionDirectory = Path.GetDirectoryName(Path.GetFullPath(solutionFilePath));
             foreach (Match match in matches)
             {
                 if (match != null)
                 {
-                    string projectPath = Path.GetFullPath(match.Groups["Path"].Value, Path.GetDirectoryName(solutionFilePath));
+                    string projectPath = Path.GetFullPath(match.Groups["Path"].Value, solutionDirectory);
                     if (File.Exists(projectPath) && !string.IsNullOrWhiteSpace(File.ReadAllTextAsync(projectPath).Result))
-                        list.Add(Path.GetFullPath(match.Groups["Path"].Value, Path.GetDirectoryName(solutionFilePath)));
+                        list.Add(Path.GetFullPath(match.Groups["Path"].Value, solutionDirectory));
                 }
             }
             return list;
