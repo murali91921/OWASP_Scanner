@@ -68,6 +68,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
             {Enums.ScannerType.SerializationConstructor, "Serialization Constructor should be secured"},
             {Enums.ScannerType.HardcodedIpAddress, "Hardcoded IP Address"},
+            {Enums.ScannerType.ExportInterface, "ExportAttribute Interfaces"},
+            {Enums.ScannerType.ThreadSuspendResume, "Thread Suspend,Resume Methods"},
             
 
         };
@@ -108,6 +110,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HttpRequestValidation,Enums.Severity.High},
             {Enums.ScannerType.SerializationConstructor,Enums.Severity.High},
             {Enums.ScannerType.HardcodedIpAddress,Enums.Severity.High},
+            {Enums.ScannerType.ExportInterface,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

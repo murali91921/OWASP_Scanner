@@ -387,6 +387,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
                 ScannerType.HardcodedIpAddress => new HardcodedIPScanner(),
                 ScannerType.ExportInterface => new ExportInterfaceScanner(),
+                ScannerType.ThreadSuspendResume => new ThreadSuspendResumeScanner(),
                 _ => null,
             };
         }

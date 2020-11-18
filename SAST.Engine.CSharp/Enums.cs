@@ -44,7 +44,8 @@
         HttpRequestValidation = 34,
         SerializationConstructor = 35,
         HardcodedIpAddress = 36,
-        ExportInterface = 37
+        ExportInterface = 37,
+        ThreadSuspendResume = 38
     }
 
     /// <summary>
