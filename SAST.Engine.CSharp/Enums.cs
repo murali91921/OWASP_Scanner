@@ -46,7 +46,8 @@
         HardcodedIpAddress = 36,
         ExportInterface = 37,
         ThreadSuspendResume = 38,
-        SafeHandle = 39
+        SafeHandle = 39,
+        RecursiveTypeInheritance = 40
     }
 
     /// <summary>

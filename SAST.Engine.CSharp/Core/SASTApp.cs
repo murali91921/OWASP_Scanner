@@ -389,6 +389,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.ExportInterface => new ExportInterfaceScanner(),
                 ScannerType.ThreadSuspendResume => new ThreadSuspendResumeScanner(),
                 ScannerType.SafeHandle => new SafeHandleScanner(),
+                ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
                 _ => null,
             };
         }
