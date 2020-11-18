@@ -45,7 +45,8 @@
         SerializationConstructor = 35,
         HardcodedIpAddress = 36,
         ExportInterface = 37,
-        ThreadSuspendResume = 38
+        ThreadSuspendResume = 38,
+        SafeHandle = 39
     }
 
     /// <summary>

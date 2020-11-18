@@ -70,8 +70,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.HardcodedIpAddress, "Hardcoded IP Address"},
             {Enums.ScannerType.ExportInterface, "ExportAttribute Interfaces"},
             {Enums.ScannerType.ThreadSuspendResume, "Thread Suspend,Resume Methods"},
-            
-
+            {Enums.ScannerType.SafeHandle, "SafeHandle.DangerousGetHandle Method"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -111,6 +110,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SerializationConstructor,Enums.Severity.High},
             {Enums.ScannerType.HardcodedIpAddress,Enums.Severity.High},
             {Enums.ScannerType.ExportInterface,Enums.Severity.High},
+            {Enums.ScannerType.ThreadSuspendResume,Enums.Severity.High},
+            {Enums.ScannerType.SafeHandle,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
