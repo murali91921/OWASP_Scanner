@@ -386,6 +386,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
                 ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
                 ScannerType.HardcodedIpAddress => new HardcodedIPScanner(),
+                ScannerType.ExportInterface => new ExportInterfaceScanner(),
                 _ => null,
             };
         }

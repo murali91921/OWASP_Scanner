@@ -43,7 +43,8 @@
         RegexInjection = 33,
         HttpRequestValidation = 34,
         SerializationConstructor = 35,
-        HardcodedIpAddress = 36
+        HardcodedIpAddress = 36,
+        ExportInterface = 37
     }
 
     /// <summary>
