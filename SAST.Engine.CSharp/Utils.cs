@@ -72,6 +72,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.ThreadSuspendResume, "Thread Suspend,Resume Methods"},
             {Enums.ScannerType.SafeHandle, "SafeHandle.DangerousGetHandle Method"},
             {Enums.ScannerType.RecursiveTypeInheritance, "Recursive Type Inheritance"},
+            {Enums.ScannerType.IDisposableImplement, "Implement IDisposable interface"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -114,6 +115,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.ThreadSuspendResume,Enums.Severity.High},
             {Enums.ScannerType.SafeHandle,Enums.Severity.High},
             {Enums.ScannerType.RecursiveTypeInheritance,Enums.Severity.High},
+            {Enums.ScannerType.IDisposableImplement,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

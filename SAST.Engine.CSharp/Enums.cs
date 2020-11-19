@@ -47,7 +47,8 @@
         ExportInterface = 37,
         ThreadSuspendResume = 38,
         SafeHandle = 39,
-        RecursiveTypeInheritance = 40
+        RecursiveTypeInheritance = 40,
+        IDisposableImplement = 41
     }
 
     /// <summary>

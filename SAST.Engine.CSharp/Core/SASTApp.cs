@@ -390,6 +390,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.ThreadSuspendResume => new ThreadSuspendResumeScanner(),
                 ScannerType.SafeHandle => new SafeHandleScanner(),
                 ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
+                ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
                 _ => null,
             };
         }
