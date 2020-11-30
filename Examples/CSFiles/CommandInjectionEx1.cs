@@ -29,9 +29,9 @@ namespace Example
         static void method2(string param1, string param2)
         {
             processStart = new ProcessStartInfo();
-            param1 = this.cleanInput(param1);
-            param1 = param1.Substring(2);
-            param1 = param1.cleanInput();
+            // param1 = this.cleanInput(param1);
+            // param1 = param1.Substring(2);
+            // param1 = param1.cleanInput();
             Process process = Process.Start(param1);
             //Unsafe all
             processStart = new ProcessStartInfo(param1);
@@ -39,6 +39,7 @@ namespace Example
             processStart = new ProcessStartInfo { FileName = param1 };
             processStart = new ProcessStartInfo { FileName = param1, Arguments = param2 };
             processStart = new ProcessStartInfo { Arguments = param2 };
+			processStart.FileName=param1;
         }
         public static string cleanInput(string param)
         {

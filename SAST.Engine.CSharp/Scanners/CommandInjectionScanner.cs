@@ -35,6 +35,7 @@ namespace SAST.Engine.CSharp.Scanners
             _solution = solution;
             vulnerabilities.AddRange(FindProcessExpressions());
             vulnerabilities.AddRange(FindProcessInfoExpressions());
+            vulnerabilities.AddRange(FindStartInfoAssignments());
             return vulnerabilities;
         }
 
@@ -100,31 +101,29 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol typeSymbol = _model.GetTypeSymbol(item);
                 if (typeSymbol == null || typeSymbol.ToString() != "System.Diagnostics.ProcessStartInfo")
                     continue;
-                
-                if (item.Initializer?.Expressions.Count == 0 && item.ArgumentList?.Arguments.Count == 0)
+
+                if (item.ArgumentList?.Arguments.Count == 0)
                     continue;
 
-                if (item.ArgumentList?.Arguments.Count > 0)
-                {
-                    foreach (var argument in item.ArgumentList?.Arguments)
-                        if (Utils.IsVulnerable(argument.Expression, _model, _solution, null))
-                        {
-                            syntaxNodes.Add(argument);
-                            break;
-                        }
-                }
-                else if (item.Initializer?.Expressions.Count > 0)
-                    foreach (var expression in item.Initializer?.Expressions)
-                        if (expression is AssignmentExpressionSyntax assignment)
-                        {
-                            if (assignment.Left.ToString() != "FileName" && assignment.Left.ToString() != "Arguments")
-                                continue;
-                            if (Utils.IsVulnerable(assignment.Right, _model, _solution, null))
-                            {
-                                syntaxNodes.Add(expression);
-                                break;
-                            }
-                        }
+                foreach (var argument in item.ArgumentList?.Arguments)
+                    if (Utils.IsVulnerable(argument.Expression, _model, _solution, null))
+                        syntaxNodes.Add(argument);
+            }
+            return Map.ConvertToVulnerabilityList(_filePath, syntaxNodes, Enums.ScannerType.CommandInjection);
+        }
+        private IEnumerable<VulnerabilityDetail> FindStartInfoAssignments()
+        {
+            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            var assignments = _syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
+            foreach (var assignment in assignments)
+            {
+                ISymbol symbol = _model.GetSymbol(assignment.Left);
+                if (symbol == null)
+                    continue;
+                if (symbol.ToString() != "System.Diagnostics.ProcessStartInfo.FileName" && symbol.ToString() != "System.Diagnostics.ProcessStartInfo.Arguments")
+                    continue;
+                if (Utils.IsVulnerable(assignment.Right, _model, _solution, null))
+                    syntaxNodes.Add(assignment);
             }
             return Map.ConvertToVulnerabilityList(_filePath, syntaxNodes, Enums.ScannerType.CommandInjection);
         }
