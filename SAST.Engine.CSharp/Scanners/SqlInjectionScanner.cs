@@ -16,20 +16,25 @@ namespace SAST.Engine.CSharp.Scanners
     internal class SqlInjectionScanner : IScanner
     {
         private static string[] CommandClasses = {
+            "System.Web.UI.WebControls.SqlDataSource",
             "System.Data.Common.DbCommand",
             "System.Data.IDbCommand",
-            "System.Data.SqlClient.SqlCommand",
-            "System.Data.OleDb.OleDbCommand",
-            "System.Data.Odbc.OdbcCommand",
-            "System.Data.OracleClient.OracleCommand",
-            "System.Data.SQLite.SQLiteCommand",
-            "System.Data.SqlClient.SqlDataAdapter",
             "System.Data.IDbDataAdapter",
+
+            "System.Data.OleDb.OleDbCommand",
             "System.Data.OleDb.OleDbDataAdapter",
-            "System.Data.Odbc.OdbcDataAdapter",
+
+            "System.Data.OracleClient.OracleCommand",
             "System.Data.OracleClient.OracleDataAdapter",
+
+            "System.Data.SqlClient.SqlCommand",
+            "System.Data.SqlClient.SqlDataAdapter",
+
+            "System.Data.Odbc.OdbcDataAdapter",
+            "System.Data.Odbc.OdbcCommand",
+
+            "System.Data.SQLite.SQLiteCommand",
             "System.Data.SQLite.SQLiteDataAdapter",
-            "System.Web.UI.WebControls.SqlDataSource",
             };
         private static string SqlDataSourceClass = "System.Web.UI.WebControls.SqlDataSource";
         private static string[] CommandTextParameters = {
@@ -41,16 +46,26 @@ namespace SAST.Engine.CSharp.Scanners
         private static string[] CommandExecuteMethods = {
             "System.Data.Linq.DataContext.ExecuteCommand",
             "System.Data.Linq.DataContext.ExecuteQuery",
+
             "System.Data.SQLite.SQLiteCommand.Execute",
+
             "System.Data.Entity.Database.ExecuteSqlCommand",
             "System.Data.Entity.Database.ExecuteSqlCommandAsync",
             "System.Data.Entity.Database.SqlQuery",
+
             "System.Data.Entity.DbSet<TEntity>.SqlQuery",
+
             "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSqlRaw",
+            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSql",
+            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSqlInterpolated",
+
             "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommand",
             "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommandAsync",
             "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRaw",
             "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRawAsync",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlInterpolated",
+            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlInterpolatedAsync",
+
             "Microsoft.Practices.EnterpriseLibrary.Data.Database.GetSqlStringCommand",
             "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteScalar",
             "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteReader",
@@ -131,21 +146,33 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 IMethodSymbol symbol = model.GetSymbol(method) as IMethodSymbol;
                 if (symbol == null)
-                    continue;
-
-                if (!CommandExecuteMethods.Any(obj => obj == symbol.ReceiverType.OriginalDefinition.ToString() + "." + symbol.Name.ToString()))
+                {
+                    if (method.Expression is MemberAccessExpressionSyntax memberAccess)
+                    {
+                        if (memberAccess.Name.ToString() == "FromSql")
+                        {
+                            ITypeSymbol typeSymbol = model.GetTypeSymbol(memberAccess.Expression);
+                            if (typeSymbol == null || typeSymbol.OriginalDefinition.ToString() + "." + memberAccess.Name.ToString() != "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSql")
+                                continue;
+                        }
+                        else
+                            continue;
+                    }
+                    else
+                        continue;
+                }
+                else if (!CommandExecuteMethods.Any(obj => obj == symbol.ReceiverType.OriginalDefinition.ToString() + "." + symbol.Name.ToString()))
                     continue;
 
                 foreach (var argument in method.ArgumentList.Arguments)
                 {
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
-                    if (typeSymbol.SpecialType != SpecialType.System_String)
+
+                    if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
                         continue;
+
                     if (argument.NameColon == null || CommandExecuteParameters.Any(param => param == argument.NameColon.Name.ToString()))
-                    {
                         lstVulnerableCheck.Add(argument.Expression);
-                        break;
-                    }
                 }
             }
             var assignments = syntaxNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(
@@ -158,7 +185,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 if (CommandTextProperties.Any(obj => obj == symbol.ToString()))
-                    lstVulnerableCheck.Add((item as AssignmentExpressionSyntax).Right);
+                    lstVulnerableCheck.Add(item.Right);
             }
 
             foreach (var item in lstVulnerableCheck)
