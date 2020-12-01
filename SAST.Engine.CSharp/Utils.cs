@@ -73,6 +73,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SafeHandle, "SafeHandle.DangerousGetHandle Method"},
             {Enums.ScannerType.RecursiveTypeInheritance, "Recursive Type Inheritance"},
             {Enums.ScannerType.IDisposableImplement, "Implement IDisposable interface"},
+            {Enums.ScannerType.DisposableMember, "Dispose IDisposable properties"},
+
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -116,6 +118,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SafeHandle,Enums.Severity.High},
             {Enums.ScannerType.RecursiveTypeInheritance,Enums.Severity.High},
             {Enums.ScannerType.IDisposableImplement,Enums.Severity.High},
+            {Enums.ScannerType.DisposableMember,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
@@ -201,7 +204,8 @@ namespace SAST.Engine.CSharp
         {
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;
-            if (typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.ToString())))
+            if (baseTypes.Any(typeName => typeName == typeSymbol.ToString())
+                || typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.ToString())))
                 return true;
             return false;
         }
@@ -216,7 +220,7 @@ namespace SAST.Engine.CSharp
         {
             if (string.IsNullOrWhiteSpace(baseType))
                 return false;
-            if (typeSymbol.AllInterfaces.Any(obj => obj.ToString() == baseType))
+            if (typeSymbol.ToString() == baseType || typeSymbol.AllInterfaces.Any(obj => obj.ToString() == baseType))
                 return true;
             return false;
         }

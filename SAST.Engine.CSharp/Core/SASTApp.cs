@@ -391,6 +391,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SafeHandle => new SafeHandleScanner(),
                 ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
                 ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
+                ScannerType.DisposableMember => new DisposableMemberScanner(),
                 _ => null,
             };
         }

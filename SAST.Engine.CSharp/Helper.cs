@@ -55,6 +55,19 @@ namespace SAST.Engine.CSharp
         /// <returns></returns>
         public static ITypeSymbol GetTypeSymbol(this SemanticModel model, SyntaxNode node) => model.GetTypeInfo(node).Type;
 
+        public static ITypeSymbol GetTypeSymbol(this ISymbol symbol)
+        {
+            if (symbol == null)
+                return null;
+            if (symbol is IFieldSymbol fieldSymbol)
+                return fieldSymbol.Type;
+            if (symbol is ILocalSymbol localSymbol)
+                return localSymbol.Type;
+            if (symbol is IPropertySymbol propertySymbol)
+                return propertySymbol.Type;
+            return null;
+        }
+
         public static string GetName(this ExpressionSyntax expression) =>
         expression switch
         {

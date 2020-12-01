@@ -48,7 +48,8 @@
         ThreadSuspendResume = 38,
         SafeHandle = 39,
         RecursiveTypeInheritance = 40,
-        IDisposableImplement = 41
+        IDisposableImplement = 41,
+        DisposableMember= 42,
     }
 
     /// <summary>
