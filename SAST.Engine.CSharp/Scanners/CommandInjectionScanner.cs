@@ -102,7 +102,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (typeSymbol == null || typeSymbol.ToString() != "System.Diagnostics.ProcessStartInfo")
                     continue;
 
-                if (item.ArgumentList?.Arguments.Count == 0)
+                if (item.ArgumentList == null || item.ArgumentList?.Arguments.Count == 0)
                     continue;
 
                 foreach (var argument in item.ArgumentList?.Arguments)

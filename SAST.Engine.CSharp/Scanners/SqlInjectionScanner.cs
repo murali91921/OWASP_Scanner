@@ -33,6 +33,8 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Data.Odbc.OdbcDataAdapter",
             "System.Data.Odbc.OdbcCommand",
 
+            "Mono.Data.Sqlite.SqliteCommand",
+            "Microsoft.Data.Sqlite.SqliteCommand",
             "System.Data.SQLite.SQLiteCommand",
             "System.Data.SQLite.SQLiteDataAdapter",
             };
@@ -84,6 +86,8 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Data.OleDb.OleDbCommand.CommandText",
             "System.Data.Odbc.OdbcCommand.CommandText",
             "System.Data.OracleClient.OracleCommand.CommandText",
+            "Mono.Data.Sqlite.SqliteCommand.CommandText",
+            "Microsoft.Data.Sqlite.SqliteCommand.CommandText",
             "System.Data.SQLite.SQLiteCommand.CommandText",
             "System.Web.UI.WebControls.SqlDataSource.SelectCommand",
             "System.Web.UI.WebControls.SqlDataSource.InsertCommand",
@@ -187,7 +191,6 @@ namespace SAST.Engine.CSharp.Scanners
                 if (CommandTextProperties.Any(obj => obj == symbol.ToString()))
                     lstVulnerableCheck.Add(item.Right);
             }
-
             foreach (var item in lstVulnerableCheck)
                 if (Utils.IsVulnerable(item, model, solution))
                     lstVulnerableStatements.Add(item.Parent);
