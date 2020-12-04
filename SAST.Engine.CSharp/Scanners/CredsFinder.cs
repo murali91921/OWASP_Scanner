@@ -85,41 +85,46 @@ namespace SAST.Engine.CSharp.Scanners
             // Finding sensitive variable names
             // Variable name should matches with keywords, and variable value is not empty,and expression should have Literal("").
             ISymbol symbol = model.GetDeclaredSymbol(variableDeclarator);
-            if (symbol != null)
+            if (symbol == null)
+                return;
+
+            VariableDeclarationSyntax declarationSyntax = variableDeclarator.AncestorsAndSelf().OfType<VariableDeclarationSyntax>().FirstOrDefault();
+            if (declarationSyntax == null)
+                return;
+            ITypeSymbol typeSymbol = model.GetTypeSymbol(declarationSyntax.Type);
+            if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
+                return;
+
+            if (variableDeclarator.Initializer != null && variableDeclarator.Initializer is EqualsValueClauseSyntax equalsValue
+            && equalsValue.Value is LiteralExpressionSyntax literalExpression)
             {
-                if (symbol.ContainingType.SpecialType != SpecialType.System_String)
-                    return;
-                if (variableDeclarator.Initializer != null && variableDeclarator.Initializer is EqualsValueClauseSyntax equalsValue
-                && equalsValue.Value is LiteralExpressionSyntax literalExpression)
+                if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
+                    if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
+                        secretStrings.Add(variableDeclarator);
+            }
+            var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
+            foreach (var reference in references)
+            {
+                foreach (var referenceLocation in reference.Locations)
                 {
-                    if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
-                        if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
-                            secretStrings.Add(variableDeclarator);
-                }
-                var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-                foreach (var reference in references)
-                {
-                    foreach (var referenceLocation in reference.Locations)
+                    string stringValue = string.Empty;
+                    var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
+                    if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
                     {
-                        string stringValue = string.Empty;
-                        var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
-                        if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
+                        stringValue = literal.ToString();
+                        if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
+                            if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
+                                secretStrings.Add(presentStatement);
+                    }
+                    else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
+                    {
+                        if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
+                        || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
                         {
-                            stringValue = literal.ToString();
+                            stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
                             if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
+                                if (IsSecretVariable(symbol.Name))
                                     secretStrings.Add(presentStatement);
-                        }
-                        else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
-                        {
-                            if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
-                            || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
-                            {
-                                stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
-                                if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                    if (IsSecretVariable(symbol.Name))
-                                        secretStrings.Add(presentStatement);
-                            }
                         }
                     }
                 }
