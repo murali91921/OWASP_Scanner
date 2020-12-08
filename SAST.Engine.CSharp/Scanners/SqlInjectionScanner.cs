@@ -34,9 +34,14 @@ namespace SAST.Engine.CSharp.Scanners
             "System.Data.Odbc.OdbcCommand",
 
             "Mono.Data.Sqlite.SqliteCommand",
+            "Mono.Data.Sqlite.SqliteDataAdapter",
             "Microsoft.Data.Sqlite.SqliteCommand",
+
             "System.Data.SQLite.SQLiteCommand",
             "System.Data.SQLite.SQLiteDataAdapter",
+
+            "MySql.Data.MySqlClient.MySqlCommand",
+            "MySql.Data.MySqlClient.MySqlDataAdapter"
             };
         private static string SqlDataSourceClass = "System.Web.UI.WebControls.SqlDataSource";
         private static string[] CommandTextParameters = {

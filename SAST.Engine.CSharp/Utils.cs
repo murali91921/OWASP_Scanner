@@ -81,7 +81,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
             {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
             {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
-            //{Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
+            {Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
             {Enums.ScannerType.InsecureRandom, Enums.Severity.Medium},
             {Enums.ScannerType.LdapInjection, Enums.Severity.High},
             {Enums.ScannerType.OpenRedirect, Enums.Severity.Medium},
@@ -312,6 +312,14 @@ namespace SAST.Engine.CSharp
                         break;
                 }
                 return vulnerable;
+            }
+            else if (node is MemberAccessExpressionSyntax memberAccessExpression)
+            {
+                ITypeSymbol typeSymbol = model.GetTypeSymbol(memberAccessExpression);
+                if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
+                    return false;
+                ISymbol symbol = model.GetSymbol(memberAccessExpression.Expression);
+                return symbol is IParameterSymbol;
             }
             else if (node is InvocationExpressionSyntax invocation)
             {

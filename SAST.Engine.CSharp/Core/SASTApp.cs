@@ -84,8 +84,7 @@ namespace SAST.Engine.CSharp.Core
                 if (filePaths.Length == 0)
                     return true;
             }
-
-            if (filePaths.Any(file => Path.GetExtension(file).ToLower() == ".csproj"))
+            else if (filePaths.Any(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
             {
                 currentWorkspace = new AdhocWorkspace();
                 var projectFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".csproj").ToArray();
@@ -108,8 +107,7 @@ namespace SAST.Engine.CSharp.Core
                 else
                     return false;
             }
-
-            if (filePaths.Any(file =>
+           if (filePaths.Any(file =>
                 Utils.ConfigurationFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
                 Utils.SourceCodeFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
                 Utils.MarkupFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase))))
@@ -135,8 +133,7 @@ namespace SAST.Engine.CSharp.Core
                 workspaces.Add(currentWorkspace);
                 return true;
             }
-            else
-                return workspaces.Count > 0;
+            return false;
         }
 
         /// <summary>

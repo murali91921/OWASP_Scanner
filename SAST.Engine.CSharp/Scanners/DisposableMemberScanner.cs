@@ -15,6 +15,7 @@ namespace SAST.Engine.CSharp.Scanners
         private static string[] Disposable_Types =
         {
             "System.IO.FileStream",
+            "System.IO.BinaryReader",
             "System.IO.StreamReader",
             "System.IO.StreamWriter",
             "System.Net.WebClient",
@@ -127,9 +128,11 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var referenceLocation in referencedSymbol.Locations)
                 {
                     SyntaxNode node = referenceLocation.Location.SourceTree.GetRoot().FindNode(referenceLocation.Location.SourceSpan);
+
                     var assignment = node.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                     if (assignment == null || assignment.Parent is UsingStatementSyntax)
                         continue;
+
                     SemanticModel model = referenceLocation.Document.GetSemanticModelAsync().Result.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
                     ISymbol assignedSymbol = model.GetSymbol(assignment.Left);
                     if (!assignedSymbol.Equals(symbol, SymbolEqualityComparer.Default))
@@ -211,8 +214,6 @@ namespace SAST.Engine.CSharp.Scanners
                 }
                 else if (identifierOrSimpleMemberAccess.IsKind(SyntaxKind.Argument))
                     expression = identifierOrSimpleMemberAccess as ArgumentSyntax;
-                //else
-                //    throw new NotSupportedException("Syntax node should be either an identifier or a simple member access expression");
 
                 if (!IsStandaloneExpression(expression))
                     continue;
@@ -237,9 +238,11 @@ namespace SAST.Engine.CSharp.Scanners
 
         private static bool IsInstantiation(ExpressionSyntax expression, SemanticModel model)
         {
-            return IsNewTrackedTypeObjectCreation(expression, model) ||
+            bool result =
+                IsNewTrackedTypeObjectCreation(expression, model) ||
                 IsDisposableRefStructCreation(expression, model) ||
                 IsFactoryMethodInvocation(expression, model);
+            return result;
         }
 
         private static bool IsNewTrackedTypeObjectCreation(ExpressionSyntax expression, SemanticModel model)
@@ -251,8 +254,9 @@ namespace SAST.Engine.CSharp.Scanners
             if (!Disposable_Types.Contains(type.ToString()))
                 return false;
 
-            return model.GetSymbol(expression) is IMethodSymbol constructor &&
-                !constructor.Parameters.Any(p => Utils.ImplementsFrom(p.Type, "System.IDisposable"));
+            bool result = model.GetSymbol(expression) is IMethodSymbol constructor;
+            //!constructor.Parameters.Any(param => Utils.ImplementsFrom(param.Type, "System.IDisposable"));
+            return result;
         }
 
         private static bool IsDisposableRefStructCreation(ExpressionSyntax expression, SemanticModel model)

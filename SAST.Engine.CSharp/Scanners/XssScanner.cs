@@ -41,7 +41,7 @@ namespace SAST.Engine.CSharp.Scanners
                 "System.Web.HttpResponse.Write",
                 "System.Web.HttpResponseBase.Write",
                 "System.Web.UI.ClientScriptManager.RegisterStartupScript",      //2
-                "System.Web.UI.ClientScriptManager.RegisterClientScriptBloc",   //2
+                "System.Web.UI.ClientScriptManager.RegisterClientScriptBlock",   //2
                 "System.Web.UI.Page.RegisterStartupScript",     //1
                 "System.Web.UI.Page.RegisterClientScriptBlock"  //1
             };

@@ -108,7 +108,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var referenceLocation in reference.Locations)
                 {
                     string stringValue = string.Empty;
-                    var presentStatement = syntaxNode.FindNode(referenceLocation.Location.SourceSpan).Parent;
+                    var presentStatement = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(reference.Definition.Locations.First().SourceSpan).Parent;
                     if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
                     {
                         stringValue = literal.ToString();
@@ -211,6 +211,7 @@ namespace SAST.Engine.CSharp.Scanners
             this.model = model;
             this.syntaxNode = syntaxNode;
             this.solution = solution;
+            var classes=syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
             IEnumerator<VariableDeclaratorSyntax> hardcoreStringNodes = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().GetEnumerator();
             //Checking strings are Passwords, secret keys or not.
             while (hardcoreStringNodes.MoveNext())

@@ -315,7 +315,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="arguments"></param>
         /// <returns></returns>
         private bool HasDefaultSize(SeparatedSyntaxList<ArgumentSyntax>? arguments)
-        { 
+        {
             return arguments == null || arguments?.Count == 0
                 || (arguments?.Count == 1 && _model.GetTypeSymbol(arguments?[0].Expression) is ITypeSymbol type
                 && Utils.DerivesFrom(type, System_Security_Cryptography_CspParameters));

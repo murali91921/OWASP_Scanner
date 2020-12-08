@@ -42,6 +42,9 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
+            if (filePath.Contains("WebGoatCoins"))
+                System.Console.WriteLine("WebGoatCoins");
+
             this.model = model;
             this.syntaxNode = syntaxNode;
             this.solution = solution;
