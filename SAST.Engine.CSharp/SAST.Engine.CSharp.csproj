@@ -253,9 +253,6 @@
     <None Update="Resources\System.Xml.Linq.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\System.Xml.ReaderWriter.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\System.Xml.XPath.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
