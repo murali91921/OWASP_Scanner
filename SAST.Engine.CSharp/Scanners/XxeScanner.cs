@@ -40,15 +40,15 @@ namespace SAST.Engine.CSharp.Scanners
                 var invocations = methodDeclaration.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
                 foreach (var invocation in invocations)
                 {
-                    ISymbol invocationSymbol = model.GetSymbol(invocation);
+                    IMethodSymbol invocationSymbol = model.GetSymbol(invocation) as IMethodSymbol;
                     if (invocationSymbol == null)
                         continue;
-                    if (invocationSymbol.ContainingType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlTextReader.Read")
+                    if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlTextReader.Read")
                     {
                         if (IsVulnerableXmlTextReader(invocation))
                             vulnerableNodes.Add(invocation);
                     }
-                    else if (invocationSymbol.ContainingType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlReader.Create")
+                    else if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlReader.Create")
                     {
                         if (invocation.ArgumentList.Arguments.Count() < 1)
                             continue;
