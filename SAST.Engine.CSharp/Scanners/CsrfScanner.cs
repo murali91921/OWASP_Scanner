@@ -78,7 +78,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<SyntaxToken> lstVulnerableStatements = new List<SyntaxToken>();
             var attributeClassDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
             foreach (var itemClass in attributeClassDeclarations)
             {
@@ -107,15 +107,13 @@ namespace SAST.Engine.CSharp.Scanners
                             break;
                         var returnTypeSymbol = model.GetSymbol(method.ReturnType);
                         {
-                            bool hasHttpVerb = false;
-                            bool hasCsrfAttribute = false;
-                            bool hasAnonymousAttribute = false;
+                            bool hasHttpVerb = false, hasCsrfAttribute = false, hasAnonymousAttribute = false;
                             foreach (var attributeList in method.AttributeLists)
                             {
                                 foreach (var attribute in attributeList.Attributes)
                                 {
                                     ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
-                                    if (typeSymbol!= null)
+                                    if (typeSymbol != null)
                                     {
                                         hasHttpVerb = CheckHttbVerbAttribute(typeSymbol) || hasHttpVerb;
                                         hasCsrfAttribute = CheckCsrfAttribute(typeSymbol) || hasCsrfAttribute;
@@ -124,7 +122,7 @@ namespace SAST.Engine.CSharp.Scanners
                                 }
                             }
                             if (hasHttpVerb && !hasCsrfAttribute & !hasAnonymousAttribute)
-                                lstVulnerableStatements.Add(method);
+                                lstVulnerableStatements.Add(method.Identifier);
                         }
                     }
                 }

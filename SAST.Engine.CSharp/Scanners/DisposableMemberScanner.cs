@@ -122,7 +122,6 @@ namespace SAST.Engine.CSharp.Scanners
         private void TrackAssignmentsToLocalsAndPrivateFields(ISymbol symbol, Solution solution, ISet<NodeAndSymbol> trackedNodesAndSymbols)
         {
             var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-
             foreach (var referencedSymbol in referencedSymbols)
             {
                 foreach (var referenceLocation in referencedSymbol.Locations)
@@ -138,10 +137,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (!assignedSymbol.Equals(symbol, SymbolEqualityComparer.Default))
                         continue;
 
-                    if (assignment.Parent.IsKind(SyntaxKind.UsingStatement))
-                        continue;
-
-                    if (!IsInstantiation(assignment.Right, model))
+                    if (assignment.Parent.IsKind(SyntaxKind.UsingStatement) || !IsInstantiation(assignment.Right, model))
                         continue;
 
                     var leftReferencedSymbol = model.GetSymbol(assignment.Left);

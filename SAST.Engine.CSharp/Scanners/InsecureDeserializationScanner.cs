@@ -20,6 +20,19 @@ namespace SAST.Engine.CSharp.Scanners
         Solution _solution;
         string _filePath;
 
+        private static readonly string[] Sink_TypeFilterLevel_Props = {
+            "System.Runtime.Remoting.Channels.SoapServerFormatterSinkProvider.TypeFilterLevel",
+            "System.Runtime.Remoting.Channels.BinaryServerFormatterSinkProvider.TypeFilterLevel",
+            "System.Runtime.Remoting.Channels.SoapServerFormatterSink.TypeFilterLevel",
+            "System.Runtime.Remoting.Channels.BinaryServerFormatterSink.TypeFilterLevel"
+        };
+
+        private static readonly string[] Binder_Props = {
+            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Binder",
+            "System.Runtime.Serialization.NetDataContractSerializer.Binder",
+            "System.Runtime.Serialization.Formatters.Soap.SoapFormatter.Binder"
+        };
+
         private static readonly string[] BinaryFormatter_Methods = {
             "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Deserialize",
             "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserialize",
@@ -134,11 +147,7 @@ namespace SAST.Engine.CSharp.Scanners
                     else if ((int)value.Value != 0)
                         vulnerabilities.Add(item);
                 }
-                else if (symbol.ToString() == "System.Runtime.Remoting.Channels.SoapServerFormatterSinkProvider.TypeFilterLevel"
-                    || symbol.ToString() == "System.Runtime.Remoting.Channels.BinaryServerFormatterSinkProvider.TypeFilterLevel"
-                    || symbol.ToString() == "System.Runtime.Remoting.Channels.SoapServerFormatterSink.TypeFilterLevel"
-                    || symbol.ToString() == "System.Runtime.Remoting.Channels.BinaryServerFormatterSink.TypeFilterLevel")
-                    
+                else if (Sink_TypeFilterLevel_Props.Contains(symbol.ToString()))
                 {
                     ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
                     if (typeSymbol == null || typeSymbol.ToString() != "System.Runtime.Serialization.Formatters.TypeFilterLevel")
@@ -263,9 +272,7 @@ namespace SAST.Engine.CSharp.Scanners
                             ISymbol assignSymbol = model.GetSymbol(assignment.Left);
                             if (assignSymbol == null)
                                 continue;
-                            if (assignSymbol.ToString() == "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Binder"
-                                || assignSymbol.ToString() == "System.Runtime.Serialization.NetDataContractSerializer.Binder"
-                                || assignSymbol.ToString() == "System.Runtime.Serialization.Formatters.Soap.SoapFormatter.Binder")
+                            if (Binder_Props.Contains(assignSymbol.ToString()))
                                 vulnerable = IsVulnerable_BinaryFormatter(assignment, model);
                         }
                     }
