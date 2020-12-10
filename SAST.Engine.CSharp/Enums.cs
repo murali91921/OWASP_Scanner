@@ -49,7 +49,8 @@
         SafeHandle = 39,
         RecursiveTypeInheritance = 40,
         IDisposableImplement = 41,
-        DisposableMember= 42,
+        DisposableMember = 42,
+        SqlKeywordDelimit = 43,
     }
 
     /// <summary>

@@ -1,8 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SAST.Engine.CSharp
 {
@@ -76,5 +77,7 @@ namespace SAST.Engine.CSharp
             _ => string.Empty
         };
 
+        public static string JoinStr<T>(this IEnumerable<T> enumerable, string separator, Func<T, string> selector) =>
+            string.Join(separator, enumerable.Select(x => selector(x)));
     }
 }

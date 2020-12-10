@@ -74,7 +74,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RecursiveTypeInheritance, "Recursive Type Inheritance"},
             {Enums.ScannerType.IDisposableImplement, "Implement IDisposable interface"},
             {Enums.ScannerType.DisposableMember, "Dispose IDisposable properties"},
-
+            {Enums.ScannerType.SqlKeywordDelimit, "SQL keywords should be delimited by whitespace"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -119,6 +119,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RecursiveTypeInheritance,Enums.Severity.High},
             {Enums.ScannerType.IDisposableImplement,Enums.Severity.High},
             {Enums.ScannerType.DisposableMember,Enums.Severity.High},
+            {Enums.ScannerType.SqlKeywordDelimit,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

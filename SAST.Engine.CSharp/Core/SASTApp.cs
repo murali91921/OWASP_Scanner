@@ -107,10 +107,10 @@ namespace SAST.Engine.CSharp.Core
                 else
                     return false;
             }
-           if (filePaths.Any(file =>
-                Utils.ConfigurationFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
-                Utils.SourceCodeFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
-                Utils.MarkupFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase))))
+            if (filePaths.Any(file =>
+                 Utils.ConfigurationFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
+                 Utils.SourceCodeFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) ||
+                 Utils.MarkupFileExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase))))
             {
                 List<string> files = new List<string>();
                 foreach (var item in filePaths)
@@ -389,6 +389,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
                 ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
                 ScannerType.DisposableMember => new DisposableMemberScanner(),
+                ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
                 _ => null,
             };
         }
