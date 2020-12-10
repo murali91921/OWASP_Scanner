@@ -33,6 +33,8 @@ namespace Example
             // param1 = param1.Substring(2);
             // param1 = param1.cleanInput();
             Process process = Process.Start(param1);
+
+            ProcessExe process = ProcessExe.Start(param1);
             //Unsafe all
             processStart = new ProcessStartInfo(param1);
             processStart = new ProcessStartInfo(param1, param2);
