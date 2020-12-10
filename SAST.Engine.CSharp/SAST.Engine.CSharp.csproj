@@ -148,6 +148,9 @@
     <None Update="Resources\System.ComponentModel.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Console.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Data.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -51,6 +51,7 @@
         IDisposableImplement = 41,
         DisposableMember = 42,
         SqlKeywordDelimit = 43,
+        CompositeFormatString = 44
     }
 
     /// <summary>

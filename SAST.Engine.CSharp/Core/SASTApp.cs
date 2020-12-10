@@ -390,6 +390,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
                 ScannerType.DisposableMember => new DisposableMemberScanner(),
                 ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
+                ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
                 _ => null,
             };
         }
