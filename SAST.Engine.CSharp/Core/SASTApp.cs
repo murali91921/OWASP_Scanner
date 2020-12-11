@@ -391,6 +391,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.DisposableMember => new DisposableMemberScanner(),
                 ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
                 ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
+                //ScannerType.InfiniteRecursion => new InfiniteRecursionScanner(),                
+                ScannerType.DestructorThrow=> new DestructorThrowScanner(),
                 _ => null,
             };
         }

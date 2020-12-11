@@ -51,7 +51,10 @@
         IDisposableImplement = 41,
         DisposableMember = 42,
         SqlKeywordDelimit = 43,
-        CompositeFormatString = 44
+        CompositeFormatString = 44,
+        //InfiniteRecursion = 45,
+        DestructorThrow = 46
+
     }
 
     /// <summary>
