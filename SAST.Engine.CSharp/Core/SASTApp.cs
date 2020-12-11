@@ -393,6 +393,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
                 //ScannerType.InfiniteRecursion => new InfiniteRecursionScanner(),                
                 ScannerType.DestructorThrow=> new DestructorThrowScanner(),
+                ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),                
                 _ => null,
             };
         }

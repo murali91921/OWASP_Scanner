@@ -53,8 +53,8 @@
         SqlKeywordDelimit = 43,
         CompositeFormatString = 44,
         //InfiniteRecursion = 45,
-        DestructorThrow = 46
-
+        DestructorThrow = 46,
+        NonAsyncTaskNull = 47
     }
 
     /// <summary>

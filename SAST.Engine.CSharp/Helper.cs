@@ -69,6 +69,22 @@ namespace SAST.Engine.CSharp
             return null;
         }
 
+        public static ITypeSymbol GetSymbolType(this ISymbol symbol)
+        {
+            if (symbol is ILocalSymbol localSymbol)
+                return localSymbol.Type;
+            else if (symbol is IFieldSymbol fieldSymbol)
+                return fieldSymbol.Type;
+            else if (symbol is IPropertySymbol propertySymbol)
+                return propertySymbol.Type;
+            else if (symbol is IParameterSymbol parameterSymbol)
+                return parameterSymbol.Type;
+            else if (symbol is IAliasSymbol aliasSymbol)
+                return aliasSymbol.Target as ITypeSymbol;
+            else
+                return symbol as ITypeSymbol;
+        }
+
         public static string GetName(this ExpressionSyntax expression) =>
         expression switch
         {
@@ -79,5 +95,19 @@ namespace SAST.Engine.CSharp
 
         public static string JoinStr<T>(this IEnumerable<T> enumerable, string separator, Func<T, string> selector) =>
             string.Join(separator, enumerable.Select(x => selector(x)));
+
+        public static SyntaxNode GetFirstNonParenthesizedParent(this SyntaxNode node) =>
+            node.GetSelfOrTopParenthesizedExpression().Parent;
+        
+        public static SyntaxNode GetSelfOrTopParenthesizedExpression(this SyntaxNode node)
+        {
+            var current = node;
+            while (current?.Parent?.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.ParenthesizedExpression) ?? false)
+                current = current.Parent;
+            return current;
+        }
+
+        public static ExpressionSyntax GetSelfOrTopParenthesizedExpression(this ExpressionSyntax node) =>
+             (ExpressionSyntax)GetSelfOrTopParenthesizedExpression((SyntaxNode)node);
     }
 }

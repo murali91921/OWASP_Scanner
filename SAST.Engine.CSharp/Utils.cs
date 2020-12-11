@@ -78,6 +78,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CompositeFormatString, "Composite format strings should not lead to unexpected behavior at runtime"},
             //{Enums.ScannerType.InfiniteRecursion, "Infinite Recursion"},
             {Enums.ScannerType.DestructorThrow, "Do not throw from Desrtuctor"},
+            {Enums.ScannerType.NonAsyncTaskNull, "Do not return null from this method"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -126,6 +127,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.CompositeFormatString,Enums.Severity.High},
             //{Enums.ScannerType.InfiniteRecursion,Enums.Severity.High},
             {Enums.ScannerType.DestructorThrow,Enums.Severity.High},
+            {Enums.ScannerType.NonAsyncTaskNull,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
