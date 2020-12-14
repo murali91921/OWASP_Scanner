@@ -30,6 +30,16 @@ namespace SAST.Engine.CSharp
         }
 
         /// <summary>
+        /// This method will remove Parenthesis
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static ExpressionSyntax RemoveParenthesis(this ExpressionSyntax expression)
+        {
+            return (ExpressionSyntax)RemoveParenthesis(expression as SyntaxNode);
+        }
+
+        /// <summary>
         /// This method will give Line Number & Character Position for<paramref name="linePosition"/> object
         /// </summary>
         /// <param name="linePosition"></param>
@@ -109,5 +119,23 @@ namespace SAST.Engine.CSharp
 
         public static ExpressionSyntax GetSelfOrTopParenthesizedExpression(this ExpressionSyntax node) =>
              (ExpressionSyntax)GetSelfOrTopParenthesizedExpression((SyntaxNode)node);
+
+        public static SyntaxToken? GetMethodCallIdentifier(this InvocationExpressionSyntax invocation)
+        {
+            if (invocation == null)
+                return null;
+            var expression = invocation.Expression;
+            switch (expression.Kind())
+            {
+                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierName:
+                    return ((IdentifierNameSyntax)expression).Identifier;
+                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression:
+                    return ((MemberAccessExpressionSyntax)expression).Name.Identifier;
+                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.MemberBindingExpression:
+                    return ((MemberBindingExpressionSyntax)expression).Name.Identifier;
+                default:
+                    return null;
+            }
+        }
     }
 }

@@ -392,8 +392,9 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
                 ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
                 //ScannerType.InfiniteRecursion => new InfiniteRecursionScanner(),                
-                ScannerType.DestructorThrow=> new DestructorThrowScanner(),
-                ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),                
+                ScannerType.DestructorThrow => new DestructorThrowScanner(),
+                ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),
+                ScannerType.BeginEndInvoke => new BeginEndInvokeScanner(),
                 _ => null,
             };
         }

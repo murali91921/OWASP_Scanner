@@ -54,7 +54,8 @@
         CompositeFormatString = 44,
         //InfiniteRecursion = 45,
         DestructorThrow = 46,
-        NonAsyncTaskNull = 47
+        NonAsyncTaskNull = 47,
+        BeginEndInvoke=48,
     }
 
     /// <summary>
