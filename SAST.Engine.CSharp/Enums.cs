@@ -55,7 +55,8 @@
         //InfiniteRecursion = 45,
         DestructorThrow = 46,
         NonAsyncTaskNull = 47,
-        BeginEndInvoke=48,
+        BeginEndInvoke = 48,
+        SharedInstance = 49,
     }
 
     /// <summary>

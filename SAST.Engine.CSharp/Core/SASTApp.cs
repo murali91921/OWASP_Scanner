@@ -395,6 +395,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.DestructorThrow => new DestructorThrowScanner(),
                 ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),
                 ScannerType.BeginEndInvoke => new BeginEndInvokeScanner(),
+                ScannerType.SharedInstance => new SharedInstanceScanner(),
                 _ => null,
             };
         }
