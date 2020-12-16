@@ -57,6 +57,7 @@
         NonAsyncTaskNull = 47,
         BeginEndInvoke = 48,
         SharedInstance = 49,
+        PropertyAccessor = 50,
     }
 
     /// <summary>

@@ -396,6 +396,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),
                 ScannerType.BeginEndInvoke => new BeginEndInvokeScanner(),
                 ScannerType.SharedInstance => new SharedInstanceScanner(),
+                ScannerType.PropertyAccessor => new PropertyAccessorScanner(),
                 _ => null,
             };
         }
