@@ -58,6 +58,7 @@
         BeginEndInvoke = 48,
         SharedInstance = 49,
         PropertyAccessor = 50,
+        RightShiftNotNumber = 51,
     }
 
     /// <summary>

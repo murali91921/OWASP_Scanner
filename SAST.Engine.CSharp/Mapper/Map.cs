@@ -20,17 +20,17 @@ namespace SAST.Engine.CSharp.Mapper
         internal static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType scannerType, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             Type itemType = typeof(T);
-            if (!(itemType == typeof(SyntaxNodeOrToken) || itemType == typeof(SyntaxTrivia)))
+            if (!(itemType == typeof(SyntaxNodeOrToken) || itemType == typeof(SyntaxTrivia) || itemType == typeof(SyntaxNode)))
                 throw new InvalidCastException($"{typeof(T)} is not valid.");
 
             var vulnerabilityList = new List<VulnerabilityDetail>();
             if (syntaxList == null || syntaxList.Count == 0)
                 return vulnerabilityList;
 
-            if (syntaxList is List<SyntaxNodeOrToken> syntaxNodeList)
+            if (syntaxList is List<SyntaxNodeOrToken> syntaxNodeOrTokenList)
             {
-                syntaxNodeList = syntaxNodeList.OrderBy(obj => obj.Span).ToList();
-                foreach (var item in syntaxNodeList)
+                syntaxNodeOrTokenList = syntaxNodeOrTokenList.OrderBy(obj => obj.Span).ToList();
+                foreach (var item in syntaxNodeOrTokenList)
                 {
                     vulnerabilityList.Add(new VulnerabilityDetail
                     {
@@ -57,21 +57,36 @@ namespace SAST.Engine.CSharp.Mapper
                     });
                 }
             }
-            //else if (syntaxList is List<SyntaxToken> syntaxTokenList)
-            //{
-            //    syntaxTokenList = syntaxTokenList.OrderBy(obj => obj.Span).ToList();
-            //    foreach (var item in syntaxTokenList)
-            //    {
-            //        vulnerabilityList.Add(new VulnerabilityDetail
-            //        {
-            //            FilePath = filePath,
-            //            CodeSnippet = item.ToString(),
-            //            LineNumber = GetLineNumber(item),
-            //            Type = scannerType,
-            //            SubType = scannerSubType
-            //        });
-            //    }
-            //}
+            else if (syntaxList is List<SyntaxToken> syntaxTokenList)
+            {
+                syntaxTokenList = syntaxTokenList.OrderBy(obj => obj.Span).ToList();
+                foreach (var item in syntaxTokenList)
+                {
+                    vulnerabilityList.Add(new VulnerabilityDetail
+                    {
+                        FilePath = filePath,
+                        CodeSnippet = item.ToString(),
+                        LineNumber = GetLineNumber(item),
+                        Type = scannerType,
+                        SubType = scannerSubType
+                    });
+                }
+            }
+            else if (syntaxList is List<SyntaxNode> syntaxNodeList)
+            {
+                syntaxNodeList = syntaxNodeList.OrderBy(obj => obj.Span).ToList();
+                foreach (var item in syntaxNodeList)
+                {
+                    vulnerabilityList.Add(new VulnerabilityDetail
+                    {
+                        FilePath = filePath,
+                        CodeSnippet = item.ToString(),
+                        LineNumber = GetLineNumber(item),
+                        Type = scannerType,
+                        SubType = scannerSubType
+                    });
+                }
+            }
 
             return vulnerabilityList;
         }

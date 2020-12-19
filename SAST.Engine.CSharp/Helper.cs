@@ -66,6 +66,12 @@ namespace SAST.Engine.CSharp
         /// <returns></returns>
         public static ITypeSymbol GetTypeSymbol(this SemanticModel model, SyntaxNode node) => model.GetTypeInfo(node).Type;
 
+        public static bool IsTypeKind(this SemanticModel model, ExpressionSyntax expression, TypeKind typeKind)
+        {
+            var type = model.GetTypeInfo(expression).Type;
+            return type != null && type.TypeKind == typeKind;
+        }
+
         public static ITypeSymbol GetTypeSymbol(this ISymbol symbol)
         {
             if (symbol == null)
@@ -108,7 +114,7 @@ namespace SAST.Engine.CSharp
 
         public static SyntaxNode GetFirstNonParenthesizedParent(this SyntaxNode node) =>
             node.GetSelfOrTopParenthesizedExpression().Parent;
-        
+
         public static SyntaxNode GetSelfOrTopParenthesizedExpression(this SyntaxNode node)
         {
             var current = node;
