@@ -104,6 +104,7 @@ namespace SAST.Engine.CSharp
         public static string GetName(this ExpressionSyntax expression) =>
         expression switch
         {
+            MemberBindingExpressionSyntax memberBinding => memberBinding.Name.Identifier.ValueText,
             MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
             IdentifierNameSyntax identifierName => identifierName.Identifier.ValueText,
             _ => string.Empty
@@ -142,6 +143,29 @@ namespace SAST.Engine.CSharp
                 default:
                     return null;
             }
+        }
+
+        public static bool IsPrimitiveType(this ITypeSymbol type)
+        {
+            return type.SpecialType switch
+            {
+                var specType when
+                specType is SpecialType.System_Boolean ||
+                specType is SpecialType.System_Byte ||
+                specType is SpecialType.System_Char ||
+                specType is SpecialType.System_Double ||
+                specType is SpecialType.System_Int16 ||
+                specType is SpecialType.System_Int32 ||
+                specType is SpecialType.System_Int64 ||
+                specType is SpecialType.System_UInt16 ||
+                specType is SpecialType.System_UInt32 ||
+                specType is SpecialType.System_UInt64 ||
+                specType is SpecialType.System_IntPtr ||
+                specType is SpecialType.System_UIntPtr ||
+                specType is SpecialType.System_SByte ||
+                specType is SpecialType.System_Single => true,
+                _ => false,
+            };
         }
     }
 }

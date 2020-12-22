@@ -241,6 +241,12 @@
     <None Update="Resources\System.Text.Encodings.Web.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Threading.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\System.Threading.Thread.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Web.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

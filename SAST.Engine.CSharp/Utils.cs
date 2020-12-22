@@ -82,7 +82,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.BeginEndInvoke, "BeginInvoke should be with an EndInvoke"},
             {Enums.ScannerType.SharedInstance, "Shared instances should not be created with constructor"},
             {Enums.ScannerType.PropertyAccessor, "Accessor should be refer to proper field"},
-            {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers" }
+            {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers"},
+            {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -136,6 +137,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SharedInstance,Enums.Severity.High},
             {Enums.ScannerType.PropertyAccessor,Enums.Severity.High},
             {Enums.ScannerType.RightShiftNotNumber,Enums.Severity.High},
+            {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
