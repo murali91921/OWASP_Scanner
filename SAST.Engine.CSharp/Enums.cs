@@ -60,6 +60,7 @@
         PropertyAccessor = 50,
         RightShiftNotNumber = 51,
         SharedObjectLock = 52,
+        DisposeFromDispose=53
     }
 
     /// <summary>

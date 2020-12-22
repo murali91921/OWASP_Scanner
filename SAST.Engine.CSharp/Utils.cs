@@ -84,6 +84,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.PropertyAccessor, "Accessor should be refer to proper field"},
             {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers"},
             {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance"},
+            {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -138,6 +139,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.PropertyAccessor,Enums.Severity.High},
             {Enums.ScannerType.RightShiftNotNumber,Enums.Severity.High},
             {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
+            {Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

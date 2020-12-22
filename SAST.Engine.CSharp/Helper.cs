@@ -167,5 +167,35 @@ namespace SAST.Engine.CSharp
                 _ => false,
             };
         }
+
+        internal static bool IsNonStaticNonPublicDisposableField(this IFieldSymbol fieldSymbol) =>
+            fieldSymbol != null &&
+            !fieldSymbol.IsStatic &&
+            (fieldSymbol.DeclaredAccessibility == Accessibility.Protected || fieldSymbol.DeclaredAccessibility == Accessibility.Private) &&
+            IsDisposable(fieldSymbol);
+
+        private static bool IsDisposable(this IFieldSymbol fieldSymbol) =>
+            Utils.ImplementsFromAny(fieldSymbol.Type, Disposable_Type) ||
+            fieldSymbol.Type.IsDisposableRefStruct();
+
+        internal static bool IsDisposableRefStruct(this ITypeSymbol symbol) =>
+            IsRefStruct(symbol) &&
+            symbol.GetMembers("Dispose").Any(s => s is IMethodSymbol method && method.IsDisposeMethod());
+
+        internal static bool IsRefStruct(this ITypeSymbol symbol) =>
+            symbol != null &&
+            symbol.TypeKind == TypeKind.Struct &&
+            symbol.DeclaringSyntaxReferences.Length == 1 &&
+            symbol.DeclaringSyntaxReferences[0].GetSyntax() is StructDeclarationSyntax structDeclaration &&
+            structDeclaration.Modifiers.Any(Microsoft.CodeAnalysis.CSharp.SyntaxKind.RefKeyword);
+
+        internal static bool IsDisposeMethod(this IMethodSymbol symbol) =>
+            symbol.Name.Equals("Dispose") &&
+            symbol.Arity == 0 &&
+            symbol.Parameters.Length == 0 &&
+            symbol.ReturnsVoid &&
+            symbol.DeclaredAccessibility == Accessibility.Public;
+
+        private static string[] Disposable_Type = { "System.IDisposable", "System.IAsyncDisposable" };
     }
 }

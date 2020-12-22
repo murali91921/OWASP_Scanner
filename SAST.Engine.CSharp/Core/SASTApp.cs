@@ -399,6 +399,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.PropertyAccessor => new PropertyAccessorScanner(),
                 ScannerType.RightShiftNotNumber => new RightShiftNotNumberScanner(),
                 ScannerType.SharedObjectLock => new SharedObjectLockScanner(),
+                ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
                 _ => null,
             };
         }
