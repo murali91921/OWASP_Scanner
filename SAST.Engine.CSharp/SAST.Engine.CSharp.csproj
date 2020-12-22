@@ -256,6 +256,9 @@
     <None Update="Resources\System.Web.Mvc.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Xaml.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.Xml.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

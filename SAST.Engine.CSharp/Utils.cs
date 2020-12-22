@@ -86,6 +86,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance"},
             {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method"},
             {Enums.ScannerType.PartCreationPolicyNonExport, "PartCreationPolicyAttribute should be used with ExportAttribute"},
+            {Enums.ScannerType.ConstructorArgumentValue, "ConstructorArgumentAttribute value to match one of the existing constructors arguments"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -142,6 +143,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
             {Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
             {Enums.ScannerType.PartCreationPolicyNonExport,Enums.Severity.Medium},
+            {Enums.ScannerType.ConstructorArgumentValue,Enums.Severity.Medium},            
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS

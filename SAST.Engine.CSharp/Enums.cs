@@ -61,7 +61,8 @@
         RightShiftNotNumber = 51,
         SharedObjectLock = 52,
         DisposeFromDispose = 53,
-        PartCreationPolicyNonExport = 54
+        PartCreationPolicyNonExport = 54,
+        ConstructorArgumentValue = 55,
     }
 
     /// <summary>

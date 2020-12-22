@@ -401,6 +401,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SharedObjectLock => new SharedObjectLockScanner(),
                 ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
                 ScannerType.PartCreationPolicyNonExport => new PartCreationPolicyNonExportScanner(),
+                ScannerType.ConstructorArgumentValue => new ConstructorArgumentValueScanner(),
                 _ => null,
             };
         }
