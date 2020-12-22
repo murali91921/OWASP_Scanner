@@ -20,7 +20,7 @@ namespace SAST.Engine.CSharp.Mapper
         internal static List<VulnerabilityDetail> ConvertToVulnerabilityList<T>(string filePath, List<T> syntaxList, ScannerType scannerType, ScannerSubType scannerSubType = ScannerSubType.None)
         {
             Type itemType = typeof(T);
-            if (!(itemType == typeof(SyntaxNodeOrToken) || itemType == typeof(SyntaxTrivia) || itemType == typeof(SyntaxNode)))
+             if (!(itemType == typeof(SyntaxNodeOrToken) || itemType == typeof(SyntaxTrivia) || itemType == typeof(SyntaxNode)))
                 throw new InvalidCastException($"{typeof(T)} is not valid.");
 
             var vulnerabilityList = new List<VulnerabilityDetail>();

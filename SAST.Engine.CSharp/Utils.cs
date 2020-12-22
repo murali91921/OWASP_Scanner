@@ -85,6 +85,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers"},
             {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance"},
             {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method"},
+            {Enums.ScannerType.PartCreationPolicyNonExport, "PartCreationPolicyAttribute should be used with ExportAttribute"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -140,6 +141,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.RightShiftNotNumber,Enums.Severity.High},
             {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
             {Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
+            {Enums.ScannerType.PartCreationPolicyNonExport,Enums.Severity.Medium},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
@@ -185,6 +187,9 @@ namespace SAST.Engine.CSharp
         /// <returns></returns>
         internal static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
+            if (typeSymbol is IErrorTypeSymbol errorTypeSymbol)
+                typeSymbol = errorTypeSymbol.CandidateSymbols.First() as ITypeSymbol;
+
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;
             while (typeSymbol != null)
@@ -202,18 +207,8 @@ namespace SAST.Engine.CSharp
         /// <param name="typeSymbol"></param>
         /// <param name="baseType"></param>
         /// <returns></returns>
-        internal static bool DerivesFrom(ITypeSymbol typeSymbol, string baseType)
-        {
-            if (string.IsNullOrWhiteSpace(baseType))
-                return false;
-            while (typeSymbol != null)
-            {
-                if (baseType.Equals(typeSymbol.ToString()))
-                    return true;
-                typeSymbol = typeSymbol.BaseType?.ConstructedFrom;
-            }
-            return false;
-        }
+        internal static bool DerivesFrom(ITypeSymbol typeSymbol, string baseType) =>
+            DerivesFromAny(typeSymbol, new string[] { baseType });
 
         /// <summary>
         /// This method will check <paramref name="typeSymbol"/> is implemented from any of <paramref name="baseTypes"/>
@@ -223,6 +218,9 @@ namespace SAST.Engine.CSharp
         /// <returns></returns>
         internal static bool ImplementsFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
+            if (typeSymbol is IErrorTypeSymbol errorTypeSymbol)
+                typeSymbol = errorTypeSymbol.CandidateSymbols.First() as ITypeSymbol;
+
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;
             if (baseTypes.Any(typeName => typeName == typeSymbol.ToString())
@@ -237,14 +235,8 @@ namespace SAST.Engine.CSharp
         /// <param name="typeSymbol"></param>
         /// <param name="baseType"></param>
         /// <returns></returns>
-        internal static bool ImplementsFrom(ITypeSymbol typeSymbol, string baseType)
-        {
-            if (string.IsNullOrWhiteSpace(baseType))
-                return false;
-            if (typeSymbol.ToString() == baseType || typeSymbol.AllInterfaces.Any(obj => obj.ToString() == baseType))
-                return true;
-            return false;
-        }
+        internal static bool ImplementsFrom(ITypeSymbol typeSymbol, string baseType) =>
+            ImplementsFromAny(typeSymbol, new string[] { baseType });
 
         /// <summary>
         /// This method will return true, If both SyntaxNodes in same Method. 

@@ -400,6 +400,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.RightShiftNotNumber => new RightShiftNotNumberScanner(),
                 ScannerType.SharedObjectLock => new SharedObjectLockScanner(),
                 ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
+                ScannerType.PartCreationPolicyNonExport => new PartCreationPolicyNonExportScanner(),
                 _ => null,
             };
         }
