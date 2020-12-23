@@ -65,6 +65,7 @@
         ConstructorArgumentValue = 55,
         OverwriteCollectionElement = 56,
         UselessException = 57,
+        CollectionSizeOrArrayLength = 58,
     }
 
     /// <summary>

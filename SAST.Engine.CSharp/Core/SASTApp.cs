@@ -403,7 +403,8 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.PartCreationPolicyNonExport => new PartCreationPolicyNonExportScanner(),
                 ScannerType.ConstructorArgumentValue => new ConstructorArgumentValueScanner(),
                 ScannerType.OverwriteCollectionElement => new OverwriteCollectionElementScanner(),
-                ScannerType.UselessException => new UselessExceptionScanner(),                
+                ScannerType.UselessException => new UselessExceptionScanner(), 
+                ScannerType.CollectionSizeOrArrayLength=> new CollectionSizeOrArrayLengthScanner(),
                 _ => null,
             };
         }
