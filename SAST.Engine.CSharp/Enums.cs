@@ -63,7 +63,8 @@
         DisposeFromDispose = 53,
         PartCreationPolicyNonExport = 54,
         ConstructorArgumentValue = 55,
-        OverwriteCollectionElement = 56
+        OverwriteCollectionElement = 56,
+        UselessException = 57,
     }
 
     /// <summary>

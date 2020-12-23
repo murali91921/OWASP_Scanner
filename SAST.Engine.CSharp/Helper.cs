@@ -120,7 +120,7 @@ namespace SAST.Engine.CSharp
         public static SyntaxNode GetSelfOrTopParenthesizedExpression(this SyntaxNode node)
         {
             var current = node;
-            while (current?.Parent?.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.ParenthesizedExpression) ?? false)
+            while (current?.Parent?.IsKind(SyntaxKind.ParenthesizedExpression) ?? false)
                 current = current.Parent;
             return current;
         }
@@ -135,11 +135,11 @@ namespace SAST.Engine.CSharp
             var expression = invocation.Expression;
             switch (expression.Kind())
             {
-                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierName:
+                case SyntaxKind.IdentifierName:
                     return ((IdentifierNameSyntax)expression).Identifier;
-                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression:
+                case SyntaxKind.SimpleMemberAccessExpression:
                     return ((MemberAccessExpressionSyntax)expression).Name.Identifier;
-                case Microsoft.CodeAnalysis.CSharp.SyntaxKind.MemberBindingExpression:
+                case SyntaxKind.MemberBindingExpression:
                     return ((MemberBindingExpressionSyntax)expression).Name.Identifier;
                 default:
                     return null;
@@ -197,7 +197,7 @@ namespace SAST.Engine.CSharp
             symbol.ReturnsVoid &&
             symbol.DeclaredAccessibility == Accessibility.Public;
 
-        private static string[] Disposable_Type = { "System.IDisposable", "System.IAsyncDisposable" };
+        private static readonly string[] Disposable_Type = { "System.IDisposable", "System.IAsyncDisposable" };
 
         internal static bool IsAnyKind(this SyntaxNode syntaxNode, SyntaxKind[] syntaxKinds) =>
             syntaxNode != null && syntaxKinds.Contains((SyntaxKind)syntaxNode.RawKind);
