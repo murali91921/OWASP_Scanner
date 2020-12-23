@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace SAST.Engine.CSharp
 {
@@ -197,5 +198,8 @@ namespace SAST.Engine.CSharp
             symbol.DeclaredAccessibility == Accessibility.Public;
 
         private static string[] Disposable_Type = { "System.IDisposable", "System.IAsyncDisposable" };
+
+        internal static bool IsAnyKind(this SyntaxNode syntaxNode, SyntaxKind[] syntaxKinds) =>
+            syntaxNode != null && syntaxKinds.Contains((SyntaxKind)syntaxNode.RawKind);
     }
 }

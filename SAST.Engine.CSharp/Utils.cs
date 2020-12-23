@@ -87,6 +87,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method"},
             {Enums.ScannerType.PartCreationPolicyNonExport, "PartCreationPolicyAttribute should be used with ExportAttribute"},
             {Enums.ScannerType.ConstructorArgumentValue, "ConstructorArgumentAttribute value to match one of the existing constructors arguments"},
+            {Enums.ScannerType.OverwriteCollectionElement, "Verify this is the index/key that was intended, a value has already been set for it."},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -143,7 +144,8 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
             {Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
             {Enums.ScannerType.PartCreationPolicyNonExport,Enums.Severity.Medium},
-            {Enums.ScannerType.ConstructorArgumentValue,Enums.Severity.Medium},            
+            {Enums.ScannerType.ConstructorArgumentValue,Enums.Severity.Medium},
+            {Enums.ScannerType.OverwriteCollectionElement,Enums.Severity.Medium},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
@@ -196,7 +198,7 @@ namespace SAST.Engine.CSharp
                 return false;
             while (typeSymbol != null)
             {
-                if (baseTypes.Contains(typeSymbol.ToString()))
+                if (baseTypes.Contains(typeSymbol.OriginalDefinition.ToString()))
                     return true;
                 typeSymbol = typeSymbol.BaseType?.ConstructedFrom;
             }
@@ -225,8 +227,8 @@ namespace SAST.Engine.CSharp
 
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;
-            if (baseTypes.Any(typeName => typeName == typeSymbol.ToString())
-                || typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.ToString())))
+            if (baseTypes.Any(typeName => typeName == typeSymbol.OriginalDefinition.ToString())
+                || typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.OriginalDefinition.ToString())))
                 return true;
             return false;
         }

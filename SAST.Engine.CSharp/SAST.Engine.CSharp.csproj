@@ -139,6 +139,9 @@
     <None Update="Resources\ServiceStack.Text.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\System.Collections.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\System.ComponentModel.Composition.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
