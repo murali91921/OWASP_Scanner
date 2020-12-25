@@ -66,6 +66,7 @@
         OverwriteCollectionElement = 56,
         UselessException = 57,
         CollectionSizeOrArrayLength = 58,
+        SerializationEventImplement = 59
     }
 
     /// <summary>

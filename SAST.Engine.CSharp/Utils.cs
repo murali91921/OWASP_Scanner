@@ -90,6 +90,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.OverwriteCollectionElement, "Verify this is the index/key that was intended, a value has already been set for it."},
             {Enums.ScannerType.UselessException, "Throw this exception or remove this useless statement."},
             {Enums.ScannerType.CollectionSizeOrArrayLength, "Use proper condition to check size of Collection or length of Array."},
+            {Enums.ScannerType.SerializationEventImplement, "Implement Serialization Event Handlers properly"},
         };
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
@@ -150,6 +151,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.OverwriteCollectionElement,Enums.Severity.Medium},
             {Enums.ScannerType.UselessException,Enums.Severity.Medium},
             {Enums.ScannerType.CollectionSizeOrArrayLength,Enums.Severity.Medium},
+            {Enums.ScannerType.SerializationEventImplement,Enums.Severity.Medium},
         };
         internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
             //XSS
