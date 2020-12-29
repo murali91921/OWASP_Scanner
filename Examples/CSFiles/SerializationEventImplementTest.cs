@@ -40,10 +40,10 @@ namespace Tests.Diagnostics
         private static void OnSerializingStatic(StreamingContext context) { } // FN
 
         [OnSerializing()]
-        internal void OnSerializingMethod(StreamingContext context) { }     // Noncompliant FP, method is not public and gets invoked
+        internal void OnSerializingMethod(StreamingContext context) { }     // Noncompliant, method is not public and gets invoked
 
         [OnSerialized()]
-        protected void OnSerializedMethod(StreamingContext context) { }      // Noncompliant FP, method is not public and gets invoked
+        protected void OnSerializedMethod(StreamingContext context) { }      // Noncompliant, method is not public and gets invoked
 
         [OnDeserializing()]
         private void OnDeserializingMethod(StreamingContext context) { }    // Compliant

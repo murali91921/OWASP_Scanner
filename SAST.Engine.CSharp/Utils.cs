@@ -198,7 +198,7 @@ namespace SAST.Engine.CSharp
         internal static bool DerivesFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
             if (typeSymbol is IErrorTypeSymbol errorTypeSymbol)
-                typeSymbol = errorTypeSymbol.CandidateSymbols.First() as ITypeSymbol;
+                typeSymbol = errorTypeSymbol.CandidateSymbols.FirstOrDefault() as ITypeSymbol;
 
             if (baseTypes == null && baseTypes.Count() == 0)
                 return false;

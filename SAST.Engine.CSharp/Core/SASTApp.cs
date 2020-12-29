@@ -56,6 +56,7 @@ namespace SAST.Engine.CSharp.Core
                 return false;
 
             workspaces = new List<AdhocWorkspace>();
+            bool solutionLoaded = false, projectLoaded = false;
             if (filePaths.Any(file => file.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
             {
                 var solutionFiles = filePaths.Where(file => Path.GetExtension(file).ToLower() == ".sln").ToArray();
@@ -79,6 +80,7 @@ namespace SAST.Engine.CSharp.Core
                         tempPaths.RemoveAll(obj => documentPaths.Contains(obj));
                         tempPaths.Remove(project.FilePath);
                         filePaths = tempPaths.ToArray();
+                        solutionLoaded = true;
                     }
                 }
                 if (filePaths.Length == 0)
@@ -100,6 +102,7 @@ namespace SAST.Engine.CSharp.Core
                         tempPaths.RemoveAll(obj => documentPaths.Contains(obj));
                         tempPaths.Remove(project.FilePath);
                         filePaths = tempPaths.ToArray();
+                        projectLoaded = true;
                     }
                     workspaces.Add(currentWorkspace);
                     return true;
@@ -133,6 +136,8 @@ namespace SAST.Engine.CSharp.Core
                 workspaces.Add(currentWorkspace);
                 return true;
             }
+            else if (solutionLoaded || projectLoaded)
+                return true;
             return false;
         }
 

@@ -25,12 +25,14 @@
   <ItemGroup>
     <!--<PackageReference Include="HtmlAgilityPack" Version="1.11.24" />-->
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0" />
+    <PackageReference Include="Json.Net" Version="1.0.23" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.7.20365.19" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <!--<PackageReference Include="Shaman.Razor" Version="1.0.1.1" />-->
 
     <!--<PackageReference Include="Microsoft.Build" Version="16.6.0" ExcludeAssets="Runtime" />

@@ -1,4 +1,6 @@
-﻿namespace SAST.Engine.CSharp.Enums
+﻿using System.Runtime.Serialization;
+
+namespace SAST.Engine.CSharp.Enums
 {
     /// <summary>
     /// Scanner Type Enum
@@ -8,6 +10,7 @@
         None = 0,
         Invalid = -1,
 
+        [EnumMember(Value = "HardCode Password")]
         HardcodePassword = 1,
         InsecureCookie = 2,
         OpenRedirect = 3,
@@ -75,6 +78,7 @@
     public enum ScannerSubType
     {
         None = 0,
+        [EnumMember(Value = "Stored XSS")]
         StoredXSS = 1,
         ReflectedXSS = 2,
         DomXSS = 3,
@@ -91,10 +95,19 @@
     /// </summary>
     public enum Severity
     {
+        [EnumMember(Value = "Critical")]
         Critical = 1,
+
+        [EnumMember(Value = "High")]
         High = 2,
+
+        [EnumMember(Value = "Medium")]
         Medium = 3,
+
+        [EnumMember(Value = "Low")]
         Low = 4,
+
+        [EnumMember(Value = "Information")]
         Information = 0,
     }
 }

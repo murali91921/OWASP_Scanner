@@ -133,17 +133,13 @@ namespace SAST.Engine.CSharp
             if (invocation == null)
                 return null;
             var expression = invocation.Expression;
-            switch (expression.Kind())
+            return (expression.Kind()) switch
             {
-                case SyntaxKind.IdentifierName:
-                    return ((IdentifierNameSyntax)expression).Identifier;
-                case SyntaxKind.SimpleMemberAccessExpression:
-                    return ((MemberAccessExpressionSyntax)expression).Name.Identifier;
-                case SyntaxKind.MemberBindingExpression:
-                    return ((MemberBindingExpressionSyntax)expression).Name.Identifier;
-                default:
-                    return null;
-            }
+                SyntaxKind.IdentifierName => ((IdentifierNameSyntax)expression).Identifier,
+                SyntaxKind.SimpleMemberAccessExpression => ((MemberAccessExpressionSyntax)expression).Name.Identifier,
+                SyntaxKind.MemberBindingExpression => ((MemberBindingExpressionSyntax)expression).Name.Identifier,
+                _ => null,
+            };
         }
 
         public static bool IsPrimitiveType(this ITypeSymbol type)
