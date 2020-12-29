@@ -385,7 +385,9 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 ScannerType.RegexInjection => new RegexInjectionScanner(),
-                ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
+                
+                //Removed as per Issue #94
+                //ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
                 ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
                 ScannerType.HardcodedIpAddress => new HardcodedIPScanner(),
                 ScannerType.ExportInterface => new ExportInterfaceScanner(),
