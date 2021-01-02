@@ -379,7 +379,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CertificateValidation => new CertificateValidationScanner(),
                 ScannerType.JWTValidation => new JWTSignatureScanner(),
                 ScannerType.PasswordLockout => new PasswordLockoutScanner(),
-                ScannerType.Authorize => new AuthorizeScanner(),
+                //ScannerType.Authorize => new AuthorizeScanner(),
                 ScannerType.CorsAllowAnyOrigin => new CorsScanner(),
                 ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
                 ScannerType.SerializationType => new SerializationTypeScanner(),

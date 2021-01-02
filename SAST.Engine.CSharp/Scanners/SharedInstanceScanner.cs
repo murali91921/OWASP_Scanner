@@ -29,6 +29,9 @@ namespace SAST.Engine.CSharp.Scanners
 
                 var semanticModel = model.Compilation.GetSemanticModel(typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree);
                 var declaration = typeSymbol.DeclaringSyntaxReferences[0].GetSyntaxAsync().Result as ClassDeclarationSyntax;
+                if (declaration == null)
+                    continue;
+
                 if (declaration.AttributeLists.Count > 0)
                 {
                     foreach (var attributeList in declaration.AttributeLists)

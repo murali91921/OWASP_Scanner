@@ -200,7 +200,7 @@ namespace SAST.Engine.CSharp
             if (typeSymbol is IErrorTypeSymbol errorTypeSymbol)
                 typeSymbol = errorTypeSymbol.CandidateSymbols.FirstOrDefault() as ITypeSymbol;
 
-            if (baseTypes == null && baseTypes.Count() == 0)
+            if (baseTypes == null || baseTypes.Count() == 0 || typeSymbol == null)
                 return false;
             while (typeSymbol != null)
             {
@@ -229,9 +229,9 @@ namespace SAST.Engine.CSharp
         internal static bool ImplementsFromAny(ITypeSymbol typeSymbol, string[] baseTypes)
         {
             if (typeSymbol is IErrorTypeSymbol errorTypeSymbol)
-                typeSymbol = errorTypeSymbol.CandidateSymbols.First() as ITypeSymbol;
+                typeSymbol = errorTypeSymbol.CandidateSymbols.FirstOrDefault() as ITypeSymbol;
 
-            if (baseTypes == null && baseTypes.Count() == 0)
+            if (baseTypes == null || baseTypes.Count() == 0 || typeSymbol == null)
                 return false;
             if (baseTypes.Any(typeName => typeName == typeSymbol.OriginalDefinition.ToString())
                 || typeSymbol.AllInterfaces.Any(interSymbol => baseTypes.Any(typeName => typeName == interSymbol.OriginalDefinition.ToString())))
