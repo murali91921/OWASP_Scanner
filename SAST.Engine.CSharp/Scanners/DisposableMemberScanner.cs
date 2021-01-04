@@ -134,7 +134,7 @@ namespace SAST.Engine.CSharp.Scanners
 
                     SemanticModel model = referenceLocation.Document.GetSemanticModelAsync().Result.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
                     ISymbol assignedSymbol = model.GetSymbol(assignment.Left);
-                    if (!assignedSymbol.Equals(symbol, SymbolEqualityComparer.Default))
+                    if (assignedSymbol == null || !assignedSymbol.Equals(symbol, SymbolEqualityComparer.Default))
                         continue;
 
                     if (assignment.Parent.IsKind(SyntaxKind.UsingStatement) || !IsInstantiation(assignment.Right, model))
