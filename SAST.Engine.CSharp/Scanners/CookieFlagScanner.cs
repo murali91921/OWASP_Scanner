@@ -35,10 +35,10 @@ namespace SAST.Engine.CSharp.Scanners
         const string HttpCookies_Node = "configuration/system.web/httpCookies";
 
         private static string[] Cookie_Classes = {
-            "System.Web.HttpCookie",
-            "System.Net.Http.Headers.CookieHeaderValue",
-            "Microsoft.AspNetCore.Http.CookieOptions",
-            "Microsoft.Net.Http.Headers.SetCookieHeaderValue"
+            Constants.KnownType.System_Web_HttpCookie,
+            Constants.KnownType.System_Net_Http_Headers_CookieHeaderValue,
+            Constants.KnownType.Microsoft_AspNetCore_Http_CookieOptions,
+            Constants.KnownType.Microsoft_Net_Http_Headers_SetCookieHeaderValue
         };
 
         #region IConfigScanner

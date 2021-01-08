@@ -83,17 +83,6 @@ namespace SAST.Engine.CSharp
                 return localSymbol.Type;
             if (symbol is IPropertySymbol propertySymbol)
                 return propertySymbol.Type;
-            return null;
-        }
-
-        public static ITypeSymbol GetSymbolType(this ISymbol symbol)
-        {
-            if (symbol is ILocalSymbol localSymbol)
-                return localSymbol.Type;
-            else if (symbol is IFieldSymbol fieldSymbol)
-                return fieldSymbol.Type;
-            else if (symbol is IPropertySymbol propertySymbol)
-                return propertySymbol.Type;
             else if (symbol is IParameterSymbol parameterSymbol)
                 return parameterSymbol.Type;
             else if (symbol is IAliasSymbol aliasSymbol)
@@ -101,6 +90,22 @@ namespace SAST.Engine.CSharp
             else
                 return symbol as ITypeSymbol;
         }
+
+        //public static ITypeSymbol GetSymbolType(this ISymbol symbol)
+        //{
+        //    if (symbol is ILocalSymbol localSymbol)
+        //        return localSymbol.Type;
+        //    else if (symbol is IFieldSymbol fieldSymbol)
+        //        return fieldSymbol.Type;
+        //    else if (symbol is IPropertySymbol propertySymbol)
+        //        return propertySymbol.Type;
+        //    else if (symbol is IParameterSymbol parameterSymbol)
+        //        return parameterSymbol.Type;
+        //    else if (symbol is IAliasSymbol aliasSymbol)
+        //        return aliasSymbol.Target as ITypeSymbol;
+        //    else
+        //        return symbol as ITypeSymbol;
+        //}
 
         public static string GetName(this ExpressionSyntax expression) =>
         expression switch

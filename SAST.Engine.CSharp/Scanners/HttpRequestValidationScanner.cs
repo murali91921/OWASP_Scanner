@@ -10,8 +10,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class HttpRequestValidationScanner : IScanner
     {
-        private static string PostAttribute_Type = "System.Web.Mvc.HttpPostAttribute";
-        private static string ValidateInputAttribute_Type = "System.Web.Mvc.ValidateInputAttribute";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -29,9 +27,9 @@ namespace SAST.Engine.CSharp.Scanners
                         ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
                         if (typeSymbol == null)
                             continue;
-                        if (typeSymbol.ToString() == PostAttribute_Type)
+                        if (typeSymbol.ToString() == Constants.KnownType.System_Web_Mvc_HttpPostAttribute)
                             hasPost = true;
-                        else if (typeSymbol.ToString() == ValidateInputAttribute_Type)
+                        else if (typeSymbol.ToString() == Constants.KnownType.System_Web_Mvc_ValidateInputAttribute)
                         {
                             AttributeArgumentSyntax argument = attribute.ArgumentList.Arguments.First();
                             if (argument == null)

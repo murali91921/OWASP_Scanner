@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static string[] Disposable_Types =
         {
-            "System.IDisposable",
-            "System.IAsyncDisposable"
+            KnownType.System_IDisposable,
+            KnownType.System_IAsyncDisposable
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -92,6 +93,7 @@ namespace SAST.Engine.CSharp.Scanners
             return method.DescendantNodes()
                 .OfType<AssignmentExpressionSyntax>()
                 .Where(n => n.IsKind(SyntaxKind.SimpleAssignmentExpression) && n.Right is ObjectCreationExpressionSyntax)
+                .Where(n => compilation.ContainsSyntaxTree(n.SyntaxTree))
                 .Select(n => compilation.GetSemanticModel(method.SyntaxTree).GetSymbol(n.Left))
                 .OfType<IFieldSymbol>();
         }

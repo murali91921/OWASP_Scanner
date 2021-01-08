@@ -48,7 +48,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         private static bool IsConvertibleToInt(ExpressionSyntax expression, SemanticModel model)
         {
-            var intType = model.Compilation.GetTypeByMetadataName("System.Int32");
+            var intType = model.Compilation.GetTypeByMetadataName(Constants.KnownType.System_Int32);
             return intType != null && CanBeConvertedTo(expression, intType, model);
         }
     }

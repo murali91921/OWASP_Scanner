@@ -18,16 +18,16 @@ namespace SAST.Engine.CSharp.Core
         private readonly Solution _solution;
 
         private static readonly List<Tuple<ScannerType, string>> _Injectables = new List<Tuple<ScannerType, string>> {
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpRequest.QueryString"),
+            new Tuple<ScannerType, string>(ScannerType.XSS, Constants.KnownType.System_Web_HttpRequest_QueryString),
         };
         private static readonly List<Tuple<ScannerType, string>> _SanitizedMethods = new List<Tuple<ScannerType, string>> {
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Text.Encodings.Web.TextEncoder.Encode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpServerUtility.HtmlEncode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpUtility.HtmlEncode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.Security.AntiXss.AntiXssEncoder.HtmlEncode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpServerUtility.UrlPathEncode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.HttpUtility.UrlPathEncode"),
-            new Tuple<ScannerType, string>(ScannerType.XSS,"System.Web.Security.AntiXss.AntiXssEncoder.UrlEncode"),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Text_Encodings_Web_TextEncoder_Encode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpServerUtility_HtmlEncode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpUtility_HtmlEncode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_HtmlEncode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpServerUtility_UrlPathEncode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpUtility_UrlPathEncode),
+            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_UrlEncode),
         };
         /// <summary>
         /// This method will verify the <paramref name="node"/> is vulnerable or not.
@@ -43,7 +43,8 @@ namespace SAST.Engine.CSharp.Core
             else if (node is IdentifierNameSyntax)
             {
                 ITypeSymbol type = model.GetTypeSymbol(node);
-                if (type == null || (type.SpecialType != SpecialType.System_String && type.ToString() != "System.IO.StringWriter"))
+                if (type == null || (type.SpecialType != SpecialType.System_String && type.ToString() != Constants.KnownType.System_IO_StringWriter
+))
                     return false;
                 ISymbol symbol = model.GetSymbol(node);
                 if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
@@ -107,9 +108,9 @@ namespace SAST.Engine.CSharp.Core
                 ISymbol symbol = model.GetSymbol(invocation);
                 if (symbol == null)
                     return false;
-                if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "System.Web.Mvc.Controller.View")
+                if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == Constants.KnownType.System_Web_Mvc_Controller_View)
                     return false;
-                if (symbol.Name == "ToString" && symbol.ContainingType.ToString() == "System.IO.StringWriter")
+                if (symbol.Name == "ToString" && symbol.ContainingType.ToString() == Constants.KnownType.System_IO_StringWriter)
                 {
                     var identifier = (invocation.Expression as MemberAccessExpressionSyntax).Expression;
                     return IsVulnerable(identifier, model);

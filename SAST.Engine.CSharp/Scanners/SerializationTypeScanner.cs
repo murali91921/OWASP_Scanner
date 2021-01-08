@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,10 +12,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SerializationTypeScanner : IScanner
     {
-        private static string XmlSerializer_Class = "System.Xml.Serialization.XmlSerializer";
-        private static string Type_Class = "System.Type";
-        private static string Type_GetType_Method = "System.Type.GetType";
-
         /// <summary>
         /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
         /// </summary>
@@ -34,7 +31,7 @@ namespace SAST.Engine.CSharp.Scanners
                 //IMethodSymbol=
                 //ITypeSymbol;
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(objectCreation);
-                if (typeSymbol == null || typeSymbol.ToString() != XmlSerializer_Class)
+                if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Xml_Serialization_XmlSerializer)
                     continue;
                 if (objectCreation.ArgumentList == null || objectCreation.ArgumentList.Arguments.Count() == 0)
                     continue;
@@ -74,7 +71,7 @@ namespace SAST.Engine.CSharp.Scanners
                     ISymbol memberSymbol = model.GetSymbol(memberAccessExpression.Expression);
                     if (memberSymbol == null)
                         return false;
-                    if (memberSymbol.ToString() + "." + memberAccessExpression.Name.ToString() == Type_GetType_Method)
+                    if (memberSymbol.ToString() == KnownType.System_Type && memberAccessExpression.Name.ToString() == "GetType")
                         return true;
                 }
                 return false;
@@ -86,8 +83,9 @@ namespace SAST.Engine.CSharp.Scanners
             else if (expression is IdentifierNameSyntax identifierName)
             {
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(identifierName);
-                if (typeSymbol == null || typeSymbol.ToString() != Type_Class)
+                if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Type)
                     return false;
+
                 ISymbol symbol = model.GetSymbol(identifierName);
                 bool vulnerable = false;
                 var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;

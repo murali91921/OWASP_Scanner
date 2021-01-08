@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class PartCreationPolicyNonExportScanner : IScanner
     {
-        private static readonly string PartCreationPolicyAttribute_Type = "System.ComponentModel.Composition.PartCreationPolicyAttribute";
-        private static readonly string InheritedExportAttribute_Type = "System.ComponentModel.Composition.InheritedExportAttribute";
-        private static readonly string ExportAttribute_Type = "System.ComponentModel.Composition.ExportAttribute";
-
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNodeOrToken> syntaxTokens = new List<SyntaxNodeOrToken>();
@@ -31,7 +28,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!HasPartCreationPolicyAttribute(classSymbol))
                     continue;
 
-                if (classSymbol.GetAttributes().Any(attr => Utils.DerivesFrom(attr.AttributeClass, ExportAttribute_Type)) || HasInheritExportAttribute(classSymbol))
+                if (classSymbol.GetAttributes().Any(attr => Utils.DerivesFrom(attr.AttributeClass,KnownType.System_ComponentModel_Composition_ExportAttribute)) || HasInheritExportAttribute(classSymbol))
                     continue;
 
                 syntaxTokens.Add(classDeclaration.Identifier);
@@ -41,11 +38,11 @@ namespace SAST.Engine.CSharp.Scanners
 
         private static bool HasPartCreationPolicyAttribute(ITypeSymbol classSymbol) =>
             classSymbol.GetAttributes().Any(attr =>
-                attr.AttributeClass?.ToString() == PartCreationPolicyAttribute_Type);
+                attr.AttributeClass?.ToString() == KnownType.System_ComponentModel_Composition_PartCreationPolicyAttribute);
 
         private static bool HasInheritExportAttribute(ITypeSymbol classSymbol)
         {
-            if (classSymbol.GetAttributes().Any(attr => Utils.ImplementsFrom(attr.AttributeClass, InheritedExportAttribute_Type)))
+            if (classSymbol.GetAttributes().Any(attr => Utils.ImplementsFrom(attr.AttributeClass, KnownType.System_ComponentModel_Composition_InheritedExportAttribute)))
                 return true;
             else if (classSymbol.BaseType != null && HasInheritExportAttribute(classSymbol.BaseType))
                 return true;

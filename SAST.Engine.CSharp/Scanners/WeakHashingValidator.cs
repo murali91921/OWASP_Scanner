@@ -12,30 +12,29 @@ using System.Reflection;
 using SAST.Engine.CSharp.Mapper;
 using System.IO;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 
 namespace SAST.Engine.CSharp.Scanners
 {
     internal class WeakHashingValidator : IScanner
     {
         static readonly string[] WeakTypes = {
-            "System.Security.Cryptography.SHA1",
-            "System.Security.Cryptography.MD5",
-            "System.Security.Cryptography.DSA",
-            "System.Security.Cryptography.RIPEMD160",
-            "System.Security.Cryptography.HMACSHA1",
-            "System.Security.Cryptography.HMACMD5",
-            "System.Security.Cryptography.HMACRIPEMD160",
-            "System.Security.Cryptography.Rfc2898DeriveBytes"
+            KnownType.System_Security_Cryptography_SHA1,
+            KnownType.System_Security_Cryptography_MD5,
+            KnownType.System_Security_Cryptography_DSA,
+            KnownType.System_Security_Cryptography_RIPEMD160,
+            KnownType.System_Security_Cryptography_HMACSHA1,
+            KnownType.System_Security_Cryptography_HMACMD5,
+            KnownType.System_Security_Cryptography_HMACRIPEMD160,
+            KnownType.System_Security_Cryptography_Rfc2898DeriveBytes
             };
-        static readonly string[] ParameterlessHashings = {
-            "System.Security.Cryptography.HMAC.Create"
-        };
+
         static readonly string[] ParameteredHashings = {
-            "System.Security.Cryptography.CryptoConfig.CreateFromName",
-            "System.Security.Cryptography.HashAlgorithm.Create",
-            "System.Security.Cryptography.KeyedHashAlgorithm.Create",
-            "System.Security.Cryptography.AsymmetricAlgorithm.Create",
-            "System.Security.Cryptography.HMAC.Create"
+            KnownMethod.System_Security_Cryptography_CryptoConfig_CreateFromName,
+            KnownMethod.System_Security_Cryptography_HashAlgorithm_Create,
+            KnownMethod.System_Security_Cryptography_KeyedHashAlgorithm_Create,
+            KnownMethod.System_Security_Cryptography_AsymmetricAlgorithm_Create,
+            KnownMethod.System_Security_Cryptography_HMAC_Create
             };
         static readonly string[] ParameterNames = {
             "SHA1",
@@ -47,8 +46,8 @@ namespace SAST.Engine.CSharp.Scanners
             "RIPEMD160Managed"
         };
         static readonly string[] QualifiedPropertyNames = {
-            "System.Security.Cryptography.HashAlgorithmName.MD5",
-            "System.Security.Cryptography.HashAlgorithmName.SHA1"
+            KnownType.System_Security_Cryptography_HashAlgorithmName_MD5,
+            KnownType.System_Security_Cryptography_HashAlgorithmName_SHA1
         };
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakHashingConfig);
         }
-        
+
         /// <summary>
         /// Determines <paramref name="methodSymbol"/> have WeakHashing or not.
         /// </summary>
@@ -104,7 +103,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 var methodFullName = methodSymbol.ContainingType + methodSymbol.Name;
                 if (argumentList.Arguments.Count == 0)
-                    return ParameterlessHashings.Contains(methodFullName);
+                    return methodFullName == KnownMethod.System_Security_Cryptography_HMAC_Create;
                 if (argumentList.Arguments.Count > 1 || !argumentList.Arguments.First().Expression.IsKind(SyntaxKind.StringLiteralExpression))
                     return false;
                 if (!ParameteredHashings.Contains(methodFullName))

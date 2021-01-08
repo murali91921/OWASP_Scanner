@@ -1,7 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,22 +15,22 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static readonly string[] FormatMethods =
         {
-            "string.Format",
-            "System.Console.Write",
-            "System.Console.WriteLine",
-            "System.IO.TextWriter.Write",
-            "System.IO.TextWriter.WriteLine",
-            "System.IO.StreamWriter.Write",
-            "System.IO.StreamWriter.WriteLine",
-            "System.Diagnostics.Debug.WriteLine",
-            "System.Diagnostics.Trace.TraceError",
-            "System.Diagnostics.Trace.TraceWarning",
-            "System.Diagnostics.Trace.TraceInformation",
-            "System.Diagnostics.TraceSource.TraceInformation",
-            "System.Text.StringBuilder.AppendFormat"
+            KnownMethod.string_Format,
+            KnownMethod.System_Console_Write,
+            KnownMethod.System_Console_WriteLine,
+            KnownMethod.System_IO_TextWriter_Write,
+            KnownMethod.System_IO_TextWriter_WriteLine,
+            KnownMethod.System_IO_StreamWriter_Write,
+            KnownMethod.System_IO_StreamWriter_WriteLine,
+            KnownMethod.System_Diagnostics_Debug_WriteLine,
+            KnownMethod.System_Diagnostics_Trace_TraceError,
+            KnownMethod.System_Diagnostics_Trace_TraceWarning,
+            KnownMethod.System_Diagnostics_Trace_TraceInformation,
+            KnownMethod.System_Diagnostics_TraceSource_TraceInformation,
+            KnownMethod.System_Text_StringBuilder_AppendFormat
         };
         private static readonly int MaxValueForArgumentIndexAndAlignment = 1_000_000;
-        private static readonly string IFormatProvider_Interface = "System.IFormatProvider";
+
         private static readonly Regex StringFormatItemRegex = new Regex(@"^(?<Index>\d+)(\s*,\s*(?<Alignment>-?\d+)\s*)?(:(?<Format>.+))?$", RegexOptions.Compiled);
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
@@ -45,7 +46,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!FormatMethods.Contains(methodSymbol.ContainingType.ToString() + "." + methodSymbol.Name))
                     continue;
 
-                var formatArgumentIndex = methodSymbol.Parameters[0].ContainingType.ToString() == IFormatProvider_Interface
+                var formatArgumentIndex = methodSymbol.Parameters[0].ContainingType.ToString() == KnownType.System_IFormatProvider
                     ? 1 : 0;
                 var formatStringExpression = invocation.ArgumentList.Arguments[formatArgumentIndex];
 

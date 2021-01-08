@@ -11,7 +11,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class UselessExceptionScanner : IScanner
     {
-        private static string Exception_Type = "System.Exception";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -19,7 +18,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var objectCreation in objectCreations)
             {
                 var createdObjectType = model.GetSymbol(objectCreation.Type) as INamedTypeSymbol;
-                if (createdObjectType == null || !Utils.DerivesFrom(createdObjectType, Exception_Type))
+                if (createdObjectType == null || !Utils.DerivesFrom(createdObjectType, Constants.KnownType.System_Exception))
                     continue;
 
                 var parent = objectCreation.GetFirstNonParenthesizedParent();

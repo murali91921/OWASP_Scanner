@@ -4,7 +4,7 @@ using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using SAST.Engine.CSharp.Constants;
 using System.Linq;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -12,30 +12,30 @@ namespace SAST.Engine.CSharp.Scanners
     internal class FilePathInjectionScanner : IScanner
     {
         private static readonly string[] insecureMethods = {
-            "System.IO.Directory.Exists",
-            "System.IO.FileInfo.CopyTo",
-            "System.IO.FileInfo.MoveTo",
-            "System.IO.FileInfo.Replace",
-            "System.IO.File.AppendAllLines",
-            "System.IO.File.AppendAllText",
-            "System.IO.File.AppendText",
-            "System.IO.File.Copy",
-            "System.IO.File.Create",
-            "System.IO.File.CreateText",
-            "System.IO.File.Delete",
-            "System.IO.File.Exists",
-            "System.IO.File.Move",
-            "System.IO.File.Open",
-            "System.IO.File.OpenRead",
-            "System.IO.File.OpenText",
-            "System.IO.File.OpenWrite",
-            "System.IO.File.ReadAllBytes",
-            "System.IO.File.ReadAllLines",
-            "System.IO.File.ReadAllText",
-            "System.IO.File.ReadLines",
-            "System.IO.File.WriteAllBytes",
-            "System.IO.File.WriteAllLines",
-            "System.IO.File.WriteAllText",
+           KnownMethod.System_IO_Directory_Exists,
+           KnownMethod.System_IO_FileInfo_CopyTo,
+           KnownMethod.System_IO_FileInfo_MoveTo,
+           KnownMethod.System_IO_FileInfo_Replace,
+           KnownMethod.System_IO_File_AppendAllLines,
+           KnownMethod.System_IO_File_AppendAllText,
+           KnownMethod.System_IO_File_AppendText,
+           KnownMethod.System_IO_File_Copy,
+           KnownMethod.System_IO_File_Create,
+           KnownMethod.System_IO_File_CreateText,
+           KnownMethod.System_IO_File_Delete,
+           KnownMethod.System_IO_File_Exists,
+           KnownMethod.System_IO_File_Move,
+           KnownMethod.System_IO_File_Open,
+           KnownMethod.System_IO_File_OpenRead,
+           KnownMethod.System_IO_File_OpenText,
+           KnownMethod.System_IO_File_OpenWrite,
+           KnownMethod.System_IO_File_ReadAllBytes,
+           KnownMethod.System_IO_File_ReadAllLines,
+           KnownMethod.System_IO_File_ReadAllText,
+           KnownMethod.System_IO_File_ReadLines,
+           KnownMethod.System_IO_File_WriteAllBytes,
+           KnownMethod.System_IO_File_WriteAllLines,
+           KnownMethod.System_IO_File_WriteAllText,
         };
         private static readonly string[] ParameterNames = {
             "path",
@@ -60,7 +60,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in objectCreations)
             {
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(item);
-                if (typeSymbol == null || typeSymbol.ToString() != "System.IO.FileInfo")
+                if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_IO_FileInfo)
                     continue;
                 if (item.ArgumentList != null && item.ArgumentList.Arguments.Count == 1)
                 {

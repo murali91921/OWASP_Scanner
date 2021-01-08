@@ -88,10 +88,10 @@ namespace SAST.Engine.CSharp.Scanners
             if (symbol == null)
                 return;
 
-            VariableDeclarationSyntax declarationSyntax = variableDeclarator.AncestorsAndSelf().OfType<VariableDeclarationSyntax>().FirstOrDefault();
-            if (declarationSyntax == null)
-                return;
-            ITypeSymbol typeSymbol = model.GetTypeSymbol(declarationSyntax.Type);
+            //VariableDeclarationSyntax declarationSyntax = variableDeclarator.AncestorsAndSelf().OfType<VariableDeclarationSyntax>().FirstOrDefault();
+            //if (declarationSyntax == null)
+            //    return;
+            ITypeSymbol typeSymbol = symbol.GetTypeSymbol();
             if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
                 return;
 
@@ -108,7 +108,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var referenceLocation in reference.Locations)
                 {
                     string stringValue = string.Empty;
-                    var presentStatement = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(reference.Definition.Locations.First().SourceSpan).Parent;
+                    var presentStatement = referenceLocation.Location.SourceTree.GetRoot().FindNode(referenceLocation.Location.SourceSpan).Parent;
                     if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
                     {
                         stringValue = literal.ToString();
@@ -211,11 +211,10 @@ namespace SAST.Engine.CSharp.Scanners
             this.model = model;
             this.syntaxNode = syntaxNode;
             this.solution = solution;
-            var classes=syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
-            IEnumerator<VariableDeclaratorSyntax> hardcoreStringNodes = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().GetEnumerator();
+            var variableDeclarators = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>();
             //Checking strings are Passwords, secret keys or not.
-            while (hardcoreStringNodes.MoveNext())
-                FindHardcodeStringNodes(hardcoreStringNodes.Current);
+            foreach (var variableDeclarator in variableDeclarators)
+                FindHardcodeStringNodes(variableDeclarator);
 
             //Finding Sensitive comments
             List<SyntaxTrivia> commentNodes = FindComments(syntaxNode);

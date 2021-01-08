@@ -50,13 +50,13 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in invocationExpressions)
             {
                 ISymbol symbol = _model.GetSymbol(item);
-                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "System.Diagnostics.Process.Start"
+                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != Constants.KnownMethod.System_Diagnostics_Process_Start
                     || item.ArgumentList.Arguments.Count == 0)
                     continue;
 
                 var argumentExpression = item.ArgumentList?.Arguments[0].Expression;
                 ITypeSymbol typeSymbol = _model.GetTypeSymbol(argumentExpression);
-                if (typeSymbol == null || typeSymbol.ToString() == "System.Diagnostics.ProcessStartInfo")
+                if (typeSymbol == null || typeSymbol.ToString() == Constants.KnownType.System_Diagnostics_ProcessStartInfo)
                     continue;
                 if (item.ArgumentList?.Arguments.Count == 1)
                 {
@@ -99,7 +99,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var item in objectCreations)
             {
                 ITypeSymbol typeSymbol = _model.GetTypeSymbol(item);
-                if (typeSymbol == null || typeSymbol.ToString() != "System.Diagnostics.ProcessStartInfo")
+                if (typeSymbol == null || typeSymbol.ToString() != Constants.KnownType.System_Diagnostics_ProcessStartInfo)
                     continue;
 
                 if (item.ArgumentList == null || item.ArgumentList?.Arguments.Count == 0)
@@ -120,7 +120,8 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = _model.GetSymbol(assignment.Left);
                 if (symbol == null)
                     continue;
-                if (symbol.ToString() != "System.Diagnostics.ProcessStartInfo.FileName" && symbol.ToString() != "System.Diagnostics.ProcessStartInfo.Arguments")
+                if (symbol.ToString() != Constants.KnownType.System_Diagnostics_ProcessStartInfo_FileName
+                    && symbol.ToString() != Constants.KnownType.System_Diagnostics_ProcessStartInfo_Arguments)
                     continue;
                 if (Utils.IsVulnerable(assignment.Right, _model, _solution, null))
                     syntaxNodes.Add(assignment);

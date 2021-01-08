@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
@@ -12,16 +13,15 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class WeakCipherModeScanner : IScanner
     {
-        private static string RSAEncryptPadding_Class = "System.Security.Cryptography.RSAEncryptionPadding";
         private static string[] Rijndael_AesManaged_Class = {
-            "System.Security.Cryptography.AesManaged",
-            "System.Security.Cryptography.RijndaelManaged"
+            KnownType.System_Security_Cryptography_AesManaged,
+            KnownType.System_Security_Cryptography_RijndaelManaged
         };
         private static string[] RSAEncrypt_Methods = {
-            "System.Security.Cryptography.RSACryptoServiceProvider.Encrypt",
-            "System.Security.Cryptography.RSACryptoServiceProvider.TryEncrypt",
-            "System.Security.Cryptography.RSA.Encrypt",
-            "System.Security.Cryptography.RSA.TryEncrypt"
+            KnownMethod.System_Security_Cryptography_RSACryptoServiceProvider_Encrypt,
+            KnownMethod.System_Security_Cryptography_RSACryptoServiceProvider_TryEncrypt,
+            KnownMethod.System_Security_Cryptography_RSA_Encrypt,
+            KnownMethod.System_Security_Cryptography_RSA_TryEncrypt
         };
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace SAST.Engine.CSharp.Scanners
                         typeSymbol = model.GetTypeSymbol(memberAccessExpression.Expression);
                         if (typeSymbol == null)
                             continue;
-                        if (typeSymbol.ToString() == RSAEncryptPadding_Class)
+                        if (typeSymbol.ToString() == KnownType.System_Security_Cryptography_RSAEncryptionPadding)
                             syntaxNodes.Add(item);
                     }
                 }

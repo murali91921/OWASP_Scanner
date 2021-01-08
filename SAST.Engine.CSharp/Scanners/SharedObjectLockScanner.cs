@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,17 +12,16 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SharedObjectLockScanner : IScanner
     {
-        private static readonly string Monitor_type = "System.Threading.Monitor";
         private static readonly string[] WeakTypes = {
-            "System.ExecutionEngineException",
-            "System.OutOfMemoryException",
-            "System.StackOverflowException"
+            KnownType.System_ExecutionEngineException,
+            KnownType.System_OutOfMemoryException,
+            KnownType.System_StackOverflowException
         };
         private static readonly string[] InheritWeakTypes = {
-            "System.Threading.Thread",
-            "System.MarshalByRefObject",
-            "System.Reflection.MemberInfo",
-            "System.Reflection.ParameterInfo",
+            KnownType.System_Threading_Thread,
+            KnownType.System_MarshalByRefObject,
+            KnownType.System_Reflection_MemberInfo,
+            KnownType.System_Reflection_ParameterInfo
         };
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
@@ -41,7 +41,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 IMethodSymbol method = model.GetSymbol(item) as IMethodSymbol;
-                if (method == null || method.ContainingType.ToString() != Monitor_type)
+                if (method == null || method.ContainingType.ToString() != KnownType.System_Threading_Monitor)
                     continue;
 
                 if (IsWeakIdentity(item.ArgumentList.Arguments[0].Expression, model))

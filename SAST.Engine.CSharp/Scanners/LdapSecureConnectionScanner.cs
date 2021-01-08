@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,10 +11,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class LdapSecureConnectionScanner : IScanner
     {
-        private static string DirectoryEntry_Class = "System.DirectoryServices.DirectoryEntry";
-        private static string AuthenticationType_Prop = "System.DirectoryServices.DirectoryEntry.AuthenticationType";
-
-
         private static int[] UnsafeAuthenticationTypes ={
             0, //None
             16 //Anonymous
@@ -33,7 +30,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var objectCreation in objectCreationExpressions)
             {
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(objectCreation);
-                if (typeSymbol == null || typeSymbol.ToString() != DirectoryEntry_Class)
+                if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_DirectoryServices_DirectoryEntry)
                     continue;
                 if (objectCreation.ArgumentList == null || objectCreation.ArgumentList.Arguments.Count < 4)
                     continue;
@@ -60,7 +57,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var assignmentExpression in assignmentExpressions)
             {
                 ISymbol symbol = model.GetSymbol(assignmentExpression.Left);
-                if (symbol == null || symbol.ToString() != AuthenticationType_Prop)
+                if (symbol == null || symbol.ToString() != KnownType.System_DirectoryServices_DirectoryEntry_AuthenticationType)
                     continue;
                 if (IsVulnerable(model, assignmentExpression.Right))
                     syntaxNodes.Add(assignmentExpression.Right);

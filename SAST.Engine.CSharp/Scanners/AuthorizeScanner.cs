@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SAST.Engine.CSharp;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,24 +10,22 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class AuthorizeScanner : IScanner
     {
-        private static string ActionResult_Interface = "Microsoft.AspNetCore.Mvc.IActionResult";
-        private static string ActionResult_Class = "System.Web.Mvc.ActionResult";
         private static string[] Controller_Classes =
         {
-            "System.Web.Mvc.Controller",
-            "System.Web.Mvc.ControllerBase",
-            "Microsoft.AspNetCore.Mvc.Controller",
-            "Microsoft.AspNetCore.Mvc.ControllerBase"
+            KnownType.System_Web_Mvc_Controller,
+            KnownType.System_Web_Mvc_ControllerBase,
+            KnownType.Microsoft_AspNetCore_Mvc_Controller,
+            KnownType.Microsoft_AspNetCore_Mvc_ControllerBase
         };
         private static string[] Authorize_Attribute =
         {
-            "Microsoft.AspNetCore.Authorization.AuthorizeAttribute",
-            "System.Web.Mvc.AuthorizeAttribute",
+            KnownType.Microsoft_AspNetCore_Authorization_AuthorizeAttribute ,
+            KnownType.System_Web_Mvc_AuthorizeAttribute,
         };
         private static string[] Anonymous_Attibute =
         {
-            "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
-            "System.Web.Mvc.AllowAnonymousAttribute",
+            KnownType.Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
+            KnownType.System_Web_Mvc_AllowAnonymousAttribute,
         };
 
         /// <summary>
@@ -80,7 +78,8 @@ namespace SAST.Engine.CSharp.Scanners
             if (typeSymbol == null)
                 return false;
 
-            if (!Utils.DerivesFrom(typeSymbol, ActionResult_Class) && !Utils.ImplementsFrom(typeSymbol, ActionResult_Interface))
+            if (!Utils.DerivesFrom(typeSymbol, Constants.KnownType.System_Web_Mvc_ActionResult)
+                && !Utils.ImplementsFrom(typeSymbol, Constants.KnownType.Microsoft_AspNetCore_Mvc_IActionResult))
                 return false;
 
             //Check for Attributes

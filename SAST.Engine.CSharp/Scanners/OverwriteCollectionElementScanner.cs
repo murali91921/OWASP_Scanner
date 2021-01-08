@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
@@ -22,8 +23,8 @@ namespace SAST.Engine.CSharp.Scanners
         };
 
         private static string[] GenericCollection_Types = {
-            "System.Collections.Generic.IDictionary<TKey, TValue>",
-            "System.Collections.Generic.ICollection<T>"
+            KnownType.System_Collections_Generic_IDictionary_TKey_TValue,
+            KnownType.System_Collections_Generic_ICollection_T
         };
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)

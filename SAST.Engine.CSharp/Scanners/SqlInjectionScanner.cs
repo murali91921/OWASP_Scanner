@@ -1,14 +1,11 @@
 using SAST.Engine.CSharp.Enums;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis;
-using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
-using static System.Console;
 using SAST.Engine.CSharp.Mapper;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -16,34 +13,26 @@ namespace SAST.Engine.CSharp.Scanners
     internal class SqlInjectionScanner : IScanner
     {
         private static string[] CommandClasses = {
-            "System.Web.UI.WebControls.SqlDataSource",
-            "System.Data.Common.DbCommand",
-            "System.Data.IDbCommand",
-            "System.Data.IDbDataAdapter",
-
-            "System.Data.OleDb.OleDbCommand",
-            "System.Data.OleDb.OleDbDataAdapter",
-
-            "System.Data.OracleClient.OracleCommand",
-            "System.Data.OracleClient.OracleDataAdapter",
-
-            "System.Data.SqlClient.SqlCommand",
-            "System.Data.SqlClient.SqlDataAdapter",
-
-            "System.Data.Odbc.OdbcDataAdapter",
-            "System.Data.Odbc.OdbcCommand",
-
-            "Mono.Data.Sqlite.SqliteCommand",
-            "Mono.Data.Sqlite.SqliteDataAdapter",
-            "Microsoft.Data.Sqlite.SqliteCommand",
-
-            "System.Data.SQLite.SQLiteCommand",
-            "System.Data.SQLite.SQLiteDataAdapter",
-
-            "MySql.Data.MySqlClient.MySqlCommand",
-            "MySql.Data.MySqlClient.MySqlDataAdapter"
+            KnownType.System_Web_UI_WebControls_SqlDataSource,
+            KnownType.System_Data_Common_DbCommand,
+            KnownType.System_Data_IDbCommand,
+            KnownType.System_Data_IDbDataAdapter,
+            KnownType.System_Data_OleDb_OleDbCommand,
+            KnownType.System_Data_OleDb_OleDbDataAdapter,
+            KnownType.System_Data_OracleClient_OracleCommand,
+            KnownType.System_Data_OracleClient_OracleDataAdapter,
+            KnownType.System_Data_SqlClient_SqlCommand,
+            KnownType.System_Data_SqlClient_SqlDataAdapter,
+            KnownType.System_Data_Odbc_OdbcDataAdapter,
+            KnownType.System_Data_Odbc_OdbcCommand,
+            KnownType.System_Data_SQLite_SQLiteCommand,
+            KnownType.System_Data_SQLite_SQLiteDataAdapter,
+            KnownType.Mono_Data_Sqlite_SqliteCommand,
+            KnownType.Mono_Data_Sqlite_SqliteDataAdapter,
+            KnownType.Microsoft_Data_Sqlite_SqliteCommand,
+            KnownType.MySql_Data_MySqlClient_MySqlCommand,
+            KnownType.MySql_Data_MySqlClient_MySqlDataAdapter
             };
-        private static string SqlDataSourceClass = "System.Web.UI.WebControls.SqlDataSource";
         private static string[] CommandTextParameters = {
             "CommandText",
             "selectCommandText",
@@ -51,33 +40,27 @@ namespace SAST.Engine.CSharp.Scanners
             "selectCommand"
             };
         private static string[] CommandExecuteMethods = {
-            "System.Data.Linq.DataContext.ExecuteCommand",
-            "System.Data.Linq.DataContext.ExecuteQuery",
-
-            "System.Data.SQLite.SQLiteCommand.Execute",
-
-            "System.Data.Entity.Database.ExecuteSqlCommand",
-            "System.Data.Entity.Database.ExecuteSqlCommandAsync",
-            "System.Data.Entity.Database.SqlQuery",
-
-            "System.Data.Entity.DbSet<TEntity>.SqlQuery",
-
-            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSqlRaw",
-            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSql",
-            "Microsoft.EntityFrameworkCore.DbSet<TEntity>.FromSqlInterpolated",
-
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommand",
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlCommandAsync",
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRaw",
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlRawAsync",
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlInterpolated",
-            "Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.ExecuteSqlInterpolatedAsync",
-
-            "Microsoft.Practices.EnterpriseLibrary.Data.Database.GetSqlStringCommand",
-            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteScalar",
-            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteReader",
-            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteNonQuery",
-            "Microsoft.Practices.EnterpriseLibrary.Data.Database.ExecuteDataSet",
+            KnownMethod.System_Data_Linq_DataContext_ExecuteCommand,
+            KnownMethod.System_Data_Linq_DataContext_ExecuteQuery,
+            KnownMethod.System_Data_SQLite_SQLiteCommand_Execute,
+            KnownMethod.System_Data_Entity_Database_ExecuteSqlCommand,
+            KnownMethod.System_Data_Entity_Database_ExecuteSqlCommandAsync,
+            KnownMethod.System_Data_Entity_Database_SqlQuery,
+            KnownMethod.System_Data_Entity_DbSet_TEntity_SqlQuery,
+            KnownMethod.Microsoft_EntityFrameworkCore_DbSet_TEntity_FromSqlRaw,
+            KnownMethod.Microsoft_EntityFrameworkCore_DbSet_TEntity_FromSql,
+            KnownMethod.Microsoft_EntityFrameworkCore_DbSet_TEntity_FromSqlInterpolated,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlCommand,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlCommandAsync,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlRaw,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlRawAsync,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlInterpolated,
+            KnownMethod.Microsoft_EntityFrameworkCore_Infrastructure_DatabaseFacade_ExecuteSqlInterpolatedAsync,
+            KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_GetSqlStringCommand,
+            KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteScalar,
+            KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteReader,
+            KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteNonQuery,
+            KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteDataSet,
         };
         private static string[] CommandExecuteParameters = {
             "query",
@@ -85,23 +68,23 @@ namespace SAST.Engine.CSharp.Scanners
             "commandText"
         };
         private static string[] CommandTextProperties = {
-            "System.Data.Common.DbCommand.CommandText",
-            "System.Data.IDbCommand.CommandText",
-            "System.Data.SqlClient.SqlCommand.CommandText",
-            "System.Data.OleDb.OleDbCommand.CommandText",
-            "System.Data.Odbc.OdbcCommand.CommandText",
-            "System.Data.OracleClient.OracleCommand.CommandText",
-            "Mono.Data.Sqlite.SqliteCommand.CommandText",
-            "Microsoft.Data.Sqlite.SqliteCommand.CommandText",
-            "System.Data.SQLite.SQLiteCommand.CommandText",
-            "System.Web.UI.WebControls.SqlDataSource.SelectCommand",
-            "System.Web.UI.WebControls.SqlDataSource.InsertCommand",
-            "System.Web.UI.WebControls.SqlDataSource.UpdateCommand",
-            "System.Web.UI.WebControls.SqlDataSource.DeleteCommand",
-            "System.Web.UI.WebControls.SqlDataSourceView.SelectCommand",
-            "System.Web.UI.WebControls.SqlDataSourceView.InsertCommand",
-            "System.Web.UI.WebControls.SqlDataSourceView.UpdateCommand",
-            "System.Web.UI.WebControls.SqlDataSourceView.DeleteCommand"
+            KnownType.System_Data_Common_DbCommand_CommandText,
+            KnownType.System_Data_IDbCommand_CommandText,
+            KnownType.System_Data_SqlClient_SqlCommand_CommandText,
+            KnownType.System_Data_OleDb_OleDbCommand_CommandText,
+            KnownType.System_Data_Odbc_OdbcCommand_CommandText,
+            KnownType.System_Data_OracleClient_OracleCommand_CommandText,
+            KnownType.Mono_Data_Sqlite_SqliteCommand_CommandText,
+            KnownType.Microsoft_Data_Sqlite_SqliteCommand_CommandText,
+            KnownType.System_Data_SQLite_SQLiteCommand_CommandText,
+            KnownType.System_Web_UI_WebControls_SqlDataSource_SelectCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSource_InsertCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSource_UpdateCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSource_DeleteCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSourceView_SelectCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSourceView_InsertCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSourceView_UpdateCommand,
+            KnownType.System_Web_UI_WebControls_SqlDataSourceView_DeleteCommand
         };
 
         /// <summary>
@@ -129,7 +112,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (objectCreation.ArgumentList != null && objectCreation.ArgumentList.Arguments.Count > 0)
                 {
                     var argument = objectCreation.ArgumentList.Arguments.First();
-                    if (Utils.DerivesFrom(typeSymbol, SqlDataSourceClass) && argument.NameColon == null)
+                    if (Utils.DerivesFrom(typeSymbol, KnownType.System_Web_UI_WebControls_SqlDataSource) && argument.NameColon == null)
                         argument = objectCreation.ArgumentList.Arguments.Last();
 
                     if (argument.NameColon != null)

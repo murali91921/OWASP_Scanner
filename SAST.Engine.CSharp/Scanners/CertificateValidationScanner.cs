@@ -14,10 +14,10 @@ namespace SAST.Engine.CSharp.Scanners
     internal class CertificateValidationScanner : IScanner
     {
         private static readonly string[] CallbackDelegates = {
-            "System.Net.ServicePointManager.ServerCertificateValidationCallback",
-            "System.Net.Http.WebRequestHandler.ServerCertificateValidationCallback",
-            "System.Net.HttpWebRequest.ServerCertificateValidationCallback",
-            "System.Net.Http.HttpClientHandler.ServerCertificateCustomValidationCallback"
+            Constants.KnownType.System_Net_ServicePointManager_ServerCertificateValidationCallback,
+            Constants.KnownType.System_Net_Http_WebRequestHandler_ServerCertificateValidationCallback,
+            Constants.KnownType.System_Net_HttpWebRequest_ServerCertificateValidationCallback,
+            Constants.KnownType.System_Net_Http_HttpClientHandler_ServerCertificateCustomValidationCallback
         };
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace SAST.Engine.CSharp.Scanners
             var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignmentExpressions)
             {
-                if (!assignment.ToString().Contains("ServerCertificateValidationCallback") 
+                if (!assignment.ToString().Contains("ServerCertificateValidationCallback")
                     && !assignment.ToString().Contains("ServerCertificateCustomValidationCallback"))
                     continue;
 
@@ -100,6 +100,8 @@ namespace SAST.Engine.CSharp.Scanners
                 if (methodSymbol == null || methodSymbol.DeclaringSyntaxReferences.Count() > 1)
                     return false;
                 var syntaxReference = methodSymbol.DeclaringSyntaxReferences.First();
+                if (!model.Compilation.ContainsSyntaxTree(syntaxReference.SyntaxTree))
+                    return false;
                 SemanticModel methodModel = model.Compilation.GetSemanticModel(syntaxReference.SyntaxTree);
                 if (!_visitedMethodSymbols.Any(obj => obj.Equals(methodSymbol, SymbolEqualityComparer.Default)))
                     return IsVulnerable(syntaxReference.GetSyntaxAsync().Result, methodModel);
@@ -158,7 +160,7 @@ namespace SAST.Engine.CSharp.Scanners
                 returnConditionalOrFalse = IsConditionalOrFalse(syntaxNode, model);
             return !returnConditionalOrFalse;
         }
-        
+
         /// <summary>
         /// This mwthod will verify <paramref name="expression"/> is Conditional Expression or False Literal Expression
         /// </summary>

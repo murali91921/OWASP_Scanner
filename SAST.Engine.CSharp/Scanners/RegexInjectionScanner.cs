@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,15 +12,9 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static string[] Match_Methods =
         {
-            "System.Text.RegularExpressions.Regex.IsMatch",
-            "System.Text.RegularExpressions.Regex.Match",
-            "System.Text.RegularExpressions.Regex.Matches"
-        };
-        private static string[] Match_MethodNames =
-        {
-            "IsMatch",
-            "Match",
-            "Matches"
+            KnownMethod.System_Text_RegularExpressions_Regex_IsMatch,
+            KnownMethod.System_Text_RegularExpressions_Regex_Match,
+            KnownMethod.System_Text_RegularExpressions_Regex_Matches
         };
 
         /// <summary>

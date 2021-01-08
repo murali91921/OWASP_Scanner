@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using SAST.Engine.CSharp.Contract;
-using static System.Console;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Mapper;
 using System.IO;
 
@@ -21,21 +21,21 @@ namespace SAST.Engine.CSharp.Scanners
         SyntaxNode syntaxNode = null;
 
         private static string[] MethodsToCheck = {
-            "System.Xml.XmlDocument.SelectSingleNode",
-            "System.Xml.XmlDocument.SelectNodes",
-            "System.Xml.XmlNode.SelectSingleNode",
-            "System.Xml.XmlNode.SelectNodes",
-            "System.Xml.XPath.XPathNavigator.SelectSingleNode",
-            "System.Xml.XPath.XPathNavigator.Select",
-            "System.Xml.XPath.XPathNavigator.Compile",
-            "System.Xml.XPath.XPathNavigator.Evaluate",
-            "System.Xml.XPath.XPathExpression.Compile",
-            "System.Xml.Linq.XNode.XPathSelectElement",
-            "System.Xml.Linq.XNode.XPathSelectElements",
-            "System.Xml.Linq.XNode.XPathEvaluate",
-            "System.Xml.XPath.Extensions.XPathSelectElement",
-            "System.Xml.XPath.Extensions.XPathSelectElements",
-            "System.Xml.XPath.Extensions.XPathEvaluate"
+            KnownMethod.System_Xml_Linq_XNode_XPathSelectElement,
+            KnownMethod.System_Xml_Linq_XNode_XPathSelectElements,
+            KnownMethod.System_Xml_Linq_XNode_XPathEvaluate,
+            KnownMethod.System_Xml_XmlDocument_SelectSingleNode,
+            KnownMethod.System_Xml_XmlDocument_SelectNodes,
+            KnownMethod.System_Xml_XmlNode_SelectSingleNode,
+            KnownMethod.System_Xml_XmlNode_SelectNodes,
+            KnownMethod.System_Xml_XPath_XPathNavigator_SelectSingleNode,
+            KnownMethod.System_Xml_XPath_XPathNavigator_Select,
+            KnownMethod.System_Xml_XPath_XPathNavigator_Compile,
+            KnownMethod.System_Xml_XPath_XPathNavigator_Evaluate,
+            KnownMethod.System_Xml_XPath_XPathExpression_Compile,
+            KnownMethod.System_Xml_XPath_Extensions_XPathSelectElement,
+            KnownMethod.System_Xml_XPath_Extensions_XPathSelectElements,
+            KnownMethod.System_Xml_XPath_Extensions_XPathEvaluate
         };
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 if (!(method.Expression is MemberAccessExpressionSyntax memberAccessExpression))
                     continue;
-                ITypeSymbol symbol = model.GetTypeSymbol(memberAccessExpression.Expression) as ITypeSymbol;
+                ITypeSymbol symbol = model.GetTypeSymbol(memberAccessExpression.Expression);
                 if (symbol == null)
                     continue;
                 if (!MethodsToCheck.Any(obj => obj == symbol.ToString() + "." + memberAccessExpression.Name.ToString()))
@@ -70,21 +70,8 @@ namespace SAST.Engine.CSharp.Scanners
                         lstVulnerableStatements.Add(argument);
                         break;
                     }
-                    //ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
-                    //if (typeSymbol == null)
-                    //    continue;
-                    //if (typeSymbol.SpecialType == SpecialType.System_String)
-                    //{
-                    //    lstVulnerableCheck.Add(argument.Expression);
-                    //    break;
-                    //}
                 }
             }
-            //foreach (var item in lstVulnerableCheck)
-            //{
-            //    if (IsVulnerable(item))
-            //        lstVulnerableStatements.Add(item.Parent);
-            //}
             return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.XPath);
         }
 

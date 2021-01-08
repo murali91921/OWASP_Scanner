@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -19,8 +20,6 @@ namespace SAST.Engine.CSharp.Scanners
             "Decode",
             "DecodeToObject"
         };
-        private static readonly string IdentityModel_Tokens = "Microsoft.IdentityModel.Tokens";
-        private static readonly string IJwtDecoder_Interface = "JWT.IJwtDecoder";
 
         /// <summary>
         /// This method will FInd JWT Token vulnerabilities from assignments.
@@ -37,7 +36,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 var leftSymbol = model.GetSymbol(assignment.Left);
-                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() == IdentityModel_Tokens))
+                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() ==KnownType.Microsoft_IdentityModel_Tokens))
                     continue;
 
                 var constant = model.GetConstantValue(assignment.Right);
@@ -63,7 +62,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(item.Expression);
                 if (symbol == null)
                     continue;
-                if (!Utils.ImplementsFrom(symbol.ContainingType, IJwtDecoder_Interface))
+                if (!Utils.ImplementsFrom(symbol.ContainingType, KnownType.JWT_IJwtDecoder))
                     continue;
                 if (!DecodeMethods.Contains(symbol.Name))
                     continue;
@@ -109,7 +108,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!item.ToString().Contains("Decode"))
                     continue;
                 ISymbol symbol = model.GetSymbol(item);
-                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != "JWT.Builder.JwtBuilder.Decode")
+                if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != KnownMethod.JWT_Builder_JwtBuilder_Decode)
                     continue;
                 //bool vulnerable = true;
                 if (IsVulnerable((item.Expression as MemberAccessExpressionSyntax).Expression, model, solution))

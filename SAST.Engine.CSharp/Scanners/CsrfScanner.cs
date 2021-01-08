@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
@@ -15,23 +16,24 @@ namespace SAST.Engine.CSharp.Scanners
     {
         //POST, GET, PUT, PATCH, and DELETE
         private static string[] HttpVerbAttributes = new string[] {
-            "System.Web.Mvc.HttpPostAttribute",
-            "System.Web.Mvc.HttpDeleteAttribute",
-            "System.Web.Mvc.HttpPutAttribute",
-            "System.Web.Mvc.HttpPatchAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPostAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpDeleteAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPutAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPatchAttribute",
+            KnownType.System_Web_Mvc_HttpPostAttribute,
+            KnownType.System_Web_Mvc_HttpDeleteAttribute,
+            KnownType.System_Web_Mvc_HttpPutAttribute,
+            KnownType.System_Web_Mvc_HttpPatchAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute,
             };
         private static string[] CsrfTokenAttributes = {
-            "System.Web.Mvc.ValidateAntiForgeryTokenAttribute",
-            "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
-            "Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute"
+            KnownType.System_Web_Mvc_ValidateAntiForgeryTokenAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_AutoValidateAntiforgeryTokenAttribute
             };
         private static string[] AnonymousAttribute = {
-            "System.Web.Mvc.AllowAnonymousAttribute",
-            "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute"};
+            KnownType.System_Web_Mvc_AllowAnonymousAttribute,
+            KnownType.Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute
+            };
 
         /// <summary>
         /// This will verify <paramref name="typeSymbol"/> is HttpVerb Attribute or not

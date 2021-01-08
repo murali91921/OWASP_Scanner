@@ -11,9 +11,7 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SharedInstanceScanner : IScanner
     {
-        private readonly string PartCreationPolicy_Attribute = "System.ComponentModel.Composition.PartCreationPolicyAttribute";
-        private readonly string CreationPolicy_Attribute = "System.ComponentModel.Composition.CreationPolicy";
-        private readonly int CreationPolicy_Shared = 1;
+        private readonly string PartCreationPolicy_Attribute = Constants.KnownType.System_ComponentModel_Composition_PartCreationPolicyAttribute;
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -27,6 +25,8 @@ namespace SAST.Engine.CSharp.Scanners
                 if (typeSymbol.DeclaringSyntaxReferences.Length == 0)
                     continue;
 
+                if (!model.Compilation.SyntaxTrees.Any(obj => obj == typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree))
+                    continue;
                 var semanticModel = model.Compilation.GetSemanticModel(typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree);
                 var declaration = typeSymbol.DeclaringSyntaxReferences[0].GetSyntaxAsync().Result as ClassDeclarationSyntax;
                 if (declaration == null)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
@@ -33,11 +34,11 @@ namespace SAST.Engine.CSharp.Scanners
                 if (symbol == null)
                     continue;
 
-                if (symbol.ContainingNamespace.ToString() != "Microsoft.AspNet.Identity.Owin" &&
-                    symbol.ContainingNamespace.ToString() != "Microsoft.AspNetCore.Identity")
+                if (symbol.ContainingNamespace.ToString() != KnownType.Microsoft_AspNet_Identity_Owin &&
+                    symbol.ContainingNamespace.ToString() != KnownType.Microsoft_AspNetCore_Identity)
                     continue;
                 int argCount = symbol.Name == "CheckPasswordSignInAsync" ? 3 : 4;
-                string parameterName = symbol.ContainingNamespace.ToString() == "Microsoft.AspNet.Identity.Owin" ? "shouldLockout" : "lockoutOnFailure";
+                string parameterName = symbol.ContainingNamespace.ToString() == KnownType.Microsoft_AspNet_Identity_Owin ? "shouldLockout" : "lockoutOnFailure";
                 if (item.ArgumentList == null || item.ArgumentList.Arguments.Count < argCount)
                     continue;
                 int i = -1;

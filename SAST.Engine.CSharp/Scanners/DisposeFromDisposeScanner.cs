@@ -11,8 +11,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class DisposeFromDisposeScanner : IScanner
     {
-        private static readonly string DisposeMethodExplicitName = "System.IDisposable.Dispose";
-
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -61,9 +59,9 @@ namespace SAST.Engine.CSharp.Scanners
 
         private static bool IsMethodMatchingDisposeMethodName(IMethodSymbol enclosingMethodSymbol) =>
             enclosingMethodSymbol.Name == "Dispose" ||
-            enclosingMethodSymbol.ExplicitInterfaceImplementations.Any() && enclosingMethodSymbol.Name == DisposeMethodExplicitName;
+            enclosingMethodSymbol.ExplicitInterfaceImplementations.Any() && enclosingMethodSymbol.Name == Constants.KnownMethod.System_IDisposable_Dispose;
 
         private static bool ImplementsDisposable(INamedTypeSymbol containingType) =>
-            Utils.ImplementsFrom(containingType, "System.IDisposable");
+            Utils.ImplementsFrom(containingType, Constants.KnownType.System_IDisposable);
     }
 }

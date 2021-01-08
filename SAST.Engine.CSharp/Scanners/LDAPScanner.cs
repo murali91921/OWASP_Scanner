@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using static System.Console;
 using SAST.Engine.CSharp.Mapper;
 using System.IO;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -16,10 +16,6 @@ namespace SAST.Engine.CSharp.Scanners
     internal class LDAPScanner : IScanner
     {
         private SemanticModel _model;
-        private static readonly string DirectorySearcher = "System.DirectoryServices.DirectorySearcher";
-        private static readonly string LdapFilterEncode = "Microsoft.Security.Application.Encoder.LdapFilterEncode";
-        private static readonly string filter = "System.DirectoryServices.DirectorySearcher.Filter";
-
         /// <summary>
         /// This method will find the LDAP vulnerabilities
         /// </summary>
@@ -41,7 +37,7 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var objectCreation in objectCreationExpressions)
                 {
                     ISymbol symbol = model.GetSymbol(objectCreation.Type);
-                    if (symbol != null && symbol.ToString() == DirectorySearcher)
+                    if (symbol != null && symbol.ToString() == KnownType.System_DirectoryServices_DirectorySearcher)
                     {
                         if (objectCreation.Initializer?.Expressions.Count > 0)
                         {
@@ -66,7 +62,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (assignment.Left is MemberAccessExpressionSyntax leftAssign)
                     {
                         var leftSymbol = model.GetSymbol(leftAssign);
-                        if (leftSymbol != null && leftSymbol.ToString() == filter)
+                        if (leftSymbol != null && leftSymbol.ToString() == KnownType.System_DirectoryServices_DirectorySearcher_Filter)
                             lstVulnerableCheck.Add(assignment.Right);
                     }
                 }
@@ -125,7 +121,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = _model.GetSymbol(node);
                 if (symbol == null)
                     return true;
-                return !(symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == LdapFilterEncode);
+                return !(symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == KnownMethod.Microsoft_Security_Application_Encoder_LdapFilterEncode);
             }
             else if (node is LiteralExpressionSyntax)
                 return false;

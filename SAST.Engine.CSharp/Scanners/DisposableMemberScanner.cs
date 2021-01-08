@@ -5,7 +5,7 @@ using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using SAST.Engine.CSharp.Constants;
 using Microsoft.CodeAnalysis.FindSymbols;
 
 namespace SAST.Engine.CSharp.Scanners
@@ -14,24 +14,24 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static string[] Disposable_Types =
         {
-            "System.IO.FileStream",
-            "System.IO.BinaryReader",
-            "System.IO.StreamReader",
-            "System.IO.StreamWriter",
-            "System.Net.WebClient",
-            "System.Net.Sockets.TcpClient",
-            "System.Net.Sockets.UdpClient",
-            "System.Drawing.Image",
-            "System.Drawing.Bitmap",
-            "System.IO.Stream"
+            KnownType.System_IO_FileStream,
+            KnownType.System_IO_BinaryReader,
+            KnownType.System_IO_StreamReader,
+            KnownType.System_IO_StreamWriter,
+            KnownType.System_Net_WebClient,
+            KnownType.System_Net_Sockets_TcpClient,
+            KnownType.System_Net_Sockets_UdpClient,
+            KnownType.System_Drawing_Image,
+            KnownType.System_Drawing_Bitmap,
+            KnownType.System_IO_Stream
         };
         private static string[] DisposeMethods = { "Dispose", "Close" };
         private static string[] FactoryMethods =
         {
-            "System.IO.File.Create",
-            "System.IO.File.Open",
-            "System.Drawing.Image.FromFile",
-            "System.Drawing.Image.FromStream"
+            KnownMethod.System_IO_File_Create,
+            KnownMethod.System_IO_File_Open,
+            KnownMethod.System_Drawing_Image_FromFile,
+            KnownMethod.System_Drawing_Image_FromStream
         };
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
@@ -55,7 +55,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 List<NodeAndModel> typesDeclarationsAndModels = symbol.DeclaringSyntaxReferences
-                    .Select(r => new NodeAndModel
+                    .Where(obj => model.Compilation.ContainsSyntaxTree(obj.SyntaxTree)).Select(r => new NodeAndModel
                     {
                         Node = r.GetSyntax(),
                         Model = model.Compilation.GetSemanticModel(r.SyntaxTree)
@@ -79,6 +79,8 @@ namespace SAST.Engine.CSharp.Scanners
                             if (referenceLocation.Location.IsInMetadata)
                                 continue;
                             var node = referenceLocation.Location.SourceTree.GetRootAsync().Result.FindNode(referenceLocation.Location.SourceSpan);
+                            if (!model.Compilation.ContainsSyntaxTree(referenceLocation.Location.SourceTree))
+                                continue;
                             var Model = model.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
 
                             ExcludeDisposedAndClosedLocalsAndPrivateFields(node, symbol, Model, excludedSymbols);
@@ -131,8 +133,12 @@ namespace SAST.Engine.CSharp.Scanners
                     var assignment = node.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                     if (assignment == null || assignment.Parent is UsingStatementSyntax)
                         continue;
+                    
+                    SemanticModel currentModel = referenceLocation.Document.GetSemanticModelAsync().Result;
+                    if (!currentModel.Compilation.ContainsSyntaxTree(referenceLocation.Location.SourceTree))
+                        continue;
 
-                    SemanticModel model = referenceLocation.Document.GetSemanticModelAsync().Result.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
+                    SemanticModel model = currentModel.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
                     ISymbol assignedSymbol = model.GetSymbol(assignment.Left);
                     if (assignedSymbol == null || !assignedSymbol.Equals(symbol, SymbolEqualityComparer.Default))
                         continue;

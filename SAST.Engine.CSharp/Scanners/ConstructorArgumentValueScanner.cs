@@ -11,7 +11,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class ConstructorArgumentValueScanner : IScanner
     {
-        private static readonly string ConstructorArgumentAttribute_Type = "System.Windows.Markup.ConstructorArgumentAttribute";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -46,7 +45,7 @@ namespace SAST.Engine.CSharp.Scanners
         }
 
         private static AttributeData GetConstructorArgumentAttributeOrDefault(IPropertySymbol propertySymbol)
-            => propertySymbol.GetAttributes().Where(attr => attr.AttributeClass?.ToString() == ConstructorArgumentAttribute_Type).FirstOrDefault();
+            => propertySymbol.GetAttributes().Where(attr => attr.AttributeClass?.ToString() == Constants.KnownType.System_Windows_Markup_ConstructorArgumentAttribute).FirstOrDefault();
 
         private static IEnumerable<string> GetAllParentClassConstructorArgumentNames(SyntaxNode propertyDeclaration)
         {

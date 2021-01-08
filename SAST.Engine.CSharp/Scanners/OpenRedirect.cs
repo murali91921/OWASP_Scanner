@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Enums;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
@@ -18,13 +19,13 @@ namespace SAST.Engine.CSharp.Scanners
         List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
 
         private static readonly string[] Response_ReceiverType = {
-            "System.Web.HttpResponse",
-            "Microsoft.AspNetCore.Http.Response",
-            "System.Web.Mvc.Controller" ,
-            "System.Web.HttpResponseBase",
-            "Microsoft.AspNetCore.Http.HttpResponse" ,
-            "Microsoft.AspNetCore.Mvc.Controller",
-            "Microsoft.AspNetCore.Mvc.ControllerBase"
+            KnownType.System_Web_HttpResponse,
+            KnownType.System_Web_Mvc_Controller ,
+            KnownType.System_Web_HttpResponseBase,
+            KnownType.Microsoft_AspNetCore_Http_Response,
+            KnownType.Microsoft_AspNetCore_Http_HttpResponse ,
+            KnownType.Microsoft_AspNetCore_Mvc_Controller,
+            KnownType.Microsoft_AspNetCore_Mvc_ControllerBase
         };
 
         private static readonly string[] Redirect_MethodNames = {

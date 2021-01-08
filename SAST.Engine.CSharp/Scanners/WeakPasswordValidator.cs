@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Mapper;
 
@@ -38,10 +39,10 @@ namespace SAST.Engine.CSharp.Scanners
                     foreach (var attribute in attributeList.Attributes)
                     {
                         ITypeSymbol type = model.GetTypeSymbol(attribute);
-                        if (type != null && type.ToString() == "System.ComponentModel.DataAnnotations.DataType"
+                        if (type != null && type.ToString() == KnownType.System_ComponentModel_DataAnnotations_DataType
                                 && attribute.ArgumentList != null && attribute.ArgumentList.Arguments.First().ToString() == "DataType.Password")
                             IsPassword = true;
-                        if (type != null && type.ToString() == "System.ComponentModel.DataAnnotations.StringLengthAttribute")
+                        if (type != null && type.ToString() == KnownType.System_ComponentModel_DataAnnotations_StringLengthAttribute)
                         {
                             // Console.WriteLine("Min Length");
                             if (attribute.ArgumentList != null && attribute.ArgumentList.Arguments.Any(obj => obj.ToString().Contains("MinimumLength")))
@@ -77,7 +78,7 @@ namespace SAST.Engine.CSharp.Scanners
                         IsWeak = true;
                         //tempIdentity = null;
                         var typeSymbol = model.GetTypeSymbol(item);
-                        if (typeSymbol != null && typeSymbol.ToString() == "Microsoft.Extensions.DependencyInjection.IServiceCollection")
+                        if (typeSymbol != null && typeSymbol.ToString() == KnownType.Microsoft_Extensions_DependencyInjection_IServiceCollection)
                         {
                             //Console.WriteLine("Type");
                             // var passwordOptions = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Identity.IdentityOptions");
@@ -90,9 +91,8 @@ namespace SAST.Engine.CSharp.Scanners
                                 if (typeOfOptionsTypeInfo != null)
                                     typeOfOptions = model.GetTypeSymbol(typeArguments.First().Arguments.First()).ToString();
                             }
-                            if (typeOfOptions == "Microsoft.AspNetCore.Identity.IdentityOptions")
+                            if (typeOfOptions == KnownType.Microsoft_AspNetCore_Identity_IdentityOptions)
                             {
-                                // IsPassword = true;
                                 var assignments = item.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(obj =>
                                                                 obj.Right is LiteralExpressionSyntax && obj.Left.ToString().Contains("Password.RequiredLength"));
                                 if (assignments.Count() > 0)
@@ -105,12 +105,9 @@ namespace SAST.Engine.CSharp.Scanners
                                     IsWeak = true;
                                 if (IsWeak && tempIdentity == null)
                                     tempIdentity = item;
-                                //Console.WriteLine("Identity");
                             }
-                            else if (typeOfOptions == "Microsoft.AspNetCore.Identity.PasswordOptions")
+                            else if (typeOfOptions == KnownType.Microsoft_AspNetCore_Identity_PasswordOptions)
                             {
-                                //PasswordoptionsExists = true;
-                                //IsPassword = true;
                                 var assignments = item.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(obj =>
                                                                 obj.Right is LiteralExpressionSyntax && obj.Left.ToString().Contains("RequiredLength"));
                                 if (assignments.Count() > 0)
@@ -121,13 +118,8 @@ namespace SAST.Engine.CSharp.Scanners
                                 }
                                 else
                                     IsWeak = true;
-                                // tempIdentity = null;
-                                if (IsWeak)
-                                    tempIdentity = item;
-                                else
-                                    tempIdentity = null;
+                                tempIdentity = IsWeak ? item : null;
                                 break;
-                                //Console.WriteLine("Password");
                             }
                             else
                                 continue;
@@ -155,21 +147,15 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     bool IsWeak = true;
                     IEnumerable<ReferencedSymbol> referencedSymbols = null;
-                    ISymbol symbol = model.GetDeclaredSymbol(declarationSyntax);
-                    if (symbol is IFieldSymbol && (symbol as IFieldSymbol).Type.ToString() == "Microsoft.AspNet.Identity.PasswordValidator")
-                    {
-                        IFieldSymbol iFieldSymbol = symbol as IFieldSymbol;
-                        referencedSymbols = SymbolFinder.FindReferencesAsync(iFieldSymbol, solution).Result;
-                    }
-                    else if (symbol is ILocalSymbol && (symbol as ILocalSymbol).Type.ToString() == "Microsoft.AspNet.Identity.PasswordValidator")
-                    {
-                        ILocalSymbol iLocalSymbol = symbol as ILocalSymbol;
-                        // Console.WriteLine(iLocalSymbol.Type);
-                        referencedSymbols = SymbolFinder.FindReferencesAsync(iLocalSymbol, solution).Result;
-                        //Console.WriteLine(referencedSymbols.Count());
-                    }
-                    else
+                    var symbol = model.GetDeclaredSymbol(declarationSyntax);
+                    if (symbol == null)
                         continue;
+
+                    ITypeSymbol typeSymbol = symbol.GetTypeSymbol();
+                    if (typeSymbol == null || typeSymbol.ToString() != KnownType.Microsoft_AspNet_Identity_PasswordValidator)
+                        continue;
+
+                    referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
                     var objectCreation = declarationSyntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>().FirstOrDefault();
                     if (objectCreation != null && objectCreation.Initializer != null)
                     {

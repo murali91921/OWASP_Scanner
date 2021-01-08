@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +13,11 @@ namespace SAST.Engine.CSharp.Scanners
     internal class SerializationEventImplementScanner : IScanner
     {
         private static readonly string[] SerializationAttributes = {
-            "System.Runtime.Serialization.OnSerializingAttribute",
-            "System.Runtime.Serialization.OnSerializedAttribute",
-            "System.Runtime.Serialization.OnDeserializingAttribute",
-            "System.Runtime.Serialization.OnDeserializedAttribute"
+            KnownType.System_Runtime_Serialization_OnSerializingAttribute,
+            KnownType.System_Runtime_Serialization_OnSerializedAttribute,
+            KnownType.System_Runtime_Serialization_OnDeserializingAttribute,
+            KnownType.System_Runtime_Serialization_OnDeserializedAttribute
         };
-        private static readonly string StreamingContext_Type = "System.Runtime.Serialization.StreamingContext";
-
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxToken> syntaxTokens = new List<SyntaxToken>();
@@ -51,6 +50,6 @@ namespace SAST.Engine.CSharp.Scanners
             || !methodSymbol.ReturnsVoid
             || !methodSymbol.TypeParameters.IsEmpty
             || methodSymbol.Parameters.Length != 1
-            || methodSymbol.Parameters.First().Type.ToString() != StreamingContext_Type;
+            || methodSymbol.Parameters.First().Type.ToString() != KnownType.System_Runtime_Serialization_StreamingContext;
     }
 }

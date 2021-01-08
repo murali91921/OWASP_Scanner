@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Antlr4.Runtime;
 using System.Xml.XPath;
 using System.Xml;
+using System.Diagnostics;
 
 namespace SAST.Engine.CSharp.Core
 {
@@ -338,8 +339,10 @@ namespace SAST.Engine.CSharp.Core
                             IScanner scanner = GetScanner(scannerType);
                             if (scanner == null)
                                 continue;
-                            vulnerabilities.AddRange(scanner.FindVulnerabilties(document.GetSyntaxRootAsync().Result, document.FilePath,
-                                document.GetSemanticModelAsync().Result, workspace.CurrentSolution));
+                            var syntaxNode = document.GetSyntaxRootAsync().Result;
+                            var model = document.GetSemanticModelAsync().Result;
+                            vulnerabilities.AddRange(scanner.FindVulnerabilties(syntaxNode, document.FilePath, model, workspace.CurrentSolution));
+                            Console.WriteLine(scannerType);
                         }
                     else
                         break;
@@ -385,7 +388,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 ScannerType.RegexInjection => new RegexInjectionScanner(),
-                
+
                 //Removed as per Issue #94
                 //ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
                 ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
@@ -395,7 +398,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.SafeHandle => new SafeHandleScanner(),
                 ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
                 ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
-                ScannerType.DisposableMember => new DisposableMemberScanner(),
+                //ScannerType.DisposableMember => new DisposableMemberScanner(),
                 ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
                 ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
                 //ScannerType.InfiniteRecursion => new InfiniteRecursionScanner(),                
@@ -406,7 +409,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.PropertyAccessor => new PropertyAccessorScanner(),
                 ScannerType.RightShiftNotNumber => new RightShiftNotNumberScanner(),
                 ScannerType.SharedObjectLock => new SharedObjectLockScanner(),
-                ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
+                //ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
                 ScannerType.PartCreationPolicyNonExport => new PartCreationPolicyNonExportScanner(),
                 ScannerType.ConstructorArgumentValue => new ConstructorArgumentValueScanner(),
                 ScannerType.OverwriteCollectionElement => new OverwriteCollectionElementScanner(),

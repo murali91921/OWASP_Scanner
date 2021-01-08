@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -15,29 +16,25 @@ namespace SAST.Engine.CSharp.Scanners
         private static readonly int MinimumKeyLength = 2048;
         private static readonly int MinimumECKeyLength = 224;
         private static readonly Regex NamedEllipticCurve = new Regex("^(secp|sect|prime|c2tnb|c2pnb|brainpoolP|B-|K-|P-)(?<KeyLength>\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly string System_Security_Cryptography_DSACryptoServiceProvider = "System.Security.Cryptography.DSACryptoServiceProvider";
-        private static readonly string System_Security_Cryptography_RSACryptoServiceProvider = "System.Security.Cryptography.RSACryptoServiceProvider";
-        private static readonly string Org_BouncyCastle_Crypto_Parameters_RsaKeyGenerationParameters = "Org.BouncyCastle.Crypto.Parameters.RsaKeyGenerationParameters";
-        private static readonly string System_Security_Cryptography_CspParameters = "System.Security.Cryptography.CspParameters";
-        private static readonly ImmutableArray<string> Org_BouncyCastle_Crypto_Generators_ParametersGenerators =
-            ImmutableArray.Create(
-                "Org.BouncyCastle.Crypto.Generators.DHParametersGenerator",
-                "Org.BouncyCastle.Crypto.Generators.DsaParametersGenerator");
-        private static readonly ImmutableArray<string> BouncyCastleCurveClasses =
-            ImmutableArray.Create(
-                "Org.BouncyCastle.Asn1.Nist.NistNamedCurves",
-                "Org.BouncyCastle.Asn1.Sec.SecNamedCurves",
-                "Org.BouncyCastle.Asn1.TeleTrust.TeleTrusTNamedCurves",
-                "Org.BouncyCastle.Asn1.X9.ECNamedCurveTable",
-                "Org.BouncyCastle.Asn1.X9.X962NamedCurves");
-        private static readonly ImmutableArray<string> SystemSecurityCryptographyDsaRsa =
-            ImmutableArray.Create(
-                "System.Security.Cryptography.DSA",
-                "System.Security.Cryptography.RSA");
-        private static readonly ImmutableArray<string> SystemSecurityCryptographyCurveClasses =
-            ImmutableArray.Create(
-                "System.Security.Cryptography.ECDiffieHellman",
-                "System.Security.Cryptography.ECDsa");
+        private static readonly string[] Org_BouncyCastle_Crypto_Generators_ParametersGenerators = {
+            KnownType.Org_BouncyCastle_Crypto_Generators_DHParametersGenerator,
+            KnownType.Org_BouncyCastle_Crypto_Generators_DsaParametersGenerator
+        };
+        private static readonly string[] BouncyCastleCurveClasses = {
+            KnownType.Org_BouncyCastle_Asn1_Nist_NistNamedCurves,
+            KnownType.Org_BouncyCastle_Asn1_Sec_SecNamedCurves,
+            KnownType.Org_BouncyCastle_Asn1_TeleTrust_TeleTrusTNamedCurves,
+            KnownType.Org_BouncyCastle_Asn1_X9_ECNamedCurveTable,
+            KnownType.Org_BouncyCastle_Asn1_X9_X962NamedCurves
+        };
+        private static readonly string[] SystemSecurityCryptographyDsaRsa ={
+            KnownType.System_Security_Cryptography_DSA,
+            KnownType.System_Security_Cryptography_RSA
+        };
+        private static readonly string[] SystemSecurityCryptographyCurveClasses = {
+                KnownType.System_Security_Cryptography_ECDiffieHellman,
+                KnownType.System_Security_Cryptography_ECDsa
+        };
 
         /// <summary>
         /// Determines the vulnerabilities
@@ -120,8 +117,8 @@ namespace SAST.Engine.CSharp.Scanners
                 if (typeSymbol == null)
                     continue;
                 {
-                    if (Utils.DerivesFrom(typeSymbol, System_Security_Cryptography_DSACryptoServiceProvider) ||
-                        Utils.DerivesFrom(typeSymbol, System_Security_Cryptography_RSACryptoServiceProvider))
+                    if (Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_DSACryptoServiceProvider) ||
+                        Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_RSACryptoServiceProvider))
                         syntaxNodes.Add(assignment);
                     else
                     {
@@ -144,7 +141,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (argument == null || containingType == null)
                 return null;
 
-            if (Utils.DerivesFromAny(containingType, SystemSecurityCryptographyDsaRsa.ToArray()) && IsInvalidCommonKeyLength(argument.Expression))
+            if (Utils.DerivesFromAny(containingType, SystemSecurityCryptographyDsaRsa) && IsInvalidCommonKeyLength(argument.Expression))
                 return argument;
             else
                 return CheckSystemSecurityEllipticCurve(containingType, argument);
@@ -158,7 +155,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private SyntaxNode CheckSystemSecurityEllipticCurve(ITypeSymbol containingType, ArgumentSyntax argument)
         {
-            if (argument == null || containingType == null || !Utils.DerivesFromAny(containingType, SystemSecurityCryptographyCurveClasses.ToArray()))
+            if (argument == null || containingType == null || !Utils.DerivesFromAny(containingType, SystemSecurityCryptographyCurveClasses))
                 return null;
 
             var paramSymbol = _model.GetSymbol(argument.Expression);
@@ -176,7 +173,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private SyntaxNode CheckBouncyCastleEllipticCurve(ITypeSymbol containingType, ArgumentSyntax argument)
         {
-            if (argument == null || containingType == null || !Utils.DerivesFromAny(containingType, BouncyCastleCurveClasses.ToArray()))
+            if (argument == null || containingType == null || !Utils.DerivesFromAny(containingType, BouncyCastleCurveClasses))
                 return null;
 
             var param = _model.GetConstantValue(argument.Expression);
@@ -212,7 +209,7 @@ namespace SAST.Engine.CSharp.Scanners
                 }
             }
 
-            if (argument == null || !Utils.DerivesFromAny(containingType, Org_BouncyCastle_Crypto_Generators_ParametersGenerators.ToArray()))
+            if (argument == null || !Utils.DerivesFromAny(containingType, Org_BouncyCastle_Crypto_Generators_ParametersGenerators))
                 return null;
 
             if (IsInvalidCommonKeyLength(argument.Expression))
@@ -252,7 +249,7 @@ namespace SAST.Engine.CSharp.Scanners
                 i++;
             }
 
-            if (argument != null && Utils.DerivesFrom(containingType, Org_BouncyCastle_Crypto_Parameters_RsaKeyGenerationParameters)
+            if (argument != null && Utils.DerivesFrom(containingType, KnownType.Org_BouncyCastle_Crypto_Parameters_RsaKeyGenerationParameters)
                 && IsInvalidCommonKeyLength(argument.Expression))
                 return argument;
             return null;
@@ -268,8 +265,8 @@ namespace SAST.Engine.CSharp.Scanners
         {
             // DSACryptoServiceProvider is always not safe as it has maximum key size of 1024
             // RSACryptoServiceProvider constructors are not safe as they have a default key size of 1024
-            if (Utils.DerivesFrom(containingType, System_Security_Cryptography_DSACryptoServiceProvider)
-                || (Utils.DerivesFrom(containingType, System_Security_Cryptography_RSACryptoServiceProvider) && HasDefaultSize(argumentList?.Arguments)))
+            if (Utils.DerivesFrom(containingType, KnownType.System_Security_Cryptography_DSACryptoServiceProvider)
+                || (Utils.DerivesFrom(containingType, KnownType.System_Security_Cryptography_RSACryptoServiceProvider) && HasDefaultSize(argumentList?.Arguments)))
                 return true;
             var argument = argumentList?.Arguments.FirstOrDefault();
             return CheckGenericDsaRsaCryptographyAlgorithms(containingType, argument?.Expression);
@@ -282,7 +279,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="keyLengthSyntax"></param>
         /// <returns></returns>
         private bool CheckGenericDsaRsaCryptographyAlgorithms(ITypeSymbol containingType, SyntaxNode keyLengthSyntax) =>
-            Utils.DerivesFromAny(containingType, SystemSecurityCryptographyDsaRsa.ToArray())
+            Utils.DerivesFromAny(containingType, SystemSecurityCryptographyDsaRsa)
                 && keyLengthSyntax != null && IsInvalidCommonKeyLength(keyLengthSyntax);
 
         /// <summary>
@@ -318,7 +315,7 @@ namespace SAST.Engine.CSharp.Scanners
         {
             return arguments == null || arguments?.Count == 0
                 || (arguments?.Count == 1 && _model.GetTypeSymbol(arguments?[0].Expression) is ITypeSymbol type
-                && Utils.DerivesFrom(type, System_Security_Cryptography_CspParameters));
+                && Utils.DerivesFrom(type, KnownType.System_Security_Cryptography_CspParameters));
         }
     }
 }

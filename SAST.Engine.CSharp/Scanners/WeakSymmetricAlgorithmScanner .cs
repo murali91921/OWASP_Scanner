@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +11,15 @@ namespace SAST.Engine.CSharp.Scanners
     internal class WeakSymmetricAlgorithmScanner : IScanner
     {
         private static readonly string[] WeakAlgorithmTypes = {
-            "System.Security.Cryptography.TripleDESCryptoServiceProvider",
-            "System.Security.Cryptography.DESCryptoServiceProvider",
-            "System.Security.Cryptography.RC2CryptoServiceProvider"
+            KnownType.System_Security_Cryptography_TripleDESCryptoServiceProvider,
+            KnownType.System_Security_Cryptography_DESCryptoServiceProvider,
+            KnownType.System_Security_Cryptography_RC2CryptoServiceProvider
         };
+
         private static readonly string[] WeakAlgorithmMethods = {
-            "System.Security.Cryptography.DES.Create",
-            "System.Security.Cryptography.RC2.Create",
-            "System.Security.Cryptography.TripleDES.Create"
+            KnownMethod.System_Security_Cryptography_DES_Create,
+            KnownMethod.System_Security_Cryptography_RC2_Create,
+            KnownMethod.System_Security_Cryptography_TripleDES_Create
         };
 
         /// <summary>

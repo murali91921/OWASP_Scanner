@@ -13,8 +13,8 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static string[] Thread_Methods =
         {
-            "System.Threading.Thread.Suspend",
-            "System.Threading.Thread.Resume"
+            Constants.KnownMethod.System_Threading_Thread_Suspend,
+            Constants.KnownMethod.System_Threading_Thread_Resume
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SafeHandleScanner : IScanner
     {
-        private static string SafeHandle_Type = "System.Runtime.InteropServices.SafeHandle";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -22,7 +22,7 @@ namespace SAST.Engine.CSharp.Scanners
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(memberAccess.Expression);
                     if (typeSymbol == null)
                         continue;
-                    if (typeSymbol.ToString() == SafeHandle_Type)
+                    if (typeSymbol.ToString() == KnownType.System_Runtime_InteropServices_SafeHandle)
                         syntaxNodes.Add(item);
                 }
                 else if (item.Expression is MemberBindingExpressionSyntax memberBinding)
@@ -34,7 +34,7 @@ namespace SAST.Engine.CSharp.Scanners
                         ITypeSymbol typeSymbol = model.GetTypeSymbol(conditionalAccess.Expression);
                         if (typeSymbol == null)
                             continue;
-                        if (typeSymbol.ToString() == SafeHandle_Type)
+                        if (typeSymbol.ToString() == KnownType.System_Runtime_InteropServices_SafeHandle)
                             syntaxNodes.Add(conditionalAccess);
                     }
                 }

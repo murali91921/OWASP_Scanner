@@ -79,12 +79,12 @@ namespace SAST.Engine.CSharp.WebApi.Controllers
                             result = Newtonsoft.Json.JsonConvert.SerializeObject(vulnerabilities);
                     }
                 }
-                catch (PathTooLongException pathTooLong)
+                catch (PathTooLongException _)
                 {
                     Response.StatusCode = 400;
                     result = "File Name was too long, Please upload with short name";
                 }
-                catch (InvalidDataException invalidData)
+                catch (InvalidDataException _)
                 {
                     Response.StatusCode = 400;
                     result = "Unable to extract files from corrupted zip File.";

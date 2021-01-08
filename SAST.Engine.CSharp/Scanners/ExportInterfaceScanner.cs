@@ -13,8 +13,8 @@ namespace SAST.Engine.CSharp.Scanners
     {
         private static string[] ExportTypes =
         {
-            "System.ComponentModel.Composition.ExportAttribute",
-            "System.ComponentModel.Composition.InheritedExportAttribute"
+            Constants.KnownType.System_ComponentModel_Composition_ExportAttribute,
+            Constants.KnownType.System_ComponentModel_Composition_InheritedExportAttribute
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {

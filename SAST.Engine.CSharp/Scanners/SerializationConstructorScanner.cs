@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,6 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SerializationConstructorScanner : IScanner
     {
-        private static string Serializable_Type = "System.SerializableAttribute";
-        private static string ISerializable_Interface = "System.Runtime.Serialization.ISerializable";
-        private static string SerializationInfo_Type = "System.Runtime.Serialization.SerializationInfo";
-        private static string StreamingContext_Type = "System.Runtime.Serialization.StreamingContext";
-
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
@@ -23,7 +19,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 //Class should implement ISerializable interface
                 var classSymbol = model.GetDeclaredSymbol(classDeclaration);
-                if (classSymbol == null || !Utils.ImplementsFrom(classSymbol as ITypeSymbol, ISerializable_Interface))
+                if (classSymbol == null || !Utils.ImplementsFrom(classSymbol as ITypeSymbol, KnownType.System_Runtime_Serialization_ISerializable))
                     continue;
 
                 //Class should have Serializable Attribute
@@ -33,7 +29,7 @@ namespace SAST.Engine.CSharp.Scanners
                     foreach (var attributeSyntax in attributeList.Attributes)
                     {
                         ITypeSymbol typeSymbol = model.GetTypeSymbol(attributeSyntax);
-                        if (typeSymbol != null && typeSymbol.ToString() == Serializable_Type)
+                        if (typeSymbol != null && typeSymbol.ToString() == KnownType.System_SerializableAttribute)
                             hasSerializableAttribute = true;
                     }
                 }
@@ -54,11 +50,11 @@ namespace SAST.Engine.CSharp.Scanners
                         //Parameter types should be SerializationInfo & StreamingContext and order also need to be consider
                         var param = item.ParameterList.Parameters[0];
                         ITypeSymbol paramTypeSymbol = model.GetTypeSymbol(param.Type);
-                        if (paramTypeSymbol == null || paramTypeSymbol.ToString() != SerializationInfo_Type)
+                        if (paramTypeSymbol == null || paramTypeSymbol.ToString() != KnownType.System_Runtime_Serialization_SerializationInfo)
                             continue;
                         param = item.ParameterList.Parameters[1];
                         paramTypeSymbol = model.GetTypeSymbol(param.Type);
-                        if (paramTypeSymbol == null || paramTypeSymbol.ToString() != StreamingContext_Type)
+                        if (paramTypeSymbol == null || paramTypeSymbol.ToString() != KnownType.System_Runtime_Serialization_StreamingContext)
                             continue;
                         constructorDeclaration = item;
                         break;

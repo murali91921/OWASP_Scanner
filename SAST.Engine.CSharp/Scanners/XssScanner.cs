@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using static System.Console;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp;
 using SAST.Engine.CSharp.Mapper;
@@ -18,54 +19,54 @@ namespace SAST.Engine.CSharp.Scanners
     internal class XssScanner : IScanner, ICSHtmlScanner
     {
         private static string[] DataRetrievalMethods = {
-            "System.Data.Common.DbDataReader.GetString",
-            "System.Data.SqlClient.SqlCommand.ExecuteScalar"
+            KnownMethod.System_Data_Common_DbDataReader_GetString,
+            KnownMethod.System_Data_SqlClient_SqlCommand_ExecuteScalar
             };
         private static string[] ControllerClassNames = {
-            "Microsoft.AspNetCore.Mvc.ControllerBase",
-            "System.Web.Mvc.Controller"
+            KnownType.Microsoft_AspNetCore_Mvc_ControllerBase,
+            KnownType.System_Web_Mvc_Controller
             };
         private static string[] HttpVerbAttributes = {
-            "System.Web.Mvc.HttpGetAttribute",
-            "System.Web.Mvc.HttpPostAttribute",
-            "System.Web.Mvc.HttpDeleteAttribute",
-            "System.Web.Mvc.HttpPutAttribute",
-            "System.Web.Mvc.HttpPatchAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpGetAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPostAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpDeleteAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPutAttribute",
-            "Microsoft.AspNetCore.Mvc.HttpPatchAttribute",
+            KnownType.System_Web_Mvc_HttpGetAttribute,
+            KnownType.System_Web_Mvc_HttpPostAttribute,
+            KnownType.System_Web_Mvc_HttpDeleteAttribute,
+            KnownType.System_Web_Mvc_HttpPutAttribute,
+            KnownType.System_Web_Mvc_HttpPatchAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute,
+            KnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute
             };
         private static string[] WebFormsRepsonseMethods = {
-                "System.Web.HttpResponse.Write",
-                "System.Web.HttpResponseBase.Write",
-                "System.Web.UI.ClientScriptManager.RegisterStartupScript",      //2
-                "System.Web.UI.ClientScriptManager.RegisterClientScriptBlock",   //2
-                "System.Web.UI.Page.RegisterStartupScript",     //1
-                "System.Web.UI.Page.RegisterClientScriptBlock"  //1
-            };
+            KnownMethod.System_Web_HttpResponse_Write,
+            KnownMethod.System_Web_HttpResponseBase_Write,
+            KnownMethod.System_Web_UI_ClientScriptManager_RegisterStartupScript,
+            KnownMethod.System_Web_UI_ClientScriptManager_RegisterClientScriptBlock,
+            KnownMethod.System_Web_UI_Page_RegisterStartupScript,
+            KnownMethod.System_Web_UI_Page_RegisterClientScriptBlock
+        };
         private static string[] WebFormsControlProperties = {
-                "System.Web.UI.WebControls.CheckBox.Text",
-                "System.Web.UI.WebControls.CompareValidator.Text",
-                "System.Web.UI.WebControls.CustomValidator.Text",
-                "System.Web.UI.WebControls.HyperLink.Text",
-                "System.Web.UI.WebControls.HyperLink.NavigateUrl",
-                "System.Web.UI.WebControls.Label.Text",
-                "System.Web.UI.WebControls.LinkButton.Text",
-                "System.Web.UI.WebControls.Literal.Text",
-                "System.Web.UI.WebControls.RadioButton.Text",
-                "System.Web.UI.WebControls.RadioButton.GroupName",
-                "System.Web.UI.WebControls.RangeValidator.Text",
-                "System.Web.UI.WebControls.RegularExpressionValidator.Text",
-                "System.Web.UI.WebControls.RequiredFieldValidator.Text",
-                "System.Web.UI.WebControls.TableCell.Text",
-                "System.Web.UI.WebControls.Calendar.Caption",
-                "System.Web.UI.WebControls.Table.Caption",
-                "System.Web.UI.WebControls.Panel.GroupingText",
-                "System.Web.UI.HtmlControls.HtmlContainerControl",
-                "System.Web.UI.WebControls.InnerHtml",
-                "System.Web.UI.Control.ID"
+            KnownType.System_Web_UI_WebControls_CheckBox_Text,
+            KnownType.System_Web_UI_WebControls_CompareValidator_Text,
+            KnownType.System_Web_UI_WebControls_CustomValidator_Text,
+            KnownType.System_Web_UI_WebControls_HyperLink_Text,
+            KnownType.System_Web_UI_WebControls_HyperLink_NavigateUrl,
+            KnownType.System_Web_UI_WebControls_Label_Text,
+            KnownType.System_Web_UI_WebControls_LinkButton_Text,
+            KnownType.System_Web_UI_WebControls_Literal_Text,
+            KnownType.System_Web_UI_WebControls_RadioButton_Text,
+            KnownType.System_Web_UI_WebControls_RadioButton_GroupName,
+            KnownType.System_Web_UI_WebControls_RangeValidator_Text,
+            KnownType.System_Web_UI_WebControls_RegularExpressionValidator_Text,
+            KnownType.System_Web_UI_WebControls_RequiredFieldValidator_Text,
+            KnownType.System_Web_UI_WebControls_TableCell_Text,
+            KnownType.System_Web_UI_WebControls_Calendar_Caption,
+            KnownType.System_Web_UI_WebControls_Table_Caption,
+            KnownType.System_Web_UI_WebControls_Panel_GroupingText,
+            KnownType.System_Web_UI_HtmlControls_HtmlContainerControl,
+            KnownType.System_Web_UI_WebControls_InnerHtml,
+            KnownType.System_Web_UI_Control_ID
             };
         Solution solution;
 
@@ -90,11 +91,11 @@ namespace SAST.Engine.CSharp.Scanners
                 //"RadioButtonFor", "DropDownList", "DropDownListFor",
                 //"Hidden", "HiddenFor", "Password", "PasswordFor",
                 //"Editor", "EditorFor", "EditorForModel","EnumDropDownListFor",
-                //"ListBox", "ListBoxFor
+                //"ListBox", "ListBoxFor 
             };
             string[] EncodeMethods = {
-                "System.Web.HttpUtility.HtmlEncode",
-                "HttpUtility.HtmlEncode",
+                KnownMethod.System_Web_HttpUtility_HtmlEncode,
+                KnownMethod.HttpUtility_HtmlEncode,
                 "Html.Encode"
             };
             int lineNum = 0;
@@ -215,7 +216,7 @@ namespace SAST.Engine.CSharp.Scanners
                             ISymbol symbol = model.GetSymbol(viewBagExpression.Expression);
                             if (symbol == null)
                                 continue;
-                            if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewBag")
+                            if (symbol.ToString() == KnownType.System_Web_Mvc_ControllerBase_ViewBag)
                                 lstVulnerableCheck.Add(item.Right);
                         }
                         else if (item.Left is ElementAccessExpressionSyntax dataExpression)
@@ -223,8 +224,8 @@ namespace SAST.Engine.CSharp.Scanners
                             ISymbol symbol = model.GetSymbol(dataExpression.Expression);
                             if (symbol == null)
                                 continue;
-                            if (symbol.ToString() == "System.Web.Mvc.ControllerBase.ViewData"
-                                || symbol.ToString() == "System.Web.Mvc.ControllerBase.TempData")
+                            if (symbol.ToString() == KnownType.System_Web_Mvc_ControllerBase_ViewData
+                                || symbol.ToString() == KnownType.System_Web_Mvc_ControllerBase_TempData)
                                 lstVulnerableCheck.Add(item.Right);
                         }
                     }
@@ -334,9 +335,9 @@ namespace SAST.Engine.CSharp.Scanners
                     var invocation = syntaxNode as InvocationExpressionSyntax;
                     if (DataRetrievalMethods.Any(method => method == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
                         return true;
-                    if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "System.Convert.ToString")
+                    if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == KnownMethod.System_Convert_ToString)
                         return IsVulnerable(invocation.ArgumentList.Arguments.First().Expression, model);
-                    else if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == "object.ToString")
+                    else if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == KnownMethod.object_ToString)
                         return IsVulnerable((invocation.Expression as MemberAccessExpressionSyntax).Expression, model);
                     if (NodeFactory.IsSanitized(syntaxNode as InvocationExpressionSyntax, model, SAST.Engine.CSharp.Enums.ScannerType.XSS))
                         return false;

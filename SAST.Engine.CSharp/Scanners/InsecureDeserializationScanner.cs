@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Enums;
 using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
@@ -21,53 +22,53 @@ namespace SAST.Engine.CSharp.Scanners
         string _filePath;
 
         private static readonly string[] Sink_TypeFilterLevel_Props = {
-            "System.Runtime.Remoting.Channels.SoapServerFormatterSinkProvider.TypeFilterLevel",
-            "System.Runtime.Remoting.Channels.BinaryServerFormatterSinkProvider.TypeFilterLevel",
-            "System.Runtime.Remoting.Channels.SoapServerFormatterSink.TypeFilterLevel",
-            "System.Runtime.Remoting.Channels.BinaryServerFormatterSink.TypeFilterLevel"
+            KnownType.System_Runtime_Remoting_Channels_SoapServerFormatterSinkProvider_TypeFilterLevel,
+            KnownType.System_Runtime_Remoting_Channels_BinaryServerFormatterSinkProvider_TypeFilterLevel,
+            KnownType.System_Runtime_Remoting_Channels_SoapServerFormatterSink_TypeFilterLevel,
+            KnownType.System_Runtime_Remoting_Channels_BinaryServerFormatterSink_TypeFilterLevel
         };
 
         private static readonly string[] Binder_Props = {
-            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Binder",
-            "System.Runtime.Serialization.NetDataContractSerializer.Binder",
-            "System.Runtime.Serialization.Formatters.Soap.SoapFormatter.Binder"
+            KnownType.System_Runtime_Serialization_Formatters_Binary_BinaryFormatter_Binder,
+            KnownType.System_Runtime_Serialization_NetDataContractSerializer_Binder,
+            KnownType.System_Runtime_Serialization_Formatters_Soap_SoapFormatter_Binder
         };
 
         private static readonly string[] BinaryFormatter_Methods = {
-            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Deserialize",
-            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserialize",
-            "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.UnsafeDeserializeMethodResponse",
-            "System.Runtime.Serialization.NetDataContractSerializer.Deserialize",
-            "System.Runtime.Serialization.NetDataContractSerializer.ReadObject",
-            "System.Runtime.Serialization.Formatters.Soap.SoapFormatter.Deserialize",
+            KnownMethod.System_Runtime_Serialization_Formatters_Binary_BinaryFormatter_Deserialize,
+            KnownMethod.System_Runtime_Serialization_Formatters_Binary_BinaryFormatter_UnsafeDeserializeMethodResponse,
+            KnownMethod.System_Runtime_Serialization_Formatters_Binary_BinaryFormatter_UnsafeDeserialize,
+            KnownMethod.System_Runtime_Serialization_Formatters_Soap_SoapFormatter_Deserialize,
+            KnownMethod.System_Runtime_Serialization_NetDataContractSerializer_Deserialize,
+            KnownMethod.System_Runtime_Serialization_NetDataContractSerializer_ReadObject,
         };
 
         private static readonly string[] _insecureMethods = {
-            "System.Messaging.BinaryMessageFormatter.Read",
-            "System.Web.UI.ObjectStateFormatter.Deserialize",
-            "System.Runtime.Serialization.XmlObjectSerializer.ReadObject",
-            "System.Runtime.Serialization.DataContractJsonSerializer.ReadObject",
-            "System.Runtime.Serialization.Json.DataContractJsonSerializer.ReadObject",
-            "System.Xml.Serialization.XmlSerializer.Deserialize",
-            "System.Messaging.XmlMessageFormatter.Read",
-            "fastJSON.JSON.ToObject",
-            "ServiceStack.Text.JsonSerializer.DeserializeFromString",
-            "ServiceStack.Text.JsonSerializer.DeserializeFromReader",
-            "ServiceStack.Text.JsonSerializer.DeserializeFromStream",
-            "ServiceStack.Text.TypeSerializer.DeserializeFromString",
-            "ServiceStack.Text.TypeSerializer.DeserializeFromReader",
-            "ServiceStack.Text.TypeSerializer.DeserializeFromStream",
-            "ServiceStack.Text.CsvSerializer.DeserializeFromString",
-            "ServiceStack.Text.CsvSerializer.DeserializeFromReader",
-            "ServiceStack.Text.CsvSerializer.DeserializeFromStream",
-            "ServiceStack.Text.XmlSerializer.DeserializeFromString",
-            "ServiceStack.Text.XmlSerializer.DeserializeFromReader",
-            "ServiceStack.Text.XmlSerializer.DeserializeFromStream"
+            KnownMethod.System_Messaging_BinaryMessageFormatter_Read,
+            KnownMethod.System_Web_UI_ObjectStateFormatter_Deserialize,
+            KnownMethod.System_Runtime_Serialization_XmlObjectSerializer_ReadObject,
+            KnownMethod.System_Runtime_Serialization_DataContractJsonSerializer_ReadObject,
+            KnownMethod.System_Runtime_Serialization_Json_DataContractJsonSerializer_ReadObject,
+            KnownMethod.System_Xml_Serialization_XmlSerializer_Deserialize,
+            KnownMethod.System_Messaging_XmlMessageFormatter_Read,
+            KnownMethod.fastJSON_JSON_ToObject,
+            KnownMethod.ServiceStack_Text_JsonSerializer_DeserializeFromString,
+            KnownMethod.ServiceStack_Text_JsonSerializer_DeserializeFromReader,
+            KnownMethod.ServiceStack_Text_JsonSerializer_DeserializeFromStream,
+            KnownMethod.ServiceStack_Text_TypeSerializer_DeserializeFromString,
+            KnownMethod.ServiceStack_Text_TypeSerializer_DeserializeFromReader,
+            KnownMethod.ServiceStack_Text_TypeSerializer_DeserializeFromStream,
+            KnownMethod.ServiceStack_Text_CsvSerializer_DeserializeFromString,
+            KnownMethod.ServiceStack_Text_CsvSerializer_DeserializeFromReader,
+            KnownMethod.ServiceStack_Text_CsvSerializer_DeserializeFromStream,
+            KnownMethod.ServiceStack_Text_XmlSerializer_DeserializeFromString,
+            KnownMethod.ServiceStack_Text_XmlSerializer_DeserializeFromReader,
+            KnownMethod.ServiceStack_Text_XmlSerializer_DeserializeFromStream
         };
         private static readonly string[] _insecureObjectCreation = {
-            "System.Runtime.Serialization.Json.DataContractJsonSerializer",
-            "System.Xml.Serialization.XmlSerializer",
-            "System.Resources.ResourceReader"
+            KnownType.System_Runtime_Serialization_Json_DataContractJsonSerializer,
+            KnownType.System_Xml_Serialization_XmlSerializer,
+            KnownType.System_Resources_ResourceReader
         };
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var argument in attributeArguments)
             {
                 ITypeSymbol typeSymbol = _model.GetTypeSymbol(argument.Name);
-                if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.JsonPropertyAttribute")
+                if (typeSymbol == null || typeSymbol.ToString() != KnownType.Newtonsoft_Json_JsonPropertyAttribute)
                     continue;
                 foreach (var item in argument.ArgumentList.Arguments)
                 {
@@ -136,10 +137,10 @@ namespace SAST.Engine.CSharp.Scanners
                 //SoapServerFormatterSinkProvider
                 if (symbol == null)
                     continue;
-                if (symbol.ToString() == "Newtonsoft.Json.JsonSerializerSettings.TypeNameHandling")
+                if (symbol.ToString() == KnownType.Newtonsoft_Json_JsonSerializerSettings_TypeNameHandling)
                 {
                     ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
-                    if (typeSymbol == null || typeSymbol.ToString() != "Newtonsoft.Json.TypeNameHandling")
+                    if (typeSymbol == null || typeSymbol.ToString() != KnownType.Newtonsoft_Json_TypeNameHandling)
                         continue;
                     Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
                     if (!value.HasValue)
@@ -150,7 +151,7 @@ namespace SAST.Engine.CSharp.Scanners
                 else if (Sink_TypeFilterLevel_Props.Contains(symbol.ToString()))
                 {
                     ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
-                    if (typeSymbol == null || typeSymbol.ToString() != "System.Runtime.Serialization.Formatters.TypeFilterLevel")
+                    if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Runtime_Serialization_Formatters_TypeFilterLevel)
                         continue;
                     Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
                     if (!value.HasValue)
@@ -181,12 +182,12 @@ namespace SAST.Engine.CSharp.Scanners
                     vulnerabilities.Add(item);
                     continue;
                 }
-                if (typeSymbol.ToString() == "System.Web.UI.LosFormatter")
+                if (typeSymbol.ToString() == KnownType.System_Web_UI_LosFormatter)
                 {
                     if (IsVulnerable_LosFormatter(item))
                         vulnerabilities.Add(item);
                 }
-                else if (typeSymbol.ToString() == "System.Web.Script.Serialization.JavaScriptSerializer")
+                else if (typeSymbol.ToString() == KnownType.System_Web_Script_Serialization_JavaScriptSerializer)
                 {
                     if (item.ArgumentList == null)
                     {
@@ -202,8 +203,7 @@ namespace SAST.Engine.CSharp.Scanners
                     typeSymbol = _model.GetTypeSymbol(argument.Expression);
                     if (typeSymbol == null)
                         continue;
-                    if (typeSymbol.ToString() == "System.Web.Script.Serialization.SimpleTypeResolver"
-                        || IsVulnerable_Resolver(typeSymbol))
+                    if (typeSymbol.ToString() == KnownType.System_Web_Script_Serialization_SimpleTypeResolver || IsVulnerable_Resolver(typeSymbol))
                         vulnerabilities.Add(item);
                 }
             }
@@ -380,7 +380,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (methodDeclaration.Identifier.Text != "BindToType" || methodDeclaration.ParameterList.Parameters.Count != 2)
                 return false;
             ITypeSymbol typeSymbol = model.GetTypeSymbol(methodDeclaration.ReturnType);
-            if (typeSymbol == null || typeSymbol.ToString() != "System.Type")
+            if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Type)
                 return false;
             typeSymbol = model.GetTypeSymbol(methodDeclaration.ParameterList.Parameters[0].Type);
             if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
@@ -397,7 +397,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (methodDeclaration.Identifier.Text != "ResolveType" || methodDeclaration.ParameterList.Parameters.Count != 1)
                 return false;
             ITypeSymbol typeSymbol = model.GetTypeSymbol(methodDeclaration.ReturnType);
-            if (typeSymbol == null || typeSymbol.ToString() != "System.Type")
+            if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Type)
                 return false;
             typeSymbol = model.GetTypeSymbol(methodDeclaration.ParameterList.Parameters[0].Type);
             if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
@@ -406,28 +406,3 @@ namespace SAST.Engine.CSharp.Scanners
         }
     }
 }
-
-
-/*
- **1. System.Runtime.Serialization.Formatters.Binary.BinaryFormatter – Deserialize, UnsafeDeserialize,UnsafeDeserializeMethodResponse
- **2. System.Runtime.Serialization.Formatters.Soap.SoapFormatter – Deserialize 
- **3. System.Web.UI.ObjectStateFormatter- Deserialize
- **4. System.Runtime.Serialization.NetDataContractSerializer – Deserialize, ReadObject
- **5. System.Web.UI.LosFormatter – Deserialize
- *6. Pending System.Workflow.ComponentModel.Activity – Load
- 
- **7. SoapServerFormatterSinkProvider,
- *-----------SoapClientFormatterSinkProvider,
- **BinaryServerFormatterSinkProvider,
- *-----------BinaryClientFormatterSinkProvider,
- *-----------SoapClientFormatterSink,
- *SoapServerFormatterSink,
- *-----------BinaryClientFormatterSink,
- *BinaryServerFormatterSink – unsafe if used across an insecure channel or if used to talk to an untrusted party
- 
- *8.Done System.Resource.ResourceReader – unsafe if used to read an untrusted resource string or stream
- *9. Not found Dll to resolve. Microsoft.Web.Design.Remote.ProxyObject – DecodeValue, DecodeSerializedObject
- *10.Done System.Web.Script.Serialization.JavaScriptSerializer – unsafe if used to deserialize an untrusted stream with a JavaScriptTypeResolver set
- *11.Done NewtonSoft / JSON.Net JSonSerializer – unsafe if the TypeNameHandling property is set to any value other than “None”
- *12.Done ServiceStack.Text – unsafe if used to deserialize an object whose membership graph can contain a member of type “Object”
- */

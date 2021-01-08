@@ -1,14 +1,11 @@
 using SAST.Engine.CSharp.Enums;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using SAST.Engine.CSharp.Contract;
-using static System.Console;
 using SAST.Engine.CSharp.Mapper;
+using SAST.Engine.CSharp.Constants;
 
 namespace SAST.Engine.CSharp.Scanners
 {
@@ -18,9 +15,10 @@ namespace SAST.Engine.CSharp.Scanners
     internal class InsecureRandomScanner : IScanner
     {
         private static string[] RandomMethods = {
-            "System.Random.Next",
-            "System.Random.NextDouble",
-            "System.Random.NextBytes"};
+            KnownMethod.System_Random_Next,
+            KnownMethod.System_Random_NextDouble,
+            KnownMethod.System_Random_NextBytes
+        };
 
         /// <summary>
         /// This method will find Insecure Random Vulnerabilities

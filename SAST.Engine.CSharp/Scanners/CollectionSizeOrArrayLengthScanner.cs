@@ -12,9 +12,7 @@ namespace SAST.Engine.CSharp.Scanners
     internal class CollectionSizeOrArrayLengthScanner : IScanner
     {
         private SemanticModel _model;
-        private static readonly string ICollection_Type = "System.Collections.Generic.ICollection<T>";
-        private static readonly string Enumerable_Type = "System.Linq.Enumerable";
-        private static readonly string Array_Type = "System.Array";
+
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -75,16 +73,16 @@ namespace SAST.Engine.CSharp.Scanners
             && methodSymbol != null
             && methodSymbol.Name == nameof(Enumerable.Count)
             && (HasExactlyNParameters(methodSymbol, 1) || HasExactlyNParameters(methodSymbol, 2))
-            && methodSymbol.ContainingType.ToString() == Enumerable_Type;
+            && methodSymbol.ContainingType.ToString() == Constants.KnownType.System_Linq_Enumerable;
 
         private static bool IsArrayLengthProperty(ISymbol symbol) =>
             symbol is IPropertySymbol propertySymbol
-            && propertySymbol.ContainingType.ToString() == Array_Type
+            && propertySymbol.ContainingType.ToString() == Constants.KnownType.System_Array
             && (propertySymbol.Name == nameof(Array.Length) || propertySymbol.Name == "LongLength");
 
         private static bool IsCollectionProperty(ISymbol symbol) =>
             symbol is IPropertySymbol propertySymbol
-            && Utils.ImplementsFrom(propertySymbol.ContainingType, ICollection_Type)
+            && Utils.ImplementsFrom(propertySymbol.ContainingType,Constants.KnownType.System_Collections_Generic_ICollection_T)
             && propertySymbol.Name == nameof(ICollection<object>.Count);
 
         private static bool HasExactlyNParameters(IMethodSymbol methodSymbol, int parametersCount) =>

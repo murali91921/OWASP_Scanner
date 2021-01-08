@@ -12,26 +12,37 @@ namespace SAST.Engine.CSharp
     /// <summary>
     /// This class will implement Utilities.
     /// </summary>
-    internal static class Utils
+    public static class Utils
     {
         internal static readonly string[] AvailableExtensions = { ".cs", ".cshtml", ".html", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
         internal static readonly string[] SourceCodeFileExtensions = { ".cs" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".html", ".aspx", ".ascx" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
-        internal static readonly Dictionary<Enums.ScannerSubType, string> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerSubType, string>{
-            {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
-            {Enums.ScannerSubType.ReflectedXSS, "Reflected XSS"},
-            {Enums.ScannerSubType.DomXSS, "Dom based XSS"},
-            {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
-            {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
-            {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
-            {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"},
-            {Enums.ScannerSubType.SecureFlag, "Secure flag"},
-            {Enums.ScannerSubType.HttpOnlyFlag, "HttpOnly flag"},
-            {Enums.ScannerSubType.None, string.Empty}
+        internal static readonly Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>>{
+            { Enums.ScannerType.XSS,
+                new Dictionary<Enums.ScannerSubType,string> {
+                    {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
+                    {Enums.ScannerSubType.ReflectedXSS, "Reflected XSS"},
+                    {Enums.ScannerSubType.DomXSS, "Dom based XSS"}
+                }
+            },
+            { Enums.ScannerType.FormsAuthentication,
+                new Dictionary<Enums.ScannerSubType,string> {
+                    {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
+                    {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
+                    {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
+                    {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"}
+                }
+            },
+            { Enums.ScannerType.InsecureCookie,
+                new Dictionary<Enums.ScannerSubType,string> {
+                    {Enums.ScannerSubType.SecureFlag, "Secure flag"},
+                    {Enums.ScannerSubType.HttpOnlyFlag, "HttpOnly flag"}
+                }
+            },
         };
-        internal static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
+        public static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
             {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
             {Enums.ScannerType.EmptyCatch, "Empty catch block"},
             {Enums.ScannerType.EmptyTry, "Empty try block"},
@@ -360,7 +371,9 @@ namespace SAST.Engine.CSharp
                     {
                         if (location.IsInSource)
                         {
-                            SemanticModel invocationModel = model.Compilation.GetSemanticModel(location.SourceTree);
+                            SemanticModel invocationModel = model.Compilation.GetSemanticModel(location.SourceTree, true);
+                            if (invocationModel == null)
+                                continue;
                             MethodDeclarationSyntax methodDeclaration = location.SourceTree.GetRoot().FindNode(location.SourceSpan) as MethodDeclarationSyntax;
                             if (methodDeclaration.Body != null)
                             {

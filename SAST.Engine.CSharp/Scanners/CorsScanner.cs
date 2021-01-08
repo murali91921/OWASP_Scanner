@@ -31,7 +31,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (symbol == null || symbol is IErrorTypeSymbol)
                     continue;
 
-                if (symbol.ContainingType.ToString() == "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder"
+                if (symbol.ContainingType.ToString() == Constants.KnownType.Microsoft_AspNetCore_Cors_Infrastructure_CorsPolicyBuilder
                     && symbol.Name.ToString() == "AllowAnyOrigin")
                     syntaxNodes.Add(item);
             }

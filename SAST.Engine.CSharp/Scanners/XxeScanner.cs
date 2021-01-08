@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Mapper;
 using System;
 using System.Collections.Generic;
@@ -43,12 +44,13 @@ namespace SAST.Engine.CSharp.Scanners
                     IMethodSymbol invocationSymbol = model.GetSymbol(invocation) as IMethodSymbol;
                     if (invocationSymbol == null)
                         continue;
-                    if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlTextReader.Read")
+                    if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == KnownMethod.System_Xml_XmlTextReader_Read)
                     {
                         if (IsVulnerableXmlTextReader(invocation))
                             vulnerableNodes.Add(invocation);
+                        continue;
                     }
-                    else if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == "System.Xml.XmlReader.Create")
+                    if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == KnownMethod.System_Xml_XmlReader_Create)
                     {
                         if (invocation.ArgumentList.Arguments.Count() < 1)
                             continue;
@@ -112,7 +114,7 @@ namespace SAST.Engine.CSharp.Scanners
             foreach (var argument in invocation.ArgumentList.Arguments)
             {
                 ITypeSymbol argumentSymbol = model.GetTypeInfo(argument.Expression).Type;
-                if (argumentSymbol == null || argumentSymbol.ToString() != "System.Xml.XmlReaderSettings")
+                if (argumentSymbol == null || argumentSymbol.ToString() != KnownType.System_Xml_XmlReaderSettings)
                     continue;
                 vulnerable = IsVulnerableSettings(argument.Expression);
             }
@@ -170,11 +172,11 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(assignmentExpression.Left);
                 if (symbol == null)
                     return false;
-                else if (symbol.ToString() == "System.Xml.XmlReaderSettings")
+                else if (symbol.ToString() == KnownType.System_Xml_XmlReaderSettings)
                     return IsVulnerableSettings(assignmentExpression.Right);
-                else if (symbol.ToString() == "System.Xml.XmlReaderSettings.DtdProcessing")
+                else if (symbol.ToString() == KnownType.System_Xml_XmlReaderSettings_DtdProcessing)
                     return (assignmentExpression.Right as MemberAccessExpressionSyntax).Name.ToString() == "Parse";
-                else if (symbol.ToString() == "System.Xml.XmlReaderSettings.ProhibitDtd" && (assignmentExpression.Right is LiteralExpressionSyntax))
+                else if (symbol.ToString() == KnownType.System_Xml_XmlReaderSettings_ProhibitDtd && (assignmentExpression.Right is LiteralExpressionSyntax))
                     return assignmentExpression.Right.Kind() == SyntaxKind.FalseLiteralExpression;
             }
             else if (settingNode is VariableDeclaratorSyntax variableDeclarator && variableDeclarator.Initializer != null)

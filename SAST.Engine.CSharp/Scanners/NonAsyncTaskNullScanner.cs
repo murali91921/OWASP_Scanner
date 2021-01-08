@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using SAST.Engine.CSharp.Contract;
+using SAST.Engine.CSharp.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,8 @@ namespace SAST.Engine.CSharp.Scanners
     internal class NonAsyncTaskNullScanner : IScanner
     {
         private static readonly string[] TaskTypes = {
-            "System.Threading.Tasks.Task",
-            "System.Threading.Tasks.Task<TResult>"
+            KnownType.System_Threading_Tasks_Task,
+            KnownType.System_Threading_Tasks_Task_TResult
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
@@ -52,7 +53,7 @@ namespace SAST.Engine.CSharp.Scanners
                 && Utils.DerivesFromAny(namedTypeSymbol.ConstructedFrom, TaskTypes);
 
             ITypeSymbol GetReturnType() =>
-                methodSymbol != null ? methodSymbol.ReturnType : symbol.GetSymbolType();
+                methodSymbol != null ? methodSymbol.ReturnType : symbol.GetTypeSymbol();
         }
 
         private static bool IsSafeTaskReturnType(IMethodSymbol methodSymbol) => methodSymbol != null && methodSymbol.IsAsync;
