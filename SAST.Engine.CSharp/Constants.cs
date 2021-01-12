@@ -156,6 +156,7 @@ namespace SAST.Engine.CSharp.Constants
             System_Security_Cryptography_TripleDESCryptoServiceProvider = "System.Security.Cryptography.TripleDESCryptoServiceProvider",
             System_SerializableAttribute = "System.SerializableAttribute",
             System_StackOverflowException = "System.StackOverflowException",
+            System_String= "System.String",
             System_Threading_Monitor = "System.Threading.Monitor",
             System_Threading_Tasks_Task = "System.Threading.Tasks.Task",
             System_Threading_Tasks_Task_TResult = "System.Threading.Tasks.Task<TResult>",

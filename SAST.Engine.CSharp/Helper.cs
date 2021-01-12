@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Text;
 
 namespace SAST.Engine.CSharp
 {
@@ -119,6 +120,9 @@ namespace SAST.Engine.CSharp
         public static string JoinStr<T>(this IEnumerable<T> enumerable, string separator, Func<T, string> selector) =>
             string.Join(separator, enumerable.Select(x => selector(x)));
 
+        public static string JoinStr<T>(this IEnumerable<T> enumerable, string separator) =>
+            string.Join(separator, enumerable.Select(x => x));
+
         public static SyntaxNode GetFirstNonParenthesizedParent(this SyntaxNode node) =>
             node.GetSelfOrTopParenthesizedExpression().Parent;
 
@@ -198,9 +202,58 @@ namespace SAST.Engine.CSharp
             symbol.ReturnsVoid &&
             symbol.DeclaredAccessibility == Accessibility.Public;
 
-        private static readonly string[] Disposable_Type = { "System.IDisposable", "System.IAsyncDisposable" };
+        private static readonly string[] Disposable_Type = { Constants.KnownType.System_IDisposable, Constants.KnownType.System_IAsyncDisposable };
 
         internal static bool IsAnyKind(this SyntaxNode syntaxNode, SyntaxKind[] syntaxKinds) =>
             syntaxNode != null && syntaxKinds.Contains((SyntaxKind)syntaxNode.RawKind);
+
+        internal static string GetStringValue(this SyntaxNode node) =>
+            node != null &&
+            node.IsKind(SyntaxKind.StringLiteralExpression) &&
+            node is LiteralExpressionSyntax literal ? literal.Token.ValueText : null;
+
+        internal static IEnumerable<string> SplitToWords(this string name)
+        {
+            bool IsFollowedByLower(int i) => i + 1 < name.Length && char.IsLower(name[i + 1]);
+            if (name == null)
+                yield break;
+            var currentWord = new StringBuilder();
+            var hasLower = false;
+
+            for (var i = 0; i < name.Length; i++)
+            {
+                var c = name[i];
+                if (!char.IsLetter(c))
+                {
+                    if (currentWord.Length > 0)
+                    {
+                        yield return currentWord.ToString();
+                        currentWord.Clear();
+                        hasLower = false;
+                    }
+                    continue;
+                }
+
+                if (char.IsUpper(c) && currentWord.Length > 0 && (hasLower || IsFollowedByLower(i)))
+                {
+                    yield return currentWord.ToString();
+                    currentWord.Clear();
+                    hasLower = false;
+                }
+                currentWord.Append(char.ToUpperInvariant(c));
+                hasLower = hasLower || char.IsLower(c);
+            }
+            if (currentWord.Length > 0)
+                yield return currentWord.ToString();
+        }
+
+        internal static SyntaxNode GetTopMostContainingMethod(this SyntaxNode node) =>
+            node.AncestorsAndSelf().LastOrDefault(ancestor => ancestor is BaseMethodDeclarationSyntax || ancestor is PropertyDeclarationSyntax);
+
+        public static bool IsMethodInvocation(this InvocationExpressionSyntax invocation, string type, string methodName, SemanticModel semanticModel) =>
+            invocation.Expression.GetName() == methodName &&
+            semanticModel.GetSymbol(invocation) is IMethodSymbol methodSymbol &&
+            methodSymbol != null &&
+            (methodSymbol.ContainingType.ToDisplayString() == type || methodSymbol.ContainingType.OriginalDefinition.ToDisplayString() == type);
     }
 }

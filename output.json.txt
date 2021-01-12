@@ -1,0 +1,389 @@
+[
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\User.cs",
+        "LineNumber": "17,27",
+        "CodeSnippet": "TokenSecret = \"f449a71cff1d56a122c84fa478c16af9075e5b4b8527787b56580773242e40ce\"",
+        "Type": "HardCode Password",
+        "SubType": "None",
+        "Description": "Hard coded credentials",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\PasswordResetsController.cs",
+        "LineNumber": "79,20",
+        "CodeSnippet": "MD5.Create()",
+        "Type": "WeakHashingConfig",
+        "SubType": "None",
+        "Description": "Weak hashing configuration",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\User.cs",
+        "LineNumber": "73,20",
+        "CodeSnippet": "MD5.Create()",
+        "Type": "WeakHashingConfig",
+        "SubType": "None",
+        "Description": "Weak hashing configuration",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\AuthorizationsController.cs",
+        "LineNumber": "23,28",
+        "CodeSnippet": "Post",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ImportsController.cs",
+        "LineNumber": "26,28",
+        "CodeSnippet": "Post",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\PasswordResetsController.cs",
+        "LineNumber": "23,28",
+        "CodeSnippet": "Put",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\PasswordResetsController.cs",
+        "LineNumber": "63,28",
+        "CodeSnippet": "Post",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "32,30",
+        "CodeSnippet": "Post",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "87,30",
+        "CodeSnippet": "Import",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\RegistrationsController.cs",
+        "LineNumber": "22,28",
+        "CodeSnippet": "Post",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\UsersController.cs",
+        "LineNumber": "33,28",
+        "CodeSnippet": "Put",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\UsersController.cs",
+        "LineNumber": "57,28",
+        "CodeSnippet": "Delete",
+        "Type": "Csrf",
+        "SubType": "None",
+        "Description": "Cross site request forgery attack",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "74,49",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "75,54",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "76,54",
+        "CodeSnippet": "$\"SELECT * From Products WHERE name LIKE '%{keyword}%' OR description LIKE '%{keyword}%'\"",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "77,59",
+        "CodeSnippet": "$\"SELECT * From Products WHERE name LIKE '%{keyword}%' OR description LIKE '%{keyword}%'\"",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "78,45",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "79,50",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "80,54",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "81,58",
+        "CodeSnippet": "query",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "82,67",
+        "CodeSnippet": "$\"SELECT * From Products WHERE name LIKE '%{keyword}%' OR description LIKE '%{keyword}%'\"",
+        "Type": "SqlInjection",
+        "SubType": "None",
+        "Description": "Sql injection",
+        "Severity": "Critical"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\AuthorizationsController.cs",
+        "LineNumber": "37,10",
+        "CodeSnippet": "return Ok(response);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\PasswordResetsController.cs",
+        "LineNumber": "59,10",
+        "CodeSnippet": "return Ok(\"Password updated successfully for userId: \" + existingUser.ID.ToString());",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\PasswordResetsController.cs",
+        "LineNumber": "88,10",
+        "CodeSnippet": "return Ok(\"An email with password reset link has been sent.\");",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "52,13",
+        "CodeSnippet": "return Ok(product);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "83,13",
+        "CodeSnippet": "return Ok(products);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\RegistrationsController.cs",
+        "LineNumber": "48,10",
+        "CodeSnippet": "return Ok(user);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\UsersController.cs",
+        "LineNumber": "52,10",
+        "CodeSnippet": "return Ok(existingUser);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\UsersController.cs",
+        "LineNumber": "68,10",
+        "CodeSnippet": "return Ok(user);",
+        "Type": "XSS",
+        "SubType": "ReflectedXSS",
+        "Description": "Cross Site Scripting attack:Reflected XSS",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ImportsController.cs",
+        "LineNumber": "43,24",
+        "CodeSnippet": "new XmlSerializer(Type.GetType(typeName))",
+        "Type": "InsecureDeserialization",
+        "SubType": "None",
+        "Description": "Insecure Deserialization",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ImportsController.cs",
+        "LineNumber": "46,26",
+        "CodeSnippet": "xser.Deserialize(reader)",
+        "Type": "InsecureDeserialization",
+        "SubType": "None",
+        "Description": "Insecure Deserialization",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "59,40",
+        "CodeSnippet": "new XmlSerializer(typeof(Product[]), root)",
+        "Type": "InsecureDeserialization",
+        "SubType": "None",
+        "Description": "Insecure Deserialization",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "91,40",
+        "CodeSnippet": "new XmlSerializer(typeof(Product[]), root)",
+        "Type": "InsecureDeserialization",
+        "SubType": "None",
+        "Description": "Insecure Deserialization",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ProductsController.cs",
+        "LineNumber": "93,39",
+        "CodeSnippet": "serializer.Deserialize(reader)",
+        "Type": "InsecureDeserialization",
+        "SubType": "None",
+        "Description": "Insecure Deserialization",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Startup.cs",
+        "LineNumber": "37,32",
+        "CodeSnippet": "builder.AllowAnyOrigin()",
+        "Type": "CorsAllowAnyOrigin",
+        "SubType": "None",
+        "Description": "Cors Allow Origin Wildcard",
+        "Severity": "Medium"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Controllers\\ImportsController.cs",
+        "LineNumber": "43,42",
+        "CodeSnippet": "Type.GetType(typeName)",
+        "Type": "SerializationType",
+        "SubType": "None",
+        "Description": "Insecure Deserialization type",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Startup.cs",
+        "LineNumber": "20,18",
+        "CodeSnippet": "Startup",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\AuthorizationRequest.cs",
+        "LineNumber": "6,17",
+        "CodeSnippet": "AuthorizationRequest",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\PasswordResetRequest.cs",
+        "LineNumber": "6,17",
+        "CodeSnippet": "PasswordResetRequest",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\Product.cs",
+        "LineNumber": "6,17",
+        "CodeSnippet": "Product",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\RegistrationRequest.cs",
+        "LineNumber": "6,17",
+        "CodeSnippet": "RegistrationRequest",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\User.cs",
+        "LineNumber": "12,17",
+        "CodeSnippet": "User",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    },
+    {
+        "FilePath": "F:\\Extract_files\\Dvcsharp\\Dvcsharp\\Models\\UserUpdateRequest.cs",
+        "LineNumber": "6,17",
+        "CodeSnippet": "UserUpdateRequest",
+        "Type": "IDisposableImplement",
+        "SubType": "None",
+        "Description": "Implement IDisposable interface",
+        "Severity": "High"
+    }
+]

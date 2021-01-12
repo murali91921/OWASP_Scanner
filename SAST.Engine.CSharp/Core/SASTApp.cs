@@ -342,7 +342,7 @@ namespace SAST.Engine.CSharp.Core
                             var syntaxNode = document.GetSyntaxRootAsync().Result;
                             var model = document.GetSemanticModelAsync().Result;
                             vulnerabilities.AddRange(scanner.FindVulnerabilties(syntaxNode, document.FilePath, model, workspace.CurrentSolution));
-                            Console.WriteLine(scannerType);
+                            //Console.WriteLine(scannerType);
                         }
                     else
                         break;

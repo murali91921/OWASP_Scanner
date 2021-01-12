@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Enums;
 using SAST.Engine.CSharp.Mapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -18,17 +19,365 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class CredsFinder : IScanner
     {
-        static readonly string[] SecretKeywords = new string[] {
-            @"\w*(password|passwd|pwd|pass)\w*",
-            @"\w*secret\w*",
-            @"\w*key\w*",
-            @".*(api|gitlab|github|slack|google|client)_?(key|token|secret)$"};
+        private static readonly string MessageFormatCredential = @"""{0}"" detected here, make sure this is not a hard-coded credential.";
+        private static readonly string MessageUriUserInfo = "Review this hard-coded URI, which contain credentials.";
+        private static readonly string DefaultCredentialWords = "password, passwd, pwd, passphrase";
+        private static readonly Regex passwordValuePattern;
+        private static readonly string Rfc3986_Unreserved = "-._~";
+        private static readonly string Rfc3986_Pct = "%";
+        private static readonly string Rfc3986_SubDelims = "!$&'()*+,;=";
+        private static readonly string UriPasswordSpecialCharacters = Rfc3986_Unreserved + Rfc3986_Pct + Rfc3986_SubDelims;
+        private static readonly char CredentialSeparator = ';';
+        private static readonly string uriUserInfoPart = @"[\w\d" + Regex.Escape(UriPasswordSpecialCharacters) + @"]+";
+        private static readonly Regex uriUserInfoPattern = new Regex(@"\w+:\/\/(?<Login>" + uriUserInfoPart + "):(?<Password>" + uriUserInfoPart + ")@", RegexOptions.Compiled);
+        private static readonly Regex validCredentialPattern = new Regex(@"^\?|:\w+|\{\d+[^}]*\}|""|'$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static IEnumerable<string> splitCredentialWords;
+
+        static CredsFinder()
+        {
+            splitCredentialWords = DefaultCredentialWords.ToUpperInvariant()
+                   .Split(',')
+                   .Select(x => x.Trim())
+                   .Where(x => x.Length != 0)
+                   .ToList();
+            passwordValuePattern = new Regex(string.Format(@"\b(?<credential>{0})\s*[:=]\s*(?<suffix>.+)$",
+                    string.Join("|", splitCredentialWords.Select(Regex.Escape))), RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        }
+
+        public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
+        {
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            FindVariableDeclarators(syntaxNode, model, ref vulnerabilities);
+            FindAssignments(syntaxNode, model, ref vulnerabilities);
+            FindStringLiterals(syntaxNode, model, ref vulnerabilities);
+            FindAddExpressions(syntaxNode, model, ref vulnerabilities);
+            FindInterpolatedStrings(syntaxNode, model, ref vulnerabilities);
+            //FindInvocations(syntaxNode, model, ref vulnerabilities);
+            if (vulnerabilities.Any())
+                vulnerabilities.ForEach(vul => vul.FilePath = filePath);
+            return vulnerabilities;
+        }
+
+        private void FindVariableDeclarators(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        {
+            var variableDeclarators = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>();
+            foreach (var declarator in variableDeclarators)
+            {
+                if (!IsStringType(declarator, model))
+                    continue;
+                string variableValue = declarator.Initializer?.Value.GetStringValue(); ;
+                if (string.IsNullOrWhiteSpace(variableValue))
+                    continue;
+                var bannedWords = FindCredentialWords(declarator.Identifier.ValueText, variableValue);
+                if (bannedWords.Any())
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = declarator.ToString(),
+                        LineNumber = Map.GetLineNumber(declarator),
+                        Type = ScannerType.HardcodePassword,
+                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+                    });
+                }
+                else if (ContainsUriUserInfo(variableValue))
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = declarator.ToString(),
+                        LineNumber = Map.GetLineNumber(declarator),
+                        Type = ScannerType.HardcodePassword,
+                        Description = MessageUriUserInfo
+                    });
+                }
+            }
+        }
+
+        private void FindAssignments(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        {
+            var assignments = syntaxNode.DescendantNodes().OfType<AssignmentExpressionSyntax>();
+            foreach (var assignment in assignments)
+            {
+                if (!IsStringType(assignment, model))
+                    continue;
+                string variableValue = assignment.Right.GetStringValue();
+                if (string.IsNullOrWhiteSpace(variableValue))
+                    continue;
+                var bannedWords = FindCredentialWords((assignment.Left as IdentifierNameSyntax)?.Identifier.ValueText, variableValue);
+                if (bannedWords.Any())
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = assignment.ToString(),
+                        LineNumber = Map.GetLineNumber(assignment),
+                        Type = ScannerType.HardcodePassword,
+                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+                    });
+                }
+                else if (ContainsUriUserInfo(variableValue))
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = assignment.ToString(),
+                        LineNumber = Map.GetLineNumber(assignment),
+                        Type = ScannerType.HardcodePassword,
+                        Description = MessageUriUserInfo
+                    });
+                }
+            }
+        }
+
+        private void FindStringLiterals(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        {
+            var literals = syntaxNode.DescendantNodes().OfType<LiteralExpressionSyntax>().Where(obj => obj.IsKind(SyntaxKind.StringLiteralExpression));
+            foreach (var literal in literals)
+            {
+                if (!ShouldConsider(literal, model))
+                    continue;
+                string variableValue = literal.GetStringValue();
+                if (string.IsNullOrWhiteSpace(variableValue))
+                    continue;
+                var bannedWords = FindCredentialWords(null, variableValue);
+                if (bannedWords.Any())
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = literal.ToString(),
+                        LineNumber = Map.GetLineNumber(literal),
+                        Type = ScannerType.HardcodePassword,
+                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+                    });
+                }
+                else if (ContainsUriUserInfo(variableValue))
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = literal.ToString(),
+                        LineNumber = Map.GetLineNumber(literal),
+                        Type = ScannerType.HardcodePassword,
+                        Description = MessageUriUserInfo
+                    });
+                }
+            }
+        }
+
+        private void FindAddExpressions(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        {
+            var binaryExpressions = syntaxNode.DescendantNodes().OfType<BinaryExpressionSyntax>().Where(obj => obj.IsKind(SyntaxKind.AddExpression));
+            foreach (var binaryExpression in binaryExpressions)
+            {
+                var left = binaryExpression.Left is BinaryExpressionSyntax precedingAdd && precedingAdd.IsKind(SyntaxKind.AddExpression) ? precedingAdd.Right : binaryExpression.Left;
+                var leftConst = model.GetConstantValue(left);
+                if (!leftConst.HasValue || !(leftConst.Value is string leftValue))
+                    continue;
+                var rightConst = model.GetConstantValue(binaryExpression.Right);
+                if (!rightConst.HasValue || !(rightConst.Value is string rightValue))
+                    continue;
+
+                string variableValue = leftValue + rightValue;
+
+                if (string.IsNullOrWhiteSpace(variableValue))
+                    continue;
+
+                var bannedWords = FindCredentialWords(null, variableValue);
+                if (bannedWords.Any())
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = binaryExpression.ToString(),
+                        LineNumber = Map.GetLineNumber(binaryExpression),
+                        Type = ScannerType.HardcodePassword,
+                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+                    });
+                }
+                else if (ContainsUriUserInfo(variableValue))
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = binaryExpression.ToString(),
+                        LineNumber = Map.GetLineNumber(binaryExpression),
+                        Type = ScannerType.HardcodePassword,
+                        Description = MessageUriUserInfo
+                    });
+                }
+            }
+        }
+
+        private void FindInterpolatedStrings(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        {
+
+            var interpolatedStrings = syntaxNode.DescendantNodes().OfType<InterpolatedStringExpressionSyntax>();
+            foreach (var interpolatedString in interpolatedStrings)
+            {
+                string variableValue = interpolatedString.Contents.JoinStr(null, x => x switch
+                {
+                    InterpolationSyntax interpolation => model.GetConstantValue(interpolation.Expression) is { } optional
+                        && optional.HasValue && optional.Value is string value ? value : null,
+                    InterpolatedStringTextSyntax text => text.TextToken.ToString(),
+                    _ => null
+                } ?? CredentialSeparator.ToString());
+
+                if (string.IsNullOrWhiteSpace(variableValue))
+                    continue;
+
+                var bannedWords = FindCredentialWords(null, variableValue);
+                if (bannedWords.Any())
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = interpolatedString.ToString(),
+                        LineNumber = Map.GetLineNumber(interpolatedString),
+                        Type = ScannerType.HardcodePassword,
+                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+                    });
+                }
+                else if (ContainsUriUserInfo(variableValue))
+                {
+                    vulnerabilities.Add(new VulnerabilityDetail()
+                    {
+                        CodeSnippet = interpolatedString.ToString(),
+                        LineNumber = Map.GetLineNumber(interpolatedString),
+                        Type = ScannerType.HardcodePassword,
+                        Description = MessageUriUserInfo
+                    });
+                }
+            }
+        }
+
+        //private void FindInvocations(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
+        //{
+        //    var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
+        //    foreach (var invocation in invocations)
+        //    {
+        //        string variableValue;
+
+
+        //        var allArgs = invocation.ArgumentList.Arguments.Select(x
+        //            => model.GetConstantValue(x.Expression) is { } optional && optional.Value is string constValue ? constValue : CredentialSeparator.ToString());
+        //        if (!allArgs.Any())
+        //            continue;
+        //        try
+        //        {
+        //            variableValue = string.Format(allArgs.First(), allArgs.Skip(1).ToArray());
+        //        }
+        //        catch (FormatException)
+        //        {
+        //            variableValue = null;
+        //        }
+        //        if (string.IsNullOrWhiteSpace(variableValue))
+        //            continue;
+
+        //        var bannedWords = FindCredentialWords(null, variableValue);
+        //        if (bannedWords.Any())
+        //        {
+        //            vulnerabilities.Add(new VulnerabilityDetail()
+        //            {
+        //                CodeSnippet = invocation.ToString(),
+        //                LineNumber = Map.GetLineNumber(invocation),
+        //                Type = ScannerType.HardcodePassword,
+        //                Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
+        //            });
+        //        }
+        //        else if (ContainsUriUserInfo(variableValue))
+        //        {
+        //            vulnerabilities.Add(new VulnerabilityDetail()
+        //            {
+        //                CodeSnippet = invocation.ToString(),
+        //                LineNumber = Map.GetLineNumber(invocation),
+        //                Type = ScannerType.HardcodePassword,
+        //                Description = MessageUriUserInfo
+        //            });
+        //        }
+        //    }
+        //}
+
+        private static bool IsStringType(VariableDeclaratorSyntax declarator, SemanticModel model) =>
+            declarator.Initializer?.Value is LiteralExpressionSyntax literalExpression
+            && literalExpression.IsKind(SyntaxKind.StringLiteralExpression)
+            && model.GetDeclaredSymbol(declarator) is ISymbol symbol
+            && symbol != null
+            && symbol.GetTypeSymbol() is ITypeSymbol typeSymbol
+            && typeSymbol != null
+            && typeSymbol.SpecialType == SpecialType.System_String;
+
+        private static bool IsStringType(AssignmentExpressionSyntax assignment, SemanticModel model) =>
+        assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
+        && assignment.Right.IsKind(SyntaxKind.StringLiteralExpression)
+        && model.GetTypeSymbol(assignment.Left) is ITypeSymbol typesymbol
+        && typesymbol != null
+        && typesymbol.SpecialType == SpecialType.System_String;
+
+        private static bool ShouldConsider(LiteralExpressionSyntax literal, SemanticModel semanticModel) =>
+            literal.IsKind(SyntaxKind.StringLiteralExpression) &&
+            ShouldConsider(literal.GetTopMostContainingMethod(), literal, semanticModel);
+
+        private static bool ShouldConsider(SyntaxNode method, SyntaxNode current, SemanticModel semanticModel)
+        {
+            while (current != null && current != method)
+            {
+                switch (current.Kind())
+                {
+                    case SyntaxKind.VariableDeclarator:
+                    case SyntaxKind.SimpleAssignmentExpression:
+                    case SyntaxKind.InvocationExpression:
+                    case SyntaxKind.AddExpression:
+                        return false;
+                    case SyntaxKind.Argument:
+                        return !(current.Parent.Parent is InvocationExpressionSyntax invocation && invocation.IsMethodInvocation(Constants.KnownType.System_String, "Format", semanticModel));
+                    default:
+                        current = current.Parent;
+                        break;
+                }
+            }
+            return true;
+        }
+
+        private IEnumerable<string> FindCredentialWords(string variableName, string variableValue)
+        {
+            var credentialWordsFound = variableName
+                .SplitToWords()
+                .Intersect(splitCredentialWords)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (credentialWordsFound.Any(x => variableValue.IndexOf(x, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                return Enumerable.Empty<string>();
+
+            var match = passwordValuePattern.Match(variableValue);
+            if (match.Success)
+            {
+                if (!IsValidCredential(match.Groups["suffix"].Value))
+                    credentialWordsFound.Add(match.Groups["credential"].Value);
+            }
+            else if (secretPatterns.Any(pattern => Regex.IsMatch(variableValue, pattern.Value)))
+                credentialWordsFound.Add(variableValue);
+            return credentialWordsFound.Select(x => x.ToLowerInvariant());
+        }
+
+
+        private bool ContainsUriUserInfo(string variableValue)
+        {
+            var match = uriUserInfoPattern.Match(variableValue);
+            return match.Success
+                && match.Groups["Password"].Value is { } password
+                && !string.Equals(match.Groups["Login"].Value, password, System.StringComparison.OrdinalIgnoreCase)
+                && password != CredentialSeparator.ToString()
+                && !validCredentialPattern.IsMatch(password);
+        }
+
+        private bool IsValidCredential(string suffix)
+        {
+            var candidateCredential = suffix.Split(CredentialSeparator).First().Trim();
+            return string.IsNullOrWhiteSpace(candidateCredential) || validCredentialPattern.IsMatch(candidateCredential);
+        }
+
         static readonly Dictionary<string, string> secretPatterns = new Dictionary<string, string>{
             {"Slack Token 32","(xox[p|b|o|a]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})"},
             {"RSA private key","-----BEGIN RSA PRIVATE KEY-----"},
             {"SSH (DSA) private key","-----BEGIN DSA PRIVATE KEY-----"},
             {"SSH (EC) private key","-----BEGIN EC PRIVATE KEY-----"},
             {"PGP private key block","-----BEGIN PGP PRIVATE KEY BLOCK-----"},
+            {"OPENSSH private key","-----BEGIN OPENSSH PRIVATE KEY-----" },
+            {"Private key","-----BEGIN PRIVATE KEY-----"},
+            {"public","-----BEGIN PUBLIC KEY-----"},
             {"Amazon AWS Access Key ID","AKIA[0-9A-Z]{16}"},
             {"Facebook Access Token","EAACEdEose0cBA[0-9A-Za-z]+"},
             {"Facebook OAuth","[f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\"][0-9a-f]{32}['|\"]"},
@@ -69,164 +418,5 @@ namespace SAST.Engine.CSharp.Scanners
             {"Twitter Oauth","[t|T][w|W][i|I][t|T][t|T][e|E][r|R].{0,30}['\"\\s][0-9a-zA-Z]{35,44}['\"\\s]"},
             {"Twitter Secret Key","(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}"},
         };
-
-        List<SyntaxNode> secretStrings = new List<SyntaxNode>();
-        List<SyntaxTrivia> secretComments = new List<SyntaxTrivia>();
-        SemanticModel model;
-        Solution solution;
-        SyntaxNode syntaxNode;
-
-        /// <summary>
-        /// Finding the Hardcoded strings in <paramref name="variableDeclarator"/>
-        /// </summary>
-        /// <param name="variableDeclarator"></param>
-        private void FindHardcodeStringNodes(VariableDeclaratorSyntax variableDeclarator)
-        {
-            // Finding sensitive variable names
-            // Variable name should matches with keywords, and variable value is not empty,and expression should have Literal("").
-            ISymbol symbol = model.GetDeclaredSymbol(variableDeclarator);
-            if (symbol == null)
-                return;
-
-            //VariableDeclarationSyntax declarationSyntax = variableDeclarator.AncestorsAndSelf().OfType<VariableDeclarationSyntax>().FirstOrDefault();
-            //if (declarationSyntax == null)
-            //    return;
-            ITypeSymbol typeSymbol = symbol.GetTypeSymbol();
-            if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
-                return;
-
-            if (variableDeclarator.Initializer != null && variableDeclarator.Initializer is EqualsValueClauseSyntax equalsValue
-            && equalsValue.Value is LiteralExpressionSyntax literalExpression)
-            {
-                if (!string.IsNullOrEmpty(literalExpression.ToString().Trim('"', ' ')))
-                    if (IsSecretVariable(symbol.Name) || IsSecretValue(literalExpression.ToString()))
-                        secretStrings.Add(variableDeclarator);
-            }
-            var references = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-            foreach (var reference in references)
-            {
-                foreach (var referenceLocation in reference.Locations)
-                {
-                    string stringValue = string.Empty;
-                    var presentStatement = referenceLocation.Location.SourceTree.GetRoot().FindNode(referenceLocation.Location.SourceSpan).Parent;
-                    if (presentStatement is AssignmentExpressionSyntax assignment && assignment.Right is LiteralExpressionSyntax literal)
-                    {
-                        stringValue = literal.ToString();
-                        if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                            if (IsSecretVariable(symbol.Name) || IsSecretValue(stringValue.ToString()))
-                                secretStrings.Add(presentStatement);
-                    }
-                    else if (presentStatement is BinaryExpressionSyntax binaryExpression && !presentStatement.Parent.IsKind(SyntaxKind.Argument))
-                    {
-                        if (((binaryExpression.Right is LiteralExpressionSyntax && binaryExpression.Left is IdentifierNameSyntax)
-                        || (binaryExpression.Left is LiteralExpressionSyntax && binaryExpression.Right is IdentifierNameSyntax)))
-                        {
-                            stringValue = (binaryExpression.Right is LiteralExpressionSyntax) ? binaryExpression.Right.ToString() : binaryExpression.Left.ToString();
-                            if (!string.IsNullOrEmpty(stringValue.Trim('"', ' ')))
-                                if (IsSecretVariable(symbol.Name))
-                                    secretStrings.Add(presentStatement);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method will check <paramref name="variable"/> is matches with patterns
-        /// </summary>
-        /// <param name="variable"></param>
-        /// <returns></returns>
-        private static bool IsSecretVariable(string variable)
-        {
-            foreach (var SecretKeywordItem in SecretKeywords)
-                if (Regex.IsMatch(variable, SecretKeywordItem, RegexOptions.IgnoreCase))
-                    return true;
-            return false;
-        }
-
-        /// <summary>
-        /// This method will check <paramref name="stringValue"/> is matches with Patterns
-        /// </summary>
-        /// <param name="stringValue"></param>
-        /// <returns></returns>
-        private static bool IsSecretValue(string stringValue)
-        {
-            foreach (var pattern in secretPatterns)
-                if (Regex.IsMatch(stringValue, pattern.Value))
-                    return true;
-            return false;
-        }
-
-        /// <summary>
-        /// This method will returns text in <paramref name="commentNode"/>
-        /// </summary>
-        /// <param name="commentNode"></param>
-        /// <returns></returns>
-        private string FindCommentText(SyntaxTrivia commentNode)
-        {
-            string commentText = string.Empty;
-            switch (commentNode.Kind())
-            {
-                case SyntaxKind.SingleLineCommentTrivia:
-                    commentText = commentNode.ToString().TrimStart('/');
-                    break;
-                case SyntaxKind.MultiLineCommentTrivia:
-                    commentText = commentNode.ToString();
-                    commentText = commentText.Substring(2, commentText.Length - 4);
-                    break;
-            }
-            return commentText;
-        }
-
-        /// <summary>
-        /// This method will return Comment Nodes in <paramref name="rootNode"/>
-        /// </summary>
-        /// <param name="rootNode"></param>
-        /// <returns>List of Comment Trivia</returns>
-        private List<SyntaxTrivia> FindComments(SyntaxNode rootNode)
-        {
-            List<SyntaxTrivia> hardcodeComments = new List<SyntaxTrivia>();
-            var commentNodes = from commentNode in rootNode.DescendantTrivia()
-                               where commentNode.IsKind(SyntaxKind.MultiLineCommentTrivia) || commentNode.IsKind(SyntaxKind.SingleLineCommentTrivia)
-                               select commentNode;
-            foreach (var commentNode in commentNodes)
-            {
-                string commentText = FindCommentText(commentNode);
-                if (!commentText.Trim().Equals(string.Empty))
-                    hardcodeComments.Add(commentNode);
-            }
-            return hardcodeComments;
-        }
-
-        /// <summary>
-        /// This method will find Vulnerabilities in <paramref name="syntaxNode"/>
-        /// </summary>
-        /// <param name="syntaxNode"></param>
-        /// <param name="filePath"></param>
-        /// <param name="model"></param>
-        /// <param name="solution"></param>
-        /// <returns></returns>
-        public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
-        {
-            this.model = model;
-            this.syntaxNode = syntaxNode;
-            this.solution = solution;
-            var variableDeclarators = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>();
-            //Checking strings are Passwords, secret keys or not.
-            foreach (var variableDeclarator in variableDeclarators)
-                FindHardcodeStringNodes(variableDeclarator);
-
-            //Finding Sensitive comments
-            List<SyntaxTrivia> commentNodes = FindComments(syntaxNode);
-            foreach (var commentNode in commentNodes)
-            {
-                string commentText = FindCommentText(commentNode);
-                if (IsSecretValue(commentText))
-                    secretComments.Add(commentNode);
-            }
-            var vulnerabilityList = Map.ConvertToVulnerabilityList(filePath, secretStrings, ScannerType.HardcodePassword);
-            vulnerabilityList.AddRange(Map.ConvertToVulnerabilityList(filePath, secretComments, ScannerType.HardcodePassword));
-            return vulnerabilityList;
-        }
     }
 }
