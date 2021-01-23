@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var typeDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
             foreach (var typeDeclaration in typeDeclarations)
             {
@@ -23,9 +23,9 @@ namespace SAST.Engine.CSharp.Scanners
 
                 var baseTypes = GetBaseTypes(typeSymbol);
                 if (baseTypes.Any(t => t.IsGenericType && HasRecursiveGenericSubstitution(t, typeSymbol)))
-                    syntaxNodes.Add(typeDeclaration);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, typeDeclaration, Enums.ScannerType.RecursiveTypeInheritance));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.RecursiveTypeInheritance);
+            return vulnerabilities;
         }
 
         private static IEnumerable<INamedTypeSymbol> GetBaseTypes(INamedTypeSymbol typeSymbol)

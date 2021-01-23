@@ -27,13 +27,13 @@ namespace SAST.Engine.CSharp.Scanners
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             this._model = model;
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             List<SyntaxNode> lstVulnerableCheck = new List<SyntaxNode>();
 
             var classDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
-            foreach (var classDeclare in classDeclarations)
+            foreach (var classDeclaration in classDeclarations)
             {
-                var objectCreationExpressions = classDeclare.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
+                var objectCreationExpressions = classDeclaration.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
                 foreach (var objectCreation in objectCreationExpressions)
                 {
                     ISymbol symbol = model.GetSymbol(objectCreation.Type);
@@ -56,16 +56,14 @@ namespace SAST.Engine.CSharp.Scanners
                     }
                 }
 
-                var assignmentExpressions = classDeclare.DescendantNodes().OfType<AssignmentExpressionSyntax>();
+                var assignmentExpressions = classDeclaration.DescendantNodes().OfType<AssignmentExpressionSyntax>();
                 foreach (var assignment in assignmentExpressions)
-                {
                     if (assignment.Left is MemberAccessExpressionSyntax leftAssign)
                     {
                         var leftSymbol = model.GetSymbol(leftAssign);
                         if (leftSymbol != null && leftSymbol.ToString() == KnownType.System_DirectoryServices_DirectorySearcher_Filter)
                             lstVulnerableCheck.Add(assignment.Right);
                     }
-                }
             }
             foreach (var item in lstVulnerableCheck)
             {
@@ -82,25 +80,26 @@ namespace SAST.Engine.CSharp.Scanners
                         foreach (var refLocation in reference.Locations)
                             if (item.SpanStart >= refLocation.Location.SourceSpan.Start)
                             {
-                                var node = syntaxNode.FindNode(refLocation.Location.SourceSpan).Ancestors().FirstOrDefault(obj =>
-                                    obj.IsKind(SyntaxKind.SimpleAssignmentExpression)) as AssignmentExpressionSyntax;
-                                if (node != null && node.Left.ToString() == item.ToString())
+                                if (syntaxNode.FindNode(refLocation.Location.SourceSpan).Ancestors().FirstOrDefault(obj =>
+                                    obj.IsKind(SyntaxKind.SimpleAssignmentExpression)) is AssignmentExpressionSyntax node && node.Left.ToString() == item.ToString())
                                     vulnerable = node.Right;
                             }
                     }
                     if (vulnerable != null && IsVulnerable(vulnerable))
-                        lstVulnerableStatements.Add(vulnerable.Ancestors().First(obj => obj.IsKind(SyntaxKind.ExpressionStatement)
-                            || obj.IsKind(SyntaxKind.VariableDeclarator)));
-
+                    {
+                        SyntaxNode syntax = vulnerable.Ancestors().First(obj => obj.IsKind(SyntaxKind.ExpressionStatement)
+                              || obj.IsKind(SyntaxKind.VariableDeclarator));
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, syntax, ScannerType.LdapInjection));
+                    }
                 }
-                else
+                else if (IsVulnerable(item))
                 {
-                    if (IsVulnerable(item))
-                        lstVulnerableStatements.Add(item.Ancestors().First(obj => obj.IsKind(SyntaxKind.ExpressionStatement)
-                            || obj.IsKind(SyntaxKind.VariableDeclarator)));
+                    var syntax = item.Ancestors().First(obj => obj.IsKind(SyntaxKind.ExpressionStatement)
+                             || obj.IsKind(SyntaxKind.VariableDeclarator));
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, syntax, ScannerType.LdapInjection));
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.LdapInjection);
+            return vulnerabilities;
         }
 
         /// <summary>

@@ -29,15 +29,7 @@ namespace SAST.Engine.CSharp.Scanners
                         element.Name.Equals("decryptionKey", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!element.Value.Contains("AutoGenerate"))
-                            vulnerabilities.Add(
-                                new VulnerabilityDetail()
-                                {
-                                    FilePath = filePath,
-                                    CodeSnippet = element.OuterXml.Trim(),
-                                    LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString()
-                                            : string.Empty,
-                                    Type = Enums.ScannerType.MachineKeyClearText
-                                });
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, element, Enums.ScannerType.MachineKeyClearText));
                     }
                 }
                 while (element.MoveToNextAttribute());

@@ -28,15 +28,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (element.Name.Equals("enableEventValidation", StringComparison.OrdinalIgnoreCase))
                     {
                         if (element.Value.Equals("false", StringComparison.OrdinalIgnoreCase))
-                            vulnerabilities.Add(
-                            new VulnerabilityDetail()
-                            {
-                                FilePath = filePath,
-                                CodeSnippet = element.OuterXml.Trim(),
-                                LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString() : string.Empty,
-                                Type = Enums.ScannerType.EventValidation,
-                                SubType = Enums.ScannerSubType.None
-                            });
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, element, Enums.ScannerType.EventValidation));
                         break;
                     }
                 }

@@ -4,8 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using SAST.Engine.CSharp.Contract;
 using SAST.Engine.CSharp.Constants;
-using SAST.Engine.CSharp.Enums;
-using SAST.Engine.CSharp.Mapper;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,9 +12,9 @@ namespace SAST.Engine.CSharp.Scanners
     internal class OpenRedirectScanner : IScanner
     {
         SemanticModel model = null;
-        SyntaxNode syntaxNode = null;
         Solution solution = null;
-        List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+        string _filePath;
+        List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
 
         private static readonly string[] Response_ReceiverType = {
             KnownType.System_Web_HttpResponse,
@@ -46,12 +44,12 @@ namespace SAST.Engine.CSharp.Scanners
             //if (filePath.Contains("WebGoatCoins"))
             //    System.Console.WriteLine("WebGoatCoins");
             this.model = model;
-            this.syntaxNode = syntaxNode;
             this.solution = solution;
+            _filePath = filePath;
             var allRedirects = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>().Where(obj => obj.ToString().Contains("Redirect"));
             foreach (var item in allRedirects)
                 FindOpenRedirect(item);
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.OpenRedirect);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -139,14 +137,13 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="item"></param>
         private void FindOpenRedirect(InvocationExpressionSyntax item)
         {
-            IMethodSymbol symbol = model.GetSymbol(item) as IMethodSymbol;
-            if (symbol == null)
+            if (!(model.GetSymbol(item) is IMethodSymbol symbol))
                 return;
             if (Redirect_MethodNames.Contains(symbol.Name) && Response_ReceiverType.Contains(symbol.ReceiverType.ToString())
                 && item.ArgumentList.Arguments.Count > 0)
             {
                 if (IsVulnerable(item.ArgumentList.Arguments.First().Expression))
-                    lstVulnerableStatements.Add(item.Parent);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item.Parent, Enums.ScannerType.OpenRedirect));
             }
         }
     }

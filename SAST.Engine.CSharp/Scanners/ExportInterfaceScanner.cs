@@ -11,14 +11,17 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class ExportInterfaceScanner : IScanner
     {
-        private static string[] ExportTypes =
+        private readonly static string[] ExportTypes =
         {
             Constants.KnownType.System_ComponentModel_Composition_ExportAttribute,
             Constants.KnownType.System_ComponentModel_Composition_InheritedExportAttribute
         };
+        private readonly static string message = "{0} '{1}' on '{2}' or remove this export attribute.";
+        protected const string ActionForInterface = "Implement";
+        protected const string ActionForClass = "Derive from";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var classDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>();
             foreach (var item in classDeclarations)
             {
@@ -56,11 +59,15 @@ namespace SAST.Engine.CSharp.Scanners
                             }
                         }
                         if (typeOfExpression != null && ValidateType(model, typeOfExpression.Type, item))
-                            syntaxNodes.Add(attribute);
+                        {
+                            var action = exportSymbol.TypeKind == TypeKind.Interface ? ActionForInterface : ActionForClass;
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, attribute, Enums.ScannerType.ExportInterface,
+                                string.Format(message, action, exportSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), typeOfExpression.Type.ToString())));
+                        }
                     }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.ExportInterface);
+            return vulnerabilities;
         }
 
         private static bool BaseTypeEquals(ITypeSymbol classSymbol, string baseType)

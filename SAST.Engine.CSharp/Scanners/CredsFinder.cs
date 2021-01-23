@@ -33,6 +33,7 @@ namespace SAST.Engine.CSharp.Scanners
         private static readonly Regex validCredentialPattern = new Regex(@"^\?|:\w+|\{\d+[^}]*\}|""|'$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static IEnumerable<string> splitCredentialWords;
 
+        private string _filePath;
         static CredsFinder()
         {
             splitCredentialWords = DefaultCredentialWords.ToUpperInvariant()
@@ -46,6 +47,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
+            _filePath = filePath;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             FindVariableDeclarators(syntaxNode, model, ref vulnerabilities);
             FindAssignments(syntaxNode, model, ref vulnerabilities);
@@ -70,25 +72,9 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 var bannedWords = FindCredentialWords(declarator.Identifier.ValueText, variableValue);
                 if (bannedWords.Any())
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = declarator.ToString(),
-                        LineNumber = Map.GetLineNumber(declarator),
-                        Type = ScannerType.HardcodePassword,
-                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, declarator, ScannerType.HardcodePassword, string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))));
                 else if (ContainsUriUserInfo(variableValue))
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = declarator.ToString(),
-                        LineNumber = Map.GetLineNumber(declarator),
-                        Type = ScannerType.HardcodePassword,
-                        Description = MessageUriUserInfo
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, declarator, ScannerType.HardcodePassword, MessageUriUserInfo));
             }
         }
 
@@ -104,25 +90,9 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 var bannedWords = FindCredentialWords((assignment.Left as IdentifierNameSyntax)?.Identifier.ValueText, variableValue);
                 if (bannedWords.Any())
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = assignment.ToString(),
-                        LineNumber = Map.GetLineNumber(assignment),
-                        Type = ScannerType.HardcodePassword,
-                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, assignment, ScannerType.HardcodePassword, string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))));
                 else if (ContainsUriUserInfo(variableValue))
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = assignment.ToString(),
-                        LineNumber = Map.GetLineNumber(assignment),
-                        Type = ScannerType.HardcodePassword,
-                        Description = MessageUriUserInfo
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, assignment, ScannerType.HardcodePassword, MessageUriUserInfo));
             }
         }
 
@@ -138,25 +108,10 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 var bannedWords = FindCredentialWords(null, variableValue);
                 if (bannedWords.Any())
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = literal.ToString(),
-                        LineNumber = Map.GetLineNumber(literal),
-                        Type = ScannerType.HardcodePassword,
-                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, literal, ScannerType.HardcodePassword, string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))));
+
                 else if (ContainsUriUserInfo(variableValue))
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = literal.ToString(),
-                        LineNumber = Map.GetLineNumber(literal),
-                        Type = ScannerType.HardcodePassword,
-                        Description = MessageUriUserInfo
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, literal, ScannerType.HardcodePassword, MessageUriUserInfo));
             }
         }
 
@@ -180,25 +135,9 @@ namespace SAST.Engine.CSharp.Scanners
 
                 var bannedWords = FindCredentialWords(null, variableValue);
                 if (bannedWords.Any())
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = binaryExpression.ToString(),
-                        LineNumber = Map.GetLineNumber(binaryExpression),
-                        Type = ScannerType.HardcodePassword,
-                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, binaryExpression, ScannerType.HardcodePassword, string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))));
                 else if (ContainsUriUserInfo(variableValue))
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = binaryExpression.ToString(),
-                        LineNumber = Map.GetLineNumber(binaryExpression),
-                        Type = ScannerType.HardcodePassword,
-                        Description = MessageUriUserInfo
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, binaryExpression, ScannerType.HardcodePassword, MessageUriUserInfo));
             }
         }
 
@@ -221,25 +160,9 @@ namespace SAST.Engine.CSharp.Scanners
 
                 var bannedWords = FindCredentialWords(null, variableValue);
                 if (bannedWords.Any())
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = interpolatedString.ToString(),
-                        LineNumber = Map.GetLineNumber(interpolatedString),
-                        Type = ScannerType.HardcodePassword,
-                        Description = string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, interpolatedString, ScannerType.HardcodePassword, string.Format(MessageFormatCredential, bannedWords.JoinStr(", "))));
                 else if (ContainsUriUserInfo(variableValue))
-                {
-                    vulnerabilities.Add(new VulnerabilityDetail()
-                    {
-                        CodeSnippet = interpolatedString.ToString(),
-                        LineNumber = Map.GetLineNumber(interpolatedString),
-                        Type = ScannerType.HardcodePassword,
-                        Description = MessageUriUserInfo
-                    });
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, interpolatedString, ScannerType.HardcodePassword, MessageUriUserInfo));
             }
         }
 
@@ -351,7 +274,6 @@ namespace SAST.Engine.CSharp.Scanners
                 credentialWordsFound.Add(variableValue);
             return credentialWordsFound.Select(x => x.ToLowerInvariant());
         }
-
 
         private bool ContainsUriUserInfo(string variableValue)
         {

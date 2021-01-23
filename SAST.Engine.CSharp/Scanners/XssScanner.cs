@@ -18,15 +18,18 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class XssScanner : IScanner, ICSHtmlScanner
     {
-        private static string[] DataRetrievalMethods = {
+        private ScannerType scannerType;
+        public XssScanner(ScannerType paramScannerType) => scannerType = paramScannerType;
+
+        private readonly static string[] DataRetrievalMethods = {
             KnownMethod.System_Data_Common_DbDataReader_GetString,
             KnownMethod.System_Data_SqlClient_SqlCommand_ExecuteScalar
             };
-        private static string[] ControllerClassNames = {
+        private readonly static string[] ControllerClassNames = {
             KnownType.Microsoft_AspNetCore_Mvc_ControllerBase,
             KnownType.System_Web_Mvc_Controller
             };
-        private static string[] HttpVerbAttributes = {
+        private readonly static string[] HttpVerbAttributes = {
             KnownType.System_Web_Mvc_HttpGetAttribute,
             KnownType.System_Web_Mvc_HttpPostAttribute,
             KnownType.System_Web_Mvc_HttpDeleteAttribute,
@@ -38,7 +41,7 @@ namespace SAST.Engine.CSharp.Scanners
             KnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute,
             KnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute
             };
-        private static string[] WebFormsRepsonseMethods = {
+        private readonly static string[] WebFormsRepsonseMethods = {
             KnownMethod.System_Web_HttpResponse_Write,
             KnownMethod.System_Web_HttpResponseBase_Write,
             KnownMethod.System_Web_UI_ClientScriptManager_RegisterStartupScript,
@@ -46,7 +49,7 @@ namespace SAST.Engine.CSharp.Scanners
             KnownMethod.System_Web_UI_Page_RegisterStartupScript,
             KnownMethod.System_Web_UI_Page_RegisterClientScriptBlock
         };
-        private static string[] WebFormsControlProperties = {
+        private readonly static string[] WebFormsControlProperties = {
             KnownType.System_Web_UI_WebControls_CheckBox_Text,
             KnownType.System_Web_UI_WebControls_CompareValidator_Text,
             KnownType.System_Web_UI_WebControls_CustomValidator_Text,
@@ -109,15 +112,16 @@ namespace SAST.Engine.CSharp.Scanners
                     {
                         if (match == null)
                             continue;
-                        if (!EncodeMethods.Any(obj => match.Groups["Value"].Value.Contains(obj)))
-                            vulnerabilities.Add(new VulnerabilityDetail()
-                            {
-                                CodeSnippet = match.Groups["Value"].Value,
-                                FilePath = filePath,
-                                LineNumber = lineNum + "," + match.Groups["Value"].Index,
-                                Type = ScannerType.XSS,
-                                SubType = ScannerSubType.DomXSS
-                            });
+                        //if (!EncodeMethods.Any(obj => match.Groups["Value"].Value.Contains(obj)))
+                        //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, element, Enums.ScannerType.XSS));
+                        //vulnerabilities.Add(new VulnerabilityDetail()
+                        //    {
+                        //        CodeSnippet = match.Groups["Value"].Value,
+                        //        FilePath = filePath,
+                        //        LineNumber = lineNum + "," + match.Groups["Value"].Index,
+                        //        Type = ScannerType.XSS,
+                        //        SubType = ScannerSubType.DomXSS
+                        //    });
                     }
                 }
             }
@@ -147,18 +151,16 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     if (nodeFactory.IsVulnerable(node, model))
                     {
-                        if (IsVulnerable(node, model))
-                            storedXSSExpressions.Add(node);
-                        else
-                            reflectedXSSExpressions.Add(node);
+                        if (scannerType == ScannerType.StoredXSS)
+                        {
+                            if (IsVulnerable(node, model))
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, node, ScannerType.StoredXSS));
+                        }
+                        else if (scannerType == ScannerType.ReflectedXSS)
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, node, ScannerType.ReflectedXSS));
                     }
                 }
-                if (reflectedXSSExpressions.Count > 0)
-                    vulnerabilities.AddRange(Map.ConvertToVulnerabilityList(filePath, reflectedXSSExpressions, ScannerType.XSS, ScannerSubType.ReflectedXSS));
-                if (storedXSSExpressions.Count > 0)
-                    vulnerabilities.AddRange(Map.ConvertToVulnerabilityList(filePath, storedXSSExpressions, ScannerType.XSS, ScannerSubType.StoredXSS));
             }
-            //vulnerabilities.AddRange();
             return vulnerabilities;
         }
 
@@ -236,8 +238,7 @@ namespace SAST.Engine.CSharp.Scanners
             {
                 foreach (var invocation in classItem.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>())
                 {
-                    IMethodSymbol symbol = model.GetSymbol(invocation) as IMethodSymbol;
-                    if (symbol == null)
+                    if (!(model.GetSymbol(invocation) is IMethodSymbol symbol))
                         continue;
                     if (!WebFormsRepsonseMethods.Any(name => name == symbol.ReceiverType.ToString() + "." + symbol.Name.ToString()))
                         continue;
@@ -250,8 +251,7 @@ namespace SAST.Engine.CSharp.Scanners
                             lstVulnerableCheck.Add(argument.Expression);
                         else if (argumentType.Type.ToString() == "char[]" && argument.Expression is InvocationExpressionSyntax)
                         {
-                            var currentExpression = (argument.Expression as InvocationExpressionSyntax).Expression as MemberAccessExpressionSyntax;
-                            if (currentExpression != null && currentExpression.Name.ToString() == "ToCharArray")
+                            if ((argument.Expression as InvocationExpressionSyntax).Expression is MemberAccessExpressionSyntax currentExpression && currentExpression.Name.ToString() == "ToCharArray")
                             {
                                 TypeInfo typeInfo = model.GetTypeInfo(currentExpression);
                                 if (typeInfo.Type == null)
@@ -267,8 +267,7 @@ namespace SAST.Engine.CSharp.Scanners
                     ISymbol symbol = model.GetSymbol(assignment.Left);
                     if (symbol == null)
                     {
-                        var member = assignment.Left as MemberAccessExpressionSyntax;
-                        if (member == null)
+                        if (!(assignment.Left is MemberAccessExpressionSyntax member))
                             continue;
 
                         symbol = model.GetSymbol(member.Expression);
@@ -339,16 +338,15 @@ namespace SAST.Engine.CSharp.Scanners
                         return IsVulnerable(invocation.ArgumentList.Arguments.First().Expression, model);
                     else if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == KnownMethod.object_ToString)
                         return IsVulnerable((invocation.Expression as MemberAccessExpressionSyntax).Expression, model);
-                    if (NodeFactory.IsSanitized(syntaxNode as InvocationExpressionSyntax, model, SAST.Engine.CSharp.Enums.ScannerType.XSS))
+                    if (NodeFactory.IsSanitized(invocation, model))
                         return false;
                     foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
                     {
-                        var methodDeclarationSyntax = syntaxReference.GetSyntax() as MethodDeclarationSyntax;
                         SemanticModel currentModel = null;
                         foreach (var project in solution.Projects)
                             if (project.GetCompilationAsync().Result.ContainsSyntaxTree(syntaxReference.SyntaxTree))
                                 currentModel = project.GetCompilationAsync().Result.GetSemanticModel(syntaxReference.SyntaxTree);
-                        if (currentModel == null || methodDeclarationSyntax == null || methodDeclarationSyntax.Body == null)
+                        if (currentModel == null || !(syntaxReference.GetSyntax() is MethodDeclarationSyntax methodDeclarationSyntax) || methodDeclarationSyntax.Body == null)
                             continue;
                         if (methodDeclarationSyntax.ExpressionBody != null)
                             return IsVulnerable(methodDeclarationSyntax.ExpressionBody.Expression, currentModel);

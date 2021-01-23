@@ -12,7 +12,7 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class DisposableMemberScanner : IScanner
     {
-        private static string[] Disposable_Types =
+        private readonly static string[] Disposable_Types =
         {
             KnownType.System_IO_FileStream,
             KnownType.System_IO_BinaryReader,
@@ -25,8 +25,8 @@ namespace SAST.Engine.CSharp.Scanners
             KnownType.System_Drawing_Bitmap,
             KnownType.System_IO_Stream
         };
-        private static string[] DisposeMethods = { "Dispose", "Close" };
-        private static string[] FactoryMethods =
+        private readonly static string[] DisposeMethods = { "Dispose", "Close" };
+        private readonly static string[] FactoryMethods =
         {
             KnownMethod.System_IO_File_Create,
             KnownMethod.System_IO_File_Open,
@@ -36,7 +36,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var variableDeclarators = syntaxNode.DescendantNodesAndSelf().OfType<VariableDeclaratorSyntax>();
             foreach (var variableDeclarator in variableDeclarators)
             {
@@ -83,17 +83,17 @@ namespace SAST.Engine.CSharp.Scanners
                                 continue;
                             var Model = model.Compilation.GetSemanticModel(referenceLocation.Location.SourceTree);
 
-                            ExcludeDisposedAndClosedLocalsAndPrivateFields(node, symbol, Model, excludedSymbols);
-                            ExcludeReturnedPassedAndAliasedLocalsAndPrivateFields(node, symbol, Model, excludedSymbols);
+                            ExcludeDisposedAndClosedLocalsAndPrivateFields(node, Model, excludedSymbols);
+                            ExcludeReturnedPassedAndAliasedLocalsAndPrivateFields(node, Model, excludedSymbols);
                         }
                     }
 
                     foreach (var trackedNodeAndSymbol in trackedNodesAndSymbols)
                         if (!excludedSymbols.Contains(trackedNodeAndSymbol.Symbol))
-                            syntaxNodes.Add(trackedNodeAndSymbol.Node);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, trackedNodeAndSymbol.Node, Enums.ScannerType.None));
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.DisposableMember);
+            return vulnerabilities;
         }
 
         private void TrackInitializedLocalsAndPrivateFields(SyntaxNode typeDeclaration, SemanticModel semanticModel, ISet<NodeAndSymbol> trackedNodesAndSymbols)
@@ -133,7 +133,7 @@ namespace SAST.Engine.CSharp.Scanners
                     var assignment = node.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
                     if (assignment == null || assignment.Parent is UsingStatementSyntax)
                         continue;
-                    
+
                     SemanticModel currentModel = referenceLocation.Document.GetSemanticModelAsync().Result;
                     if (!currentModel.Compilation.ContainsSyntaxTree(referenceLocation.Location.SourceTree))
                         continue;
@@ -156,7 +156,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
-        private static void ExcludeDisposedAndClosedLocalsAndPrivateFields(SyntaxNode typeDeclaration, ISymbol symbol, SemanticModel semanticModel, ISet<ISymbol> excludedSymbols)
+        private static void ExcludeDisposedAndClosedLocalsAndPrivateFields(SyntaxNode typeDeclaration, SemanticModel semanticModel, ISet<ISymbol> excludedSymbols)
         {
             var invocationsAndConditionalAccesses = typeDeclaration
                 .AncestorsAndSelf()
@@ -193,7 +193,7 @@ namespace SAST.Engine.CSharp.Scanners
             }
         }
 
-        private static void ExcludeReturnedPassedAndAliasedLocalsAndPrivateFields(SyntaxNode typeDeclaration, ISymbol symbol, SemanticModel semanticModel, ISet<ISymbol> excludedSymbols)
+        private static void ExcludeReturnedPassedAndAliasedLocalsAndPrivateFields(SyntaxNode typeDeclaration, SemanticModel semanticModel, ISet<ISymbol> excludedSymbols)
         {
             var identifiersAndSimpleMemberAccesses = typeDeclaration
                 .AncestorsAndSelf()
@@ -256,7 +256,7 @@ namespace SAST.Engine.CSharp.Scanners
             if (!Disposable_Types.Contains(type.ToString()))
                 return false;
 
-            bool result = model.GetSymbol(expression) is IMethodSymbol constructor;
+            bool result = model.GetSymbol(expression) is IMethodSymbol;
             //!constructor.Parameters.Any(param => Utils.ImplementsFrom(param.Type, "System.IDisposable"));
             return result;
         }

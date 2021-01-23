@@ -32,7 +32,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var Nodes = syntaxNode.DescendantNodes().Where(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.ObjectCreationExpression)
                                                                || obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InvocationExpression));
             foreach (var item in Nodes)
@@ -45,15 +45,12 @@ namespace SAST.Engine.CSharp.Scanners
                     if (symbol == null)
                         continue;
                     if (WeakAlgorithmMethods.Any(obj => obj == symbol.ContainingType.ToString() + "." + symbol.Name.ToString()))
-                        lstVulnerableStatements.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.WeakSymmetricAlgorithm));
                 }
-                else if (item is ObjectCreationExpressionSyntax objectCreation)
-                {
-                    if (Utils.DerivesFromAny(model.GetTypeSymbol(item), WeakAlgorithmTypes))
-                        lstVulnerableStatements.Add(item);
-                }
+                else if (item is ObjectCreationExpressionSyntax objectCreation && Utils.DerivesFromAny(model.GetTypeSymbol(item), WeakAlgorithmTypes))
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.WeakSymmetricAlgorithm));
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.WeakSymmetricAlgorithm);
+            return vulnerabilities;
         }
     }
 }

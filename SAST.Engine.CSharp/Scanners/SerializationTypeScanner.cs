@@ -22,7 +22,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
 
             var objectCreationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreationExpressions)
@@ -41,16 +41,16 @@ namespace SAST.Engine.CSharp.Scanners
                     if (item.NameColon == null && index == 0)
                     {
                         if (IsVulnerable(item.Expression, model, solution))
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.SerializationType));
                     }
                     else if (item.NameColon.Name.ToString() == "type")
                     {
                         if (IsVulnerable(item.Expression, model, solution))
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.SerializationType));
                     }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SerializationType);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private bool IsVulnerable(SyntaxNode expression, SemanticModel model, Solution solution)
         {
-            if (expression is TypeOfExpressionSyntax typeOfExpression)
+            if (expression is TypeOfExpressionSyntax)
                 return false;
             else if (expression is InvocationExpressionSyntax invocation)
             {
@@ -77,9 +77,7 @@ namespace SAST.Engine.CSharp.Scanners
                 return false;
             }
             else if (expression is VariableDeclaratorSyntax variableDeclarator)
-            {
                 return IsVulnerable(variableDeclarator.Initializer.Value, model, solution);
-            }
             else if (expression is IdentifierNameSyntax identifierName)
             {
                 ITypeSymbol typeSymbol = model.GetTypeSymbol(identifierName);

@@ -33,13 +33,15 @@ namespace SAST.Engine.CSharp.Scanners
     internal class CookieFlagScanner : IScanner, IConfigScanner
     {
         const string HttpCookies_Node = "configuration/system.web/httpCookies";
-
-        private static string[] Cookie_Classes = {
+        private ScannerType scannerType;
+        private readonly static string[] Cookie_Classes = {
             Constants.KnownType.System_Web_HttpCookie,
             Constants.KnownType.System_Net_Http_Headers_CookieHeaderValue,
             Constants.KnownType.Microsoft_AspNetCore_Http_CookieOptions,
             Constants.KnownType.Microsoft_Net_Http_Headers_SetCookieHeaderValue
         };
+
+        public CookieFlagScanner(ScannerType paramScannerType) => scannerType = paramScannerType;
 
         #region IConfigScanner
 
@@ -50,47 +52,31 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(string filePath)
         {
-            bool isSecure = false, isHttpOnly = false;
+            bool enabled = false;
             //string returnStatement = string.Empty;
             List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             try
             {
-
                 XPathNavigator element = XMLParser.CreateNavigator(filePath, HttpCookies_Node);
                 if (element != null)
                 {
                     if (element.HasAttributes)
                     {
+                        string elementName = scannerType == ScannerType.MissingHttpOnlyCookie ? "httpOnlyCookies" : "requireSSL";
                         element.MoveToFirstAttribute();
                         do
                         {
-                            if (element.Name.Equals("httpOnlyCookies", StringComparison.InvariantCultureIgnoreCase))
-                                isHttpOnly = bool.Parse(element.Value);
-                            else if (element.Name.Equals("requireSSL", StringComparison.InvariantCultureIgnoreCase))
-                                isSecure = bool.Parse(element.Value);
+                            if (element.Name.Equals(elementName, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                enabled = bool.Parse(element.Value);
+                                break;
+                            }
                         }
                         while (element.MoveToNextAttribute());
                         element.MoveToParent();
                     }
-                    if (!isHttpOnly || !isSecure)
-                    {
-                        string missing = "";
-                        if (!isHttpOnly)
-                            missing = "HttpOnly";
-                        if (!isSecure)
-                            missing = string.IsNullOrEmpty(missing) ? "Secure" : (missing + ", Secure");
-                        missing += " Flag(s) missing ";
-                        //returnStatement = string.Format(returnStatement, missing);
-                        var vulnerability = new VulnerabilityDetail()
-                        {
-                            FilePath = filePath,
-                            CodeSnippet = element.OuterXml.Trim(),
-                            LineNumber = (IXmlLineInfo)element != null ? ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString() : string.Empty,
-                            Type = ScannerType.InsecureCookie,
-                            Description = missing
-                        };
-                        vulnerabilities = new List<VulnerabilityDetail>() { vulnerability };
-                    }
+                    if (!enabled)
+                        vulnerabilities = new List<VulnerabilityDetail>() { VulnerabilityDetail.Create(filePath, element, scannerType) };
                 }
             }
             catch
@@ -118,192 +104,174 @@ namespace SAST.Engine.CSharp.Scanners
             var methodDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
             foreach (var method in methodDeclarations)
             {
-                vulnerabilities.AddRange(FindVulnerabilties(method, filePath, model, ScannerSubType.SecureFlag, solution));
-                vulnerabilities.AddRange(FindVulnerabilties(method, filePath, model, ScannerSubType.HttpOnlyFlag, solution));
-            }
-            return vulnerabilities;
-        }
+                //Set the propertyName based on scannerSubType parameter, this value will be usedful for Property check.
+                string propertyName = scannerType == ScannerType.MissingHttpOnlyCookie ? "HttpOnly" : "Secure";
 
-        /// <summary>
-        /// This method will find the HttpOnly or Secure flag vulnerabilities
-        /// </summary>
-        /// <param name="syntaxNode"></param>
-        /// <param name="filePath"></param>
-        /// <param name="model"></param>
-        /// <param name="scannerSubType">Value should be ScannerSubType.HttpOnlyFlag or ScannerSubType.SecureFlag </param>
-        /// <param name="solution"></param>
-        /// <returns></returns>
-        private IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, ScannerSubType scannerSubType, Solution solution = null)
-        {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
-
-            //Set the propertyName based on scannerSubType parameter, this value will be usedful for Property check.
-            string propertyName = scannerSubType == ScannerSubType.HttpOnlyFlag ? "HttpOnly" : "Secure";
-
-            // Checking Variable Declarations
-            var variableDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<VariableDeclarationSyntax>();
-            foreach (var item in variableDeclarations)
-            {
-                ITypeSymbol typeSymbol = model.GetTypeSymbol(item.Type);
-                if (typeSymbol == null || !Cookie_Classes.Contains(typeSymbol.ToString()))
-                    continue;
-                //Considering the Cookie Type variables only.
-                foreach (var variableDeclarator in item.Variables)
+                // Checking Variable Declarations
+                var variableDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<VariableDeclarationSyntax>();
+                foreach (var item in variableDeclarations)
                 {
-                    ISymbol symbol = model.GetDeclaredSymbol(variableDeclarator);
-
-                    SyntaxNode vulnerableNode = variableDeclarator;
-
-                    bool propertyChange = false, isVulnerable = true;
-                    if (variableDeclarator.Initializer != null && variableDeclarator.Initializer.Value.RemoveParenthesis() is ObjectCreationExpressionSyntax objectCreation)
+                    ITypeSymbol typeSymbol = model.GetTypeSymbol(item.Type);
+                    if (typeSymbol == null || !Cookie_Classes.Contains(typeSymbol.ToString()))
+                        continue;
+                    //Considering the Cookie Type variables only.
+                    foreach (var variableDeclarator in item.Variables)
                     {
-                        if (objectCreation.Initializer != null && objectCreation.Initializer.Expressions.Count > 0)
-                            foreach (var initializerExpression in objectCreation.Initializer?.Expressions)
-                            {
-                                var assignmentExpression = initializerExpression as AssignmentExpressionSyntax;
-                                if (assignmentExpression.Left.ToString() != propertyName)
-                                    continue;
-                                propertyChange = true;
-                                var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
-                                // If constant value is true then consider as safe,
-                                if (rightConstant.HasValue && rightConstant.Value is bool value && value)
-                                    isVulnerable = false;
-                                // If constant value is false or no constant value, consider as not safe.
-                                else
-                                    vulnerabilities.Add(assignmentExpression);
-                            }
-                    }
-                    var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
-                    foreach (var referencedSymbol in referencedSymbols)
-                    {
-                        foreach (var referenceLocation in referencedSymbol.Locations)
+                        ISymbol symbol = model.GetDeclaredSymbol(variableDeclarator);
+
+                        SyntaxNode vulnerableNode = variableDeclarator;
+
+                        bool propertyChange = false, isVulnerable = true;
+                        if (variableDeclarator.Initializer != null && variableDeclarator.Initializer.Value.RemoveParenthesis() is ObjectCreationExpressionSyntax objectCreation)
                         {
-                            if (!referenceLocation.Location.IsInSource)
-                                continue;
-                            var assignNode = referenceLocation.Location.SourceTree.GetRoot().FindNode(referenceLocation.Location.SourceSpan);
-                            var assignmentExpression = assignNode.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
-                            if (assignmentExpression == null)
-                                continue;
-
-                            ISymbol propertySymbol = model.GetSymbol(assignmentExpression.Left);
-                            ITypeSymbol propertyTypeSymbol = model.GetTypeSymbol(assignmentExpression.Left);
-                            if (assignNode.SpanStart > assignmentExpression.Right.SpanStart)
-                                continue;
-
-                            #region Property Assign Check
-
-                            if (propertyTypeSymbol.SpecialType == SpecialType.System_Boolean
-                                && Cookie_Classes.Any(obj => obj + "." + propertyName == propertySymbol.ToString()))
-                            {
-                                propertyChange = true;
-                                var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
-                                // If constant value is true then consider as safe
-                                if (rightConstant.HasValue && rightConstant.Value is bool value && value)
-                                    isVulnerable = false;
-                                // If constant value is false or Othe expression then consider as unsafe
-                                else
+                            if (objectCreation.Initializer != null && objectCreation.Initializer.Expressions.Count > 0)
+                                foreach (var initializerExpression in objectCreation.Initializer?.Expressions)
                                 {
-                                    vulnerabilities.Add(assignmentExpression);
-                                    isVulnerable = true;
+                                    var assignmentExpression = initializerExpression as AssignmentExpressionSyntax;
+                                    if (assignmentExpression.Left.ToString() != propertyName)
+                                        continue;
+                                    propertyChange = true;
+                                    var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
+                                    // If constant value is true then consider as safe,
+                                    if (rightConstant.HasValue && rightConstant.Value is bool value && value)
+                                        isVulnerable = false;
+                                    // If constant value is false or no constant value, consider as not safe.
+                                    else
+                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
                                 }
-                            }
-
-                            #endregion
-
-                            #region Object Assign Check
-
-                            if (Cookie_Classes.Contains(propertyTypeSymbol.ToString())
-                                && assignmentExpression.Right is ObjectCreationExpressionSyntax objectCreationExpression)
+                        }
+                        var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
+                        foreach (var referencedSymbol in referencedSymbols)
+                        {
+                            foreach (var referenceLocation in referencedSymbol.Locations)
                             {
-                                if (isVulnerable && !propertyChange)
-                                    vulnerabilities.Add(vulnerableNode);
-                                isVulnerable = true;
-                                propertyChange = false;
-                                vulnerableNode = objectCreationExpression;
-                                if (objectCreationExpression.Initializer != null && objectCreationExpression.Initializer.Expressions.Count > 0)
+                                if (!referenceLocation.Location.IsInSource)
+                                    continue;
+                                var assignNode = referenceLocation.Location.SourceTree.GetRoot().FindNode(referenceLocation.Location.SourceSpan);
+                                var assignmentExpression = assignNode.AncestorsAndSelf().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
+                                if (assignmentExpression == null)
+                                    continue;
+
+                                ISymbol propertySymbol = model.GetSymbol(assignmentExpression.Left);
+                                ITypeSymbol propertyTypeSymbol = model.GetTypeSymbol(assignmentExpression.Left);
+                                if (assignNode.SpanStart > assignmentExpression.Right.SpanStart)
+                                    continue;
+
+                                #region Property Assign Check
+
+                                if (propertyTypeSymbol.SpecialType == SpecialType.System_Boolean
+                                    && Cookie_Classes.Any(obj => obj + "." + propertyName == propertySymbol.ToString()))
                                 {
-                                    foreach (var initializerExpression in objectCreationExpression.Initializer?.Expressions)
+                                    propertyChange = true;
+                                    var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
+                                    // If constant value is true then consider as safe
+                                    if (rightConstant.HasValue && rightConstant.Value is bool value && value)
+                                        isVulnerable = false;
+                                    // If constant value is false or Othe expression then consider as unsafe
+                                    else
                                     {
-                                        //Console.WriteLine(initializerExpression);
-                                        var propertyAssignmentExpression = initializerExpression as AssignmentExpressionSyntax;
-                                        if (propertyAssignmentExpression.Left.ToString() != propertyName)
-                                            continue;
-                                        propertyChange = false;
-                                        var rightConstant = model.GetConstantValue(propertyAssignmentExpression.Right.RemoveParenthesis());
-                                        // If constant value is true then consider as safe,
-                                        if (rightConstant.HasValue && rightConstant.Value is bool value && value)
-                                            isVulnerable = false;
-                                        // If constant value is false or no constant value, consider as not safe.
-                                        else
+                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
+                                        isVulnerable = true;
+                                    }
+                                }
+
+                                #endregion
+
+                                #region Object Assign Check
+
+                                if (Cookie_Classes.Contains(propertyTypeSymbol.ToString())
+                                    && assignmentExpression.Right is ObjectCreationExpressionSyntax objectCreationExpression)
+                                {
+                                    if (isVulnerable && !propertyChange)
+                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
+                                    isVulnerable = true;
+                                    propertyChange = false;
+                                    vulnerableNode = objectCreationExpression;
+                                    if (objectCreationExpression.Initializer != null && objectCreationExpression.Initializer.Expressions.Count > 0)
+                                    {
+                                        foreach (var initializerExpression in objectCreationExpression.Initializer?.Expressions)
                                         {
-                                            propertyChange = true;
-                                            vulnerabilities.Add(propertyAssignmentExpression);
+                                            //Console.WriteLine(initializerExpression);
+                                            var propertyAssignmentExpression = initializerExpression as AssignmentExpressionSyntax;
+                                            if (propertyAssignmentExpression.Left.ToString() != propertyName)
+                                                continue;
+                                            propertyChange = false;
+                                            var rightConstant = model.GetConstantValue(propertyAssignmentExpression.Right.RemoveParenthesis());
+                                            // If constant value is true then consider as safe,
+                                            if (rightConstant.HasValue && rightConstant.Value is bool value && value)
+                                                isVulnerable = false;
+                                            // If constant value is false or no constant value, consider as not safe.
+                                            else
+                                            {
+                                                propertyChange = true;
+                                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, propertyAssignmentExpression, scannerType));
+                                            }
                                         }
                                     }
                                 }
+                                #endregion
                             }
-                            #endregion
+                            if (isVulnerable && !propertyChange && vulnerableNode != null)
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
                         }
-                        if (isVulnerable && !propertyChange && vulnerableNode != null)
-                            vulnerabilities.Add(vulnerableNode);
                     }
                 }
-            }
 
-            // Invocations
-            var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
-            foreach (var item in invocations)
-            {
-                foreach (var argument in item.ArgumentList.Arguments)
+                // Invocations
+                var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
+                foreach (var item in invocations)
                 {
-                    ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
-                    if (typeSymbol == null || !Cookie_Classes.Contains(typeSymbol.ToString()))
-                        continue;
-                    if (argument.Expression.RemoveParenthesis() is ObjectCreationExpressionSyntax objectCreation)
+                    foreach (var argument in item.ArgumentList.Arguments)
                     {
-                        SyntaxNode vulnerableNode = argument.Expression.RemoveParenthesis();
-                        bool vulnerable = true;
-                        if (objectCreation.Initializer != null && objectCreation.Initializer.Expressions.Count > 0)
-                            foreach (var initializerExpression in objectCreation.Initializer?.Expressions)
-                            {
-                                //Console.WriteLine(initializerExpression);
-                                var assignmentExpression = initializerExpression as AssignmentExpressionSyntax;
-                                if (assignmentExpression.Left.ToString() != propertyName)
-                                    continue;
-                                var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
-                                // If constant value is false or no constant value, consider as not safe.
-                                if (rightConstant.HasValue && rightConstant.Value is bool value && value)
-                                    vulnerable = false;
-                                else
-                                    vulnerableNode = assignmentExpression;
-                            }
-                        if (vulnerable)
-                            vulnerabilities.Add(vulnerableNode);
+                        ITypeSymbol typeSymbol = model.GetTypeSymbol(argument.Expression);
+                        if (typeSymbol == null || !Cookie_Classes.Contains(typeSymbol.ToString()))
+                            continue;
+                        if (argument.Expression.RemoveParenthesis() is ObjectCreationExpressionSyntax objectCreation)
+                        {
+                            SyntaxNode vulnerableNode = argument.Expression.RemoveParenthesis();
+                            bool vulnerable = true;
+                            if (objectCreation.Initializer != null && objectCreation.Initializer.Expressions.Count > 0)
+                                foreach (var initializerExpression in objectCreation.Initializer?.Expressions)
+                                {
+                                    //Console.WriteLine(initializerExpression);
+                                    var assignmentExpression = initializerExpression as AssignmentExpressionSyntax;
+                                    if (assignmentExpression.Left.ToString() != propertyName)
+                                        continue;
+                                    var rightConstant = model.GetConstantValue(assignmentExpression.Right.RemoveParenthesis());
+                                    // If constant value is false or no constant value, consider as not safe.
+                                    if (rightConstant.HasValue && rightConstant.Value is bool value && value)
+                                        vulnerable = false;
+                                    else
+                                        vulnerableNode = assignmentExpression;
+                                }
+                            if (vulnerable)
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
+                        }
                     }
                 }
-            }
 
-            //Checking property assignments other than Cookie variable property assignments.
-            //Ex: Response.Cookies[0].Secure = false;
-            var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
-            foreach (var item in assignmentExpressions)
-            {
-                if (item.Parent.Kind() == SyntaxKind.ObjectInitializerExpression)
-                    continue;
-                ISymbol symbol = model.GetSymbol(item.Left);
-                if (symbol == null || !Cookie_Classes.Any(obj => obj + "." + propertyName == symbol.ToString()))
-                    continue;
-                {
-                    var rightConstant = model.GetConstantValue(item.Right.RemoveParenthesis());
-                    // If constant value is false or no constant value, consider as not safe.
-                    if (rightConstant.HasValue && rightConstant.Value is bool value && !value)
-                    {
-                        if (!vulnerabilities.Contains(item))
-                            vulnerabilities.Add(item);
-                    }
-                }
+                //Checking property assignments other than Cookie variable property assignments.
+                //Ex: Response.Cookies[0].Secure = false;
+                //var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
+                //foreach (var item in assignmentExpressions)
+                //{
+                //    if (item.Parent.Kind() == SyntaxKind.ObjectInitializerExpression)
+                //        continue;
+                //    ISymbol symbol = model.GetSymbol(item.Left);
+                //    if (symbol == null || !Cookie_Classes.Any(obj => obj + "." + propertyName == symbol.ToString()))
+                //        continue;
+                //    {
+                //        var rightConstant = model.GetConstantValue(item.Right.RemoveParenthesis());
+                //        // If constant value is false or no constant value, consider as not safe.
+                //        if (rightConstant.HasValue && rightConstant.Value is bool value && !value)
+                //        {
+                //            if (!vulnerabilities.Contains(item))
+                //                vulnerabilities.Add(item);
+                //        }
+                //    }
+                //}
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities, ScannerType.InsecureCookie, scannerSubType);
+            return vulnerabilities;
         }
 
         #endregion

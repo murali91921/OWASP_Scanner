@@ -13,11 +13,11 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class WeakCipherModeScanner : IScanner
     {
-        private static string[] Rijndael_AesManaged_Class = {
+        private readonly static string[] Rijndael_AesManaged_Class = {
             KnownType.System_Security_Cryptography_AesManaged,
             KnownType.System_Security_Cryptography_RijndaelManaged
         };
-        private static string[] RSAEncrypt_Methods = {
+        private readonly static string[] RSAEncrypt_Methods = {
             KnownMethod.System_Security_Cryptography_RSACryptoServiceProvider_Encrypt,
             KnownMethod.System_Security_Cryptography_RSACryptoServiceProvider_TryEncrypt,
             KnownMethod.System_Security_Cryptography_RSA_Encrypt,
@@ -34,7 +34,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
 
             //Filtering AesManaged object creations
             var objectCreations = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
@@ -44,7 +44,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (typeSymbol == null)
                     continue;
                 if (Rijndael_AesManaged_Class.Contains(typeSymbol.ToString()))
-                    syntaxNodes.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.WeakCipherModePadding));
             }
 
             //Filtering Encrypt,TryEncrypt Invocations
@@ -59,10 +59,7 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(memberAccess.Expression);
                 if (symbol == null)
                     continue;
-                ITypeSymbol memberAccessType = symbol is ILocalSymbol local ? local.Type
-                    : symbol is IFieldSymbol field ? field.Type
-                    : symbol is IPropertySymbol property ? property.Type : null;
-
+                ITypeSymbol memberAccessType = symbol.GetTypeSymbol();
                 if (memberAccessType == null)
                     continue;
 
@@ -71,7 +68,6 @@ namespace SAST.Engine.CSharp.Scanners
 
                 foreach (var item in invocation.ArgumentList.Arguments)
                 {
-                    ISymbol argSymbol = model.GetSymbol(item.Expression);
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(item.Expression);
                     if (typeSymbol == null)
                         continue;
@@ -80,22 +76,21 @@ namespace SAST.Engine.CSharp.Scanners
                         var optional = model.GetConstantValue(item.Expression);
                         if (optional.HasValue && optional.Value is bool value && !value)
                         {
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.WeakCipherModePadding));
                             break;
                         }
                     }
-                    else if (item.Expression is MemberAccessExpressionSyntax memberAccessExpression
-                        && memberAccessExpression.Name.ToString() == "Pkcs1")
+                    else if (item.Expression is MemberAccessExpressionSyntax memberAccessExpression && memberAccessExpression.Name.ToString() == "Pkcs1")
                     {
                         typeSymbol = model.GetTypeSymbol(memberAccessExpression.Expression);
                         if (typeSymbol == null)
                             continue;
                         if (typeSymbol.ToString() == KnownType.System_Security_Cryptography_RSAEncryptionPadding)
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.WeakCipherModePadding));
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.WeakCipherModePadding);
+            return vulnerabilities;
         }
     }
 }

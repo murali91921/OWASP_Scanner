@@ -6,13 +6,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using SAST.Engine.CSharp.Constants;
 using SAST.Engine.CSharp.Contract;
-using SAST.Engine.CSharp.Mapper;
 
 namespace SAST.Engine.CSharp.Scanners
 {
     internal class SqlInjectionScanner : IScanner
     {
-        private static string[] CommandClasses = {
+        private static readonly string[] CommandClasses = {
             KnownType.System_Web_UI_WebControls_SqlDataSource,
             KnownType.System_Data_Common_DbCommand,
             KnownType.System_Data_IDbCommand,
@@ -33,13 +32,13 @@ namespace SAST.Engine.CSharp.Scanners
             KnownType.MySql_Data_MySqlClient_MySqlCommand,
             KnownType.MySql_Data_MySqlClient_MySqlDataAdapter
             };
-        private static string[] CommandTextParameters = {
+        private readonly static string[] CommandTextParameters = {
             "CommandText",
             "selectCommandText",
             "cmdText",
             "selectCommand"
             };
-        private static string[] CommandExecuteMethods = {
+        private readonly static string[] CommandExecuteMethods = {
             KnownMethod.System_Data_Linq_DataContext_ExecuteCommand,
             KnownMethod.System_Data_Linq_DataContext_ExecuteQuery,
             KnownMethod.System_Data_SQLite_SQLiteCommand_Execute,
@@ -62,12 +61,12 @@ namespace SAST.Engine.CSharp.Scanners
             KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteNonQuery,
             KnownMethod.Microsoft_Practices_EnterpriseLibrary_Data_Database_ExecuteDataSet,
         };
-        private static string[] CommandExecuteParameters = {
+        private readonly static string[] CommandExecuteParameters = {
             "query",
             "command",
             "commandText"
         };
-        private static string[] CommandTextProperties = {
+        private readonly static string[] CommandTextProperties = {
             KnownType.System_Data_Common_DbCommand_CommandText,
             KnownType.System_Data_IDbCommand_CommandText,
             KnownType.System_Data_SqlClient_SqlCommand_CommandText,
@@ -97,7 +96,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             HashSet<SyntaxNode> lstVulnerableCheck = new HashSet<SyntaxNode>();
             var objectCreationExpressions = syntaxNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreationExpressions)
@@ -136,8 +135,7 @@ namespace SAST.Engine.CSharp.Scanners
             var methods = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
             {
-                IMethodSymbol symbol = model.GetSymbol(method) as IMethodSymbol;
-                if (symbol == null)
+                if (!(model.GetSymbol(method) is IMethodSymbol symbol))
                 {
                     if (method.Expression is MemberAccessExpressionSyntax memberAccess)
                     {
@@ -171,9 +169,7 @@ namespace SAST.Engine.CSharp.Scanners
                 obj => !obj.Right.IsKind(SyntaxKind.ObjectCreationExpression)).ToList();
             foreach (var item in assignments)
             {
-                IPropertySymbol symbol = model.GetSymbol(item.Left) as IPropertySymbol;
-
-                if (symbol == null)
+                if (!(model.GetSymbol(item.Left) is IPropertySymbol symbol))
                     continue;
 
                 if (CommandTextProperties.Any(obj => obj == symbol.ToString()))
@@ -181,9 +177,9 @@ namespace SAST.Engine.CSharp.Scanners
             }
             foreach (var item in lstVulnerableCheck)
                 if (Utils.IsVulnerable(item, model, solution))
-                    lstVulnerableStatements.Add(item.Parent);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item.Parent, ScannerType.SqlInjection));
 
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.SqlInjection);
+            return vulnerabilities;
         }
     }
 }

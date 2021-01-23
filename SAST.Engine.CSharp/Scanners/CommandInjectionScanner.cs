@@ -13,6 +13,8 @@ namespace SAST.Engine.CSharp.Scanners
     /// </summary>
     internal class CommandInjectionScanner : IScanner
     {
+        private const string messageProcess = "Untrusted data is passed to the Process.Start fileName or arguments parameter.";
+        private const string messageProcessStartInfo = "Untrusted data is passed to the ProcessStartInfo fileName or arguments parameter.";
         string _filePath;
         SyntaxNode _syntaxNode;
         SemanticModel _model = null;
@@ -45,7 +47,6 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private IEnumerable<VulnerabilityDetail> FindProcessExpressions()
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
             var invocationExpressions = _syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
@@ -61,7 +62,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (item.ArgumentList?.Arguments.Count == 1)
                 {
                     if (Utils.IsVulnerable(argumentExpression, _model, _solution))
-                        syntaxNodes.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, Enums.ScannerType.CommandInjection, messageProcess));
                     continue;
                 }
 
@@ -79,13 +80,13 @@ namespace SAST.Engine.CSharp.Scanners
 
                     if (vulnerable)
                     {
-                        syntaxNodes.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, Enums.ScannerType.CommandInjection));
                         break;
                     }
                     index++;
                 }
             }
-            return Map.ConvertToVulnerabilityList(_filePath, syntaxNodes, Enums.ScannerType.CommandInjection);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -94,7 +95,6 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private IEnumerable<VulnerabilityDetail> FindProcessInfoExpressions()
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
             var objectCreations = _syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
@@ -107,13 +107,13 @@ namespace SAST.Engine.CSharp.Scanners
 
                 foreach (var argument in item.ArgumentList?.Arguments)
                     if (Utils.IsVulnerable(argument.Expression, _model, _solution, null))
-                        syntaxNodes.Add(argument);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, argument, Enums.ScannerType.CommandInjection, messageProcessStartInfo));
             }
-            return Map.ConvertToVulnerabilityList(_filePath, syntaxNodes, Enums.ScannerType.CommandInjection);
+            return vulnerabilities;
         }
+
         private IEnumerable<VulnerabilityDetail> FindStartInfoAssignments()
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
             var assignments = _syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignments)
             {
@@ -124,9 +124,9 @@ namespace SAST.Engine.CSharp.Scanners
                     && symbol.ToString() != Constants.KnownType.System_Diagnostics_ProcessStartInfo_Arguments)
                     continue;
                 if (Utils.IsVulnerable(assignment.Right, _model, _solution, null))
-                    syntaxNodes.Add(assignment);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, assignment, Enums.ScannerType.CommandInjection, messageProcessStartInfo));
             }
-            return Map.ConvertToVulnerabilityList(_filePath, syntaxNodes, Enums.ScannerType.CommandInjection);
+            return vulnerabilities;
         }
     }
 }

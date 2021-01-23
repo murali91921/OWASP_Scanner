@@ -20,21 +20,20 @@ namespace SAST.Engine.CSharp.Scanners
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxToken> syntaxTokens = new List<SyntaxToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var methodDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
             foreach (var method in methodDeclarations)
             {
                 IMethodSymbol symbol = model.GetDeclaredSymbol(method);
-                if (symbol == null
-                    || !symbol.GetAttributes().Any(attr => attr.AttributeClass != null && SerializationAttributes.Contains(attr.AttributeClass.ToString())))
+                if (symbol == null || !symbol.GetAttributes().Any(attr => attr.AttributeClass != null && SerializationAttributes.Contains(attr.AttributeClass.ToString())))
                     continue;
                 if (symbol.Name != "OnSerializingStatic")
                     continue;
 
                 if (IsUnsafe(symbol))
-                    syntaxTokens.Add(method.Identifier);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, method.Identifier, Enums.ScannerType.SerializationEventImplement));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxTokens, Enums.ScannerType.SerializationEventImplement);
+            return vulnerabilities;
         }
 
         // Raise the error If,

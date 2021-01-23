@@ -15,7 +15,7 @@ namespace SAST.Engine.CSharp.Scanners
     internal class CsrfScanner : IScanner
     {
         //POST, GET, PUT, PATCH, and DELETE
-        private static string[] HttpVerbAttributes = new string[] {
+        private readonly static string[] HttpVerbAttributes = new string[] {
             KnownType.System_Web_Mvc_HttpPostAttribute,
             KnownType.System_Web_Mvc_HttpDeleteAttribute,
             KnownType.System_Web_Mvc_HttpPutAttribute,
@@ -25,12 +25,12 @@ namespace SAST.Engine.CSharp.Scanners
             KnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute,
             KnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute,
             };
-        private static string[] CsrfTokenAttributes = {
+        private readonly static string[] CsrfTokenAttributes = {
             KnownType.System_Web_Mvc_ValidateAntiForgeryTokenAttribute,
             KnownType.Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
             KnownType.Microsoft_AspNetCore_Mvc_AutoValidateAntiforgeryTokenAttribute
             };
-        private static string[] AnonymousAttribute = {
+        private readonly static string[] AnonymousAttribute = {
             KnownType.System_Web_Mvc_AllowAnonymousAttribute,
             KnownType.Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute
             };
@@ -80,7 +80,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
-            List<SyntaxToken> lstVulnerableStatements = new List<SyntaxToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var attributeClassDeclarations = syntaxNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
             foreach (var itemClass in attributeClassDeclarations)
             {
@@ -90,8 +90,9 @@ namespace SAST.Engine.CSharp.Scanners
                     foreach (var attribute in attributeList.Attributes)
                     {
                         ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
-                        if (typeSymbol != null)
-                            IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeSymbol) || IsCsrfAttributeExistsInClass;
+                        if (typeSymbol == null)
+                            continue;
+                        IsCsrfAttributeExistsInClass = CheckCsrfAttribute(typeSymbol) || IsCsrfAttributeExistsInClass;
                         if (IsCsrfAttributeExistsInClass)
                             break;
                     }
@@ -108,28 +109,25 @@ namespace SAST.Engine.CSharp.Scanners
                         if (!method.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)))
                             break;
                         var returnTypeSymbol = model.GetSymbol(method.ReturnType);
+                        bool hasHttpVerb = false, hasCsrfAttribute = false, hasAnonymousAttribute = false;
+                        foreach (var attributeList in method.AttributeLists)
                         {
-                            bool hasHttpVerb = false, hasCsrfAttribute = false, hasAnonymousAttribute = false;
-                            foreach (var attributeList in method.AttributeLists)
+                            foreach (var attribute in attributeList.Attributes)
                             {
-                                foreach (var attribute in attributeList.Attributes)
-                                {
-                                    ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
-                                    if (typeSymbol != null)
-                                    {
-                                        hasHttpVerb = CheckHttbVerbAttribute(typeSymbol) || hasHttpVerb;
-                                        hasCsrfAttribute = CheckCsrfAttribute(typeSymbol) || hasCsrfAttribute;
-                                        hasAnonymousAttribute = CheckAnonymousAttribute(typeSymbol) || hasAnonymousAttribute;
-                                    }
-                                }
+                                ITypeSymbol typeSymbol = model.GetTypeSymbol(attribute);
+                                if (typeSymbol == null)
+                                    continue;
+                                hasHttpVerb = CheckHttbVerbAttribute(typeSymbol) || hasHttpVerb;
+                                hasCsrfAttribute = CheckCsrfAttribute(typeSymbol) || hasCsrfAttribute;
+                                hasAnonymousAttribute = CheckAnonymousAttribute(typeSymbol) || hasAnonymousAttribute;
                             }
-                            if (hasHttpVerb && !hasCsrfAttribute & !hasAnonymousAttribute)
-                                lstVulnerableStatements.Add(method.Identifier);
                         }
+                        if (hasHttpVerb && !hasCsrfAttribute & !hasAnonymousAttribute)
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, method.Identifier, Enums.ScannerType.Csrf));
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, Enums.ScannerType.Csrf);
+            return vulnerabilities;
         }
     }
 }

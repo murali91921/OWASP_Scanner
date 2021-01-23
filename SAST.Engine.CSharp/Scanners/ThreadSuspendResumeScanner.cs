@@ -11,24 +11,23 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class ThreadSuspendResumeScanner : IScanner
     {
-        private static string[] Thread_Methods =
+        private readonly static string[] Thread_Methods =
         {
             Constants.KnownMethod.System_Threading_Thread_Suspend,
             Constants.KnownMethod.System_Threading_Thread_Resume
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var invocation in invocationExpressions)
             {
-                IMethodSymbol methodSymbol = model.GetSymbol(invocation) as IMethodSymbol;
-                if (methodSymbol == null)
+                if (!(model.GetSymbol(invocation) is IMethodSymbol methodSymbol))
                     continue;
                 if (Thread_Methods.Contains(methodSymbol.ContainingType + "." + methodSymbol.Name))
-                    syntaxNodes.Add(invocation.Parent);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation.Parent, Enums.ScannerType.ThreadSuspendResume));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.ThreadSuspendResume);
+            return vulnerabilities;
         }
     }
 }

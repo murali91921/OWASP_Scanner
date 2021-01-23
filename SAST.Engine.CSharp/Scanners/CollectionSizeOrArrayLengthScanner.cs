@@ -12,46 +12,49 @@ namespace SAST.Engine.CSharp.Scanners
     internal class CollectionSizeOrArrayLengthScanner : IScanner
     {
         private SemanticModel _model;
-
+        private readonly static string message = "The {0} of '{1}' is always '>=0', so fix this test to get the real expected behavior.";
+        private List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+        private string _filePath;
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             _model = model;
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            _filePath = filePath;
             var binaryExpressions = syntaxNode.DescendantNodesAndSelf().OfType<BinaryExpressionSyntax>();
             foreach (var binaryExpression in binaryExpressions)
             {
-                bool result = false;
                 if (binaryExpression.IsKind(SyntaxKind.GreaterThanOrEqualExpression))
-                    result = CheckCondition(binaryExpression.Left, binaryExpression.Right);
+                    CheckCondition(binaryExpression.Left, binaryExpression.Right, binaryExpression);
                 else if (binaryExpression.IsKind(SyntaxKind.LessThanOrEqualExpression))
-                    result = CheckCondition(binaryExpression.Right, binaryExpression.Left);
-                else
-                    continue;
-                if (result)
-                    syntaxNodes.Add(binaryExpression);
+                    CheckCondition(binaryExpression.Right, binaryExpression.Left, binaryExpression);
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CollectionSizeOrArrayLength);
+            return vulnerabilities;
         }
-        private bool CheckCondition(ExpressionSyntax expressionValueNode, ExpressionSyntax constantValueNode)
+        private void CheckCondition(ExpressionSyntax expressionValueNode, ExpressionSyntax constantValueNode, BinaryExpressionSyntax parentExpression)
         {
             if (!IsConstantZero(constantValueNode))
-                return false;
+                return;
 
             var symbol = GetSymbol(expressionValueNode);
-            if (symbol == null)
-                return false;
+            if (symbol == null || !IsCollectionType(symbol))
+                return;
 
-            if (!IsCollectionType(symbol))
-                return false;
-
-            return true;
+            var symbolType = GetDeclaringTypeName(symbol);
+            if (symbolType == null)
+                return;
+            vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, parentExpression, Enums.ScannerType.CollectionSizeOrArrayLength,
+                string.Format(message, symbol.Name, symbolType)));
         }
+
+        private string GetDeclaringTypeName(ISymbol symbol)
+            => IsArrayLengthProperty(symbol) ? "Array" :
+            IsEnumerableCountMethod(symbol) ? "IEnumerable<T>" :
+            IsCollectionProperty(symbol) ? "ICollection" : null;
 
         private bool IsConstantZero(ExpressionSyntax expression)
         {
             var constant = _model.GetConstantValue(expression.RemoveParenthesis());
-            return constant.HasValue && (constant.Value is int) && (int)constant.Value == 0;
+            return constant.HasValue && (constant.Value is int value) && value == 0;
         }
 
         private ISymbol GetSymbol(ExpressionSyntax expression)
@@ -82,7 +85,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         private static bool IsCollectionProperty(ISymbol symbol) =>
             symbol is IPropertySymbol propertySymbol
-            && Utils.ImplementsFrom(propertySymbol.ContainingType,Constants.KnownType.System_Collections_Generic_ICollection_T)
+            && Utils.ImplementsFrom(propertySymbol.ContainingType, Constants.KnownType.System_Collections_Generic_ICollection_T)
             && propertySymbol.Name == nameof(ICollection<object>.Count);
 
         private static bool HasExactlyNParameters(IMethodSymbol methodSymbol, int parametersCount) =>

@@ -99,7 +99,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableAttributes()
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var attributeArguments = _syntaxNode.DescendantNodesAndSelf().OfType<AttributeSyntax>();
             foreach (var argument in attributeArguments)
             {
@@ -111,16 +111,15 @@ namespace SAST.Engine.CSharp.Scanners
                     if (item.NameEquals.Name.ToString() == "TypeNameHandling")
                     {
                         Optional<object> value = _model.GetConstantValue(item.Expression);
-                        ISymbol symbol = _model.GetSymbol(item.Expression);
                         if (value.HasValue && ((int)value.Value != 0))
                         {
-                            vulnerabilities.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                             break;
                         }
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -129,7 +128,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableAssignments()
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var assignments = _syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var item in assignments)
             {
@@ -142,26 +141,21 @@ namespace SAST.Engine.CSharp.Scanners
                     ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
                     if (typeSymbol == null || typeSymbol.ToString() != KnownType.Newtonsoft_Json_TypeNameHandling)
                         continue;
-                    Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
-                    if (!value.HasValue)
-                        vulnerabilities.Add(item);
-                    else if ((int)value.Value != 0)
-                        vulnerabilities.Add(item);
+                    Optional<object> optional = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
+                    if (!optional.HasValue || (optional.Value is int value && value != 0))
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                 }
                 else if (Sink_TypeFilterLevel_Props.Contains(symbol.ToString()))
                 {
                     ITypeSymbol typeSymbol = _model.GetTypeSymbol(item.Right);
                     if (typeSymbol == null || typeSymbol.ToString() != KnownType.System_Runtime_Serialization_Formatters_TypeFilterLevel)
                         continue;
-                    Optional<object> value = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
-                    if (!value.HasValue)
-                        vulnerabilities.Add(item);
-                    else if ((int)value.Value == 3)
-                        vulnerabilities.Add(item);
+                    Optional<object> optional = _model.GetConstantValue(item.Right is CastExpressionSyntax cast ? cast.Expression : item.Right);
+                    if (!optional.HasValue || (optional.Value is int value && value == 3))
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                 }
-
             }
-            return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -170,7 +164,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableObjectCreations()
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var objectCreations = _syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
@@ -178,36 +172,33 @@ namespace SAST.Engine.CSharp.Scanners
                 if (typeSymbol == null)
                     continue;
                 if (_insecureObjectCreation.Any(obj => obj == typeSymbol.ToString()))
-                {
-                    vulnerabilities.Add(item);
-                    continue;
-                }
-                if (typeSymbol.ToString() == KnownType.System_Web_UI_LosFormatter)
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
+                else if (typeSymbol.ToString() == KnownType.System_Web_UI_LosFormatter)
                 {
                     if (IsVulnerable_LosFormatter(item))
-                        vulnerabilities.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                 }
                 else if (typeSymbol.ToString() == KnownType.System_Web_Script_Serialization_JavaScriptSerializer)
                 {
                     if (item.ArgumentList == null)
                     {
-                        vulnerabilities.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                         continue;
                     }
                     var argument = item.ArgumentList.Arguments.FirstOrDefault();
                     if (argument == null || argument.Expression.Kind() == SyntaxKind.NullLiteralExpression)
                     {
-                        vulnerabilities.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                         continue;
                     }
                     typeSymbol = _model.GetTypeSymbol(argument.Expression);
                     if (typeSymbol == null)
                         continue;
                     if (typeSymbol.ToString() == KnownType.System_Web_Script_Serialization_SimpleTypeResolver || IsVulnerable_Resolver(typeSymbol))
-                        vulnerabilities.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                 }
             }
-            return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -216,7 +207,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         private List<VulnerabilityDetail> FindVulnerableInvocations(SemanticModel model)
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocationExpressions = _syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
@@ -225,16 +216,13 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (BinaryFormatter_Methods.Contains(symbol.ContainingType + "." + symbol.Name))
                 {
-                    if (item.Expression is MemberAccessExpressionSyntax memberAccess
-                        && IsVulnerable_BinaryFormatter(memberAccess.Expression, model))
-                        vulnerabilities.Add(item);
+                    if (item.Expression is MemberAccessExpressionSyntax memberAccess && IsVulnerable_BinaryFormatter(memberAccess.Expression, model))
+                        vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
                 }
                 else if (_insecureMethods.Contains(symbol.ContainingType + "." + symbol.Name))
-                {
-                    vulnerabilities.Add(item);
-                }
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, ScannerType.InsecureDeserialization));
             }
-            return Map.ConvertToVulnerabilityList(_filePath, vulnerabilities, ScannerType.InsecureDeserialization);
+            return vulnerabilities;
         }
 
         /// <summary>

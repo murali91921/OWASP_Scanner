@@ -20,14 +20,11 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocationExpressions = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
-                var memberAccess = item.Expression as MemberAccessExpressionSyntax;
-                if (memberAccess == null)
-                    continue;
-                if (!memberAccess.ToString().Contains("PasswordSignIn"))
+                if (!(item.Expression is MemberAccessExpressionSyntax memberAccess) || !memberAccess.ToString().Contains("PasswordSignIn"))
                     continue;
 
                 ISymbol symbol = model.GetSymbol(memberAccess);
@@ -52,11 +49,11 @@ namespace SAST.Engine.CSharp.Scanners
 
                     var lockoutValue = model.GetConstantValue(argument.Expression);
                     if (lockoutValue.HasValue && lockoutValue.Value is bool value && !value)
-                        vulnerabilities.Add(argument);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, argument, Enums.ScannerType.PasswordLockout));
                     break;
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.PasswordLockout);
+            return vulnerabilities;
         }
     }
 }

@@ -11,7 +11,9 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class SqlKeywordDelimitScanner : IScanner
     {
-        private List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+        private List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+        private readonly static string message = "Add a space before '{0}'.";
+        public string _filePath;
         private static readonly IList<string> SqlStartQueryKeywords = new List<string>()
         {
             "ALTER",
@@ -38,12 +40,13 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
+            _filePath = filePath;
             var binaryExpressions = syntaxNode.DescendantNodesAndSelf().OfType<BinaryExpressionSyntax>();
             foreach (var binaryExpression in binaryExpressions)
             {
                 CheckBinary(binaryExpression);
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SqlKeywordDelimit);
+            return vulnerabilities;
         }
 
         public void CheckBinary(BinaryExpressionSyntax node)
@@ -53,9 +56,11 @@ namespace SAST.Engine.CSharp.Scanners
                 TryGetStringWrapper(node.Right, out var rightSide) &&
                 StartsWithSqlKeyword(leftSide.Text.Trim()))
             {
-                var strings = new List<StringWrapper>();
-                strings.Add(leftSide);
-                strings.Add(rightSide);
+                var strings = new List<StringWrapper>
+                {
+                    leftSide,
+                    rightSide
+                };
                 var onlyStringsInConcatenation = AddStringsToList(node, strings);
                 if (!onlyStringsInConcatenation)
                     return;
@@ -70,13 +75,11 @@ namespace SAST.Engine.CSharp.Scanners
                 var firstStringText = stringWrappers[i].Text;
                 var secondString = stringWrappers[i + 1];
                 var secondStringText = secondString.Text;
-                if (firstStringText.Length > 0 &&
-                    IsAlphaNumericOrAt(firstStringText.ToCharArray().Last()) &&
-                    secondStringText.Length > 0 &&
-                    IsAlphaNumericOrAt(secondStringText[0]))
+                if (firstStringText.Length > 0 && IsAlphaNumericOrAt(firstStringText.ToCharArray().Last()) &&
+                    secondStringText.Length > 0 && IsAlphaNumericOrAt(secondStringText[0]))
                 {
                     var word = secondStringText.Split(' ').FirstOrDefault();
-                    syntaxNodes.Add(secondString.Node);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, secondString.Node, Enums.ScannerType.SqlKeywordDelimit, string.Format(message, word)));
                 }
             }
         }
@@ -88,7 +91,7 @@ namespace SAST.Engine.CSharp.Scanners
                 stringWrapper = new StringWrapper(literal, literal.Token.ValueText);
                 return true;
             }
-            if (expression is InterpolatedStringExpressionSyntax interpolatedString)
+            else if (expression is InterpolatedStringExpressionSyntax interpolatedString)
             {
                 var interpolatedStringText = interpolatedString.Contents.JoinStr("", content => content.ToString());
                 stringWrapper = new StringWrapper(interpolatedString, interpolatedStringText);

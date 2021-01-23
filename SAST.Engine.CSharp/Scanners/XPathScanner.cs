@@ -20,7 +20,7 @@ namespace SAST.Engine.CSharp.Scanners
         Solution solution = null;
         SyntaxNode syntaxNode = null;
 
-        private static string[] MethodsToCheck = {
+        private readonly static string[] MethodsToCheck = {
             KnownMethod.System_Xml_Linq_XNode_XPathSelectElement,
             KnownMethod.System_Xml_Linq_XNode_XPathSelectElements,
             KnownMethod.System_Xml_Linq_XNode_XPathEvaluate,
@@ -51,7 +51,7 @@ namespace SAST.Engine.CSharp.Scanners
             this.solution = solution;
             this.model = model;
             this.syntaxNode = syntaxNode;
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             HashSet<SyntaxNode> lstVulnerableCheck = new HashSet<SyntaxNode>();
             var methods = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var method in methods)
@@ -67,12 +67,12 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     if (IsVulnerable(argument.Expression))
                     {
-                        lstVulnerableStatements.Add(argument);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, argument, Enums.ScannerType.XPath));
                         break;
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.XPath);
+            return vulnerabilities;
         }
 
         /// <summary>

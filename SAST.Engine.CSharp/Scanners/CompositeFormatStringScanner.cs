@@ -59,7 +59,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (failure == null || CanIgnoreFailure(failure, methodSymbol.Name, invocation.ArgumentList.Arguments.Count))
                     continue;
 
-                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation.Expression, failure.ToString(), Enums.ScannerType.CompositeFormatString));
+                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation.Expression, Enums.ScannerType.None));
             }
             return vulnerabilities;
         }

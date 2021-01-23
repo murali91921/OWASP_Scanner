@@ -14,9 +14,9 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
-            var methods = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.None);
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            //var methods = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
+            return vulnerabilities;
         }
         private static void CheckForNoExitMethod(SemanticModel model, SyntaxNode method)
         {

@@ -13,15 +13,16 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var destructorDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<DestructorDeclarationSyntax>();
             foreach (var destructor in destructorDeclarations)
             {
                 var throwStatements = destructor.DescendantNodesAndSelf().Where(obj => obj is ThrowExpressionSyntax || obj is ThrowStatementSyntax);
-                if (throwStatements.Count() > 0)
-                    syntaxNodes.AddRange(throwStatements);
+                if (throwStatements.Any())
+                    foreach (var throwStatement in throwStatements)
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, throwStatement, Enums.ScannerType.DestructorThrow));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.DestructorThrow);
+            return vulnerabilities;
         }
     }
 }

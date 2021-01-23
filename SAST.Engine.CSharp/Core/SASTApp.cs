@@ -241,17 +241,11 @@ namespace SAST.Engine.CSharp.Core
                 {
                     string directory = Path.GetDirectoryName(projectPath);
                     foreach (var item in Utils.SourceCodeFileExtensions)
-                    {
                         sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
-                    }
                     foreach (var item in Utils.MarkupFileExtensions)
-                    {
                         sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
-                    }
                     foreach (var item in Utils.ConfigurationFileExtensions)
-                    {
                         sourceFilePaths.AddRange(Directory.EnumerateFiles(directory, "*" + item, SearchOption.AllDirectories));
-                    }
                 }
                 currentWorkspace.TryApplyChanges(solution);
                 //Loading the source Files (.cs,.config ) to add them in Project.
@@ -360,19 +354,21 @@ namespace SAST.Engine.CSharp.Core
         {
             return scannerType switch
             {
-                ScannerType.Csrf => new CsrfScanner(),
-                ScannerType.EmptyCatch => new EmptyCatchScanner(),
-                ScannerType.EmptyTry => new EmptyTryScanner(),
                 ScannerType.HardcodePassword => new CredsFinder(),
-                ScannerType.InsecureCookie => new CookieFlagScanner(),
-                ScannerType.InsecureRandom => new InsecureRandomScanner(),
-                ScannerType.LdapInjection => new LDAPScanner(),
+                ScannerType.MissingHttpOnlyCookie => new CookieFlagScanner(scannerType),
+                ScannerType.MissingSecureCookie => new CookieFlagScanner(scannerType),
                 ScannerType.OpenRedirect => new OpenRedirectScanner(),
-                ScannerType.SqlInjection => new SqlInjectionScanner(),
-                ScannerType.WeakHashingConfig => new WeakHashingValidator(),
+                ScannerType.EmptyTry => new EmptyTryScanner(),
+                ScannerType.EmptyCatch => new EmptyCatchScanner(),
                 ScannerType.WeakPasswordConfig => new WeakPasswordValidator(),
+                ScannerType.WeakHashingConfig => new WeakHashingValidator(),
+                ScannerType.Csrf => new CsrfScanner(),
+                ScannerType.LdapInjection => new LDAPScanner(),
+                ScannerType.InsecureRandom => new InsecureRandomScanner(),
+                ScannerType.SqlInjection => new SqlInjectionScanner(),
                 ScannerType.XPath => new XPathScanner(),
-                ScannerType.XSS => new XssScanner(),
+                ScannerType.StoredXSS => new XssScanner(scannerType),
+                ScannerType.ReflectedXSS => new XssScanner(scannerType),
                 ScannerType.XXE => new XxeScanner(),
                 ScannerType.WeakSymmetricAlgorithm => new WeakSymmetricAlgorithmScanner(),
                 ScannerType.WeakCipherModePadding => new WeakCipherModeScanner(),
@@ -382,26 +378,19 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CertificateValidation => new CertificateValidationScanner(),
                 ScannerType.JWTValidation => new JWTSignatureScanner(),
                 ScannerType.PasswordLockout => new PasswordLockoutScanner(),
-                //ScannerType.Authorize => new AuthorizeScanner(),
+                ScannerType.Authorize => new AuthorizeScanner(),
                 ScannerType.CorsAllowAnyOrigin => new CorsScanner(),
                 ScannerType.WeakCryptoKeyLength => new WeakCryptoKeyLengthScanner(),
                 ScannerType.SerializationType => new SerializationTypeScanner(),
                 ScannerType.LdapSecureConnection => new LdapSecureConnectionScanner(),
                 ScannerType.RegexInjection => new RegexInjectionScanner(),
-
-                //Removed as per Issue #94
-                //ScannerType.HttpRequestValidation => new HttpRequestValidationScanner(),
                 ScannerType.SerializationConstructor => new SerializationConstructorScanner(),
                 ScannerType.HardcodedIpAddress => new HardcodedIPScanner(),
                 ScannerType.ExportInterface => new ExportInterfaceScanner(),
                 ScannerType.ThreadSuspendResume => new ThreadSuspendResumeScanner(),
                 ScannerType.SafeHandle => new SafeHandleScanner(),
                 ScannerType.RecursiveTypeInheritance => new RecursiveTypeInheritScanner(),
-                ScannerType.IDisposableImplement => new IDisposableImplementScanner(),
-                //ScannerType.DisposableMember => new DisposableMemberScanner(),
                 ScannerType.SqlKeywordDelimit => new SqlKeywordDelimitScanner(),
-                ScannerType.CompositeFormatString => new CompositeFormatStringScanner(),
-                //ScannerType.InfiniteRecursion => new InfiniteRecursionScanner(),                
                 ScannerType.DestructorThrow => new DestructorThrowScanner(),
                 ScannerType.NonAsyncTaskNull => new NonAsyncTaskNullScanner(),
                 ScannerType.BeginEndInvoke => new BeginEndInvokeScanner(),
@@ -409,7 +398,6 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.PropertyAccessor => new PropertyAccessorScanner(),
                 ScannerType.RightShiftNotNumber => new RightShiftNotNumberScanner(),
                 ScannerType.SharedObjectLock => new SharedObjectLockScanner(),
-                //ScannerType.DisposeFromDispose => new DisposeFromDisposeScanner(),
                 ScannerType.PartCreationPolicyNonExport => new PartCreationPolicyNonExportScanner(),
                 ScannerType.ConstructorArgumentValue => new ConstructorArgumentValueScanner(),
                 ScannerType.OverwriteCollectionElement => new OverwriteCollectionElementScanner(),
@@ -429,8 +417,12 @@ namespace SAST.Engine.CSharp.Core
         {
             return scannerType switch
             {
-                ScannerType.FormsAuthentication => new FormAuthenticationScanner(),
-                ScannerType.InsecureCookie => new CookieFlagScanner(),
+                ScannerType.MissingCookielessFormsAuthentication => new FormAuthenticationScanner(scannerType),
+                ScannerType.MissingCookieProtectionFormsAuthentication => new FormAuthenticationScanner(scannerType),
+                ScannerType.MissingCrossAppRedirectsFormsAuthentication => new FormAuthenticationScanner(scannerType),
+                ScannerType.MissingRequireSSLFormsAuthentication => new FormAuthenticationScanner(scannerType),
+                ScannerType.MissingHttpOnlyCookie => new CookieFlagScanner(scannerType),
+                ScannerType.MissingSecureCookie => new CookieFlagScanner(scannerType),
                 ScannerType.MachineKeyClearText => new MachineKeyScanner(),
                 ScannerType.HTTPHeaderChecking => new HTTPHeaderCheckingScanner(),
                 ScannerType.EventValidation => new EventValidationScanner(),
@@ -448,7 +440,7 @@ namespace SAST.Engine.CSharp.Core
         {
             return scannerType switch
             {
-                ScannerType.XSS => new XssScanner(),
+                //ScannerType.XSS => new XssScanner(),
                 _ => null,
             };
         }

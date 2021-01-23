@@ -20,15 +20,15 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            var emptyTryStatements = new List<SyntaxNode>();
+            var vulnerabilities = new List<VulnerabilityDetail>();
             var allTryStatements = syntaxNode.DescendantNodes().OfType<TryStatementSyntax>().GetEnumerator();
             while (allTryStatements.MoveNext())
             {
                 var tryBlock = allTryStatements.Current.DescendantNodes().OfType<BlockSyntax>().First();
                 if (tryBlock.DescendantNodes().Count() == 0)
-                    emptyTryStatements.Add(tryBlock);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, tryBlock, ScannerType.EmptyTry));
             }
-            return Map.ConvertToVulnerabilityList(filePath, emptyTryStatements, ScannerType.EmptyTry);
+            return vulnerabilities;
         }
     }
 }

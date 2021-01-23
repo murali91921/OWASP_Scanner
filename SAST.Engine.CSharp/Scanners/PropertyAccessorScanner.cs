@@ -11,10 +11,10 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class PropertyAccessorScanner : IScanner
     {
-
+        private readonly static string message = "Refactor this {0} so that it actually refers to the field '{1}'.";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNodeOrToken> syntaxNodes = new List<SyntaxNodeOrToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             IEnumerable<SyntaxNode> classDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>();
             classDeclarations = classDeclarations.Union(syntaxNode.DescendantNodesAndSelf().OfType<StructDeclarationSyntax>());
 
@@ -46,18 +46,20 @@ namespace SAST.Engine.CSharp.Scanners
                         {
                             unsafeNodeOrToken = CheckExpectedFieldIsUsed(data.PropertySymbol.GetMethod, expectedField, data.ReadFields);
                             if (unsafeNodeOrToken != null)
-                                syntaxNodes.Add(unsafeNodeOrToken);
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, unsafeNodeOrToken, Enums.ScannerType.PropertyAccessor,
+                                    string.Format(message, "getter", unsafeNodeOrToken)));
                         }
                         if (!data.IgnoreSetter)
                         {
                             unsafeNodeOrToken = CheckExpectedFieldIsUsed(data.PropertySymbol.SetMethod, expectedField, data.UpdatedFields);
                             if (unsafeNodeOrToken != null)
-                                syntaxNodes.Add(unsafeNodeOrToken);
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, unsafeNodeOrToken, Enums.ScannerType.PropertyAccessor,
+                                    string.Format(message, "setter", unsafeNodeOrToken)));
                         }
                     }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.PropertyAccessor);
+            return vulnerabilities;
         }
 
         private IEnumerable<FieldData> FindFieldAssignments(IPropertySymbol property, Compilation compilation)

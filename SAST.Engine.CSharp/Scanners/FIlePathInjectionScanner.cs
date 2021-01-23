@@ -55,7 +55,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var objectCreations = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var item in objectCreations)
             {
@@ -68,7 +68,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (typeSymbol == null || typeSymbol.SpecialType != SpecialType.System_String)
                         continue;
                     if (Utils.IsVulnerable(item.ArgumentList.Arguments[0].Expression, model, solution))
-                        syntaxNodes.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath,item,Enums.ScannerType.FilePathInjection));
                 }
             }
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
@@ -96,7 +96,7 @@ namespace SAST.Engine.CSharp.Scanners
                         vulnerable = Utils.IsVulnerable(argument.Expression, model, solution, null);
                     if (vulnerable)
                     {
-                        syntaxNodes.Add(item);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath,item,Enums.ScannerType.FilePathInjection));
                         if (symbol.Name.ToString() == "Replace" || symbol.Name.ToString() == "Copy" || symbol.Name.ToString() == "Move"
                             || symbol.Name.ToString() == "WriteAllText" || symbol.Name.ToString() == "AppendAllText")
                             break;
@@ -104,7 +104,7 @@ namespace SAST.Engine.CSharp.Scanners
                     index++;
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.FilePathInjection);
+            return vulnerabilities;
         }
     }
 }

@@ -17,17 +17,17 @@ namespace SAST.Engine.CSharp.Core
 
         private readonly Solution _solution;
 
-        private static readonly List<Tuple<ScannerType, string>> _Injectables = new List<Tuple<ScannerType, string>> {
-            new Tuple<ScannerType, string>(ScannerType.XSS, Constants.KnownType.System_Web_HttpRequest_QueryString),
-        };
-        private static readonly List<Tuple<ScannerType, string>> _SanitizedMethods = new List<Tuple<ScannerType, string>> {
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Text_Encodings_Web_TextEncoder_Encode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpServerUtility_HtmlEncode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpUtility_HtmlEncode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_HtmlEncode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpServerUtility_UrlPathEncode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_HttpUtility_UrlPathEncode),
-            new Tuple<ScannerType, string>(ScannerType.XSS,Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_UrlEncode),
+        private static readonly List<string> _Injectables = new List<string> {
+            Constants.KnownType.System_Web_HttpRequest_QueryString };
+
+        private static readonly List<string> _SanitizedMethods = new List<string> {
+            Constants.KnownMethod.System_Text_Encodings_Web_TextEncoder_Encode,
+            Constants.KnownMethod.System_Web_HttpServerUtility_HtmlEncode,
+            Constants.KnownMethod.System_Web_HttpUtility_HtmlEncode,
+            Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_HtmlEncode,
+            Constants.KnownMethod.System_Web_HttpServerUtility_UrlPathEncode,
+            Constants.KnownMethod.System_Web_HttpUtility_UrlPathEncode,
+            Constants.KnownMethod.System_Web_Security_AntiXss_AntiXssEncoder_UrlEncode,
         };
         /// <summary>
         /// This method will verify the <paramref name="node"/> is vulnerable or not.
@@ -44,7 +44,7 @@ namespace SAST.Engine.CSharp.Core
             {
                 ITypeSymbol type = model.GetTypeSymbol(node);
                 if (type == null || (type.SpecialType != SpecialType.System_String && type.ToString() != Constants.KnownType.System_IO_StringWriter
-))
+    ))
                     return false;
                 ISymbol symbol = model.GetSymbol(node);
                 if (symbol == null || symbol.Equals(callingSymbol, SymbolEqualityComparer.Default))
@@ -73,7 +73,7 @@ namespace SAST.Engine.CSharp.Core
                                 var invocation = currentNode.Ancestors().OfType<InvocationExpressionSyntax>().FirstOrDefault();
                                 if (invocation == null || invocation.ArgumentList.Arguments.Count() == 1)
                                     continue;
-                                vulnerable = !IsSanitized(invocation, model, ScannerType.XSS);
+                                vulnerable = !IsSanitized(invocation, model);
                             }
                         }
                     }
@@ -101,7 +101,7 @@ namespace SAST.Engine.CSharp.Core
             else if (node is ElementAccessExpressionSyntax)
                 return IsVulnerable((node as ElementAccessExpressionSyntax).Expression, model);
             else if (node is MemberAccessExpressionSyntax)
-                return IsInjectable(node, model, ScannerType.XSS);
+                return IsInjectable(node, model);
             else if (node is InvocationExpressionSyntax)
             {
                 var invocation = node as InvocationExpressionSyntax;
@@ -116,7 +116,7 @@ namespace SAST.Engine.CSharp.Core
                     return IsVulnerable(identifier, model);
                 }
                 else
-                    return !IsSanitized(invocation, model, ScannerType.XSS);
+                    return !IsSanitized(invocation, model);
             }
             else if (node is ParameterSyntax)
                 return true;
@@ -129,9 +129,8 @@ namespace SAST.Engine.CSharp.Core
         /// </summary>
         /// <param name="node"></param>
         /// <param name="model"></param>
-        /// <param name="scannerType"></param>
         /// <returns></returns>
-        internal static bool IsInjectable(SyntaxNode node, SemanticModel model, ScannerType scannerType)
+        internal static bool IsInjectable(SyntaxNode node, SemanticModel model)
         {
             if (node is MemberAccessExpressionSyntax)
             {
@@ -139,7 +138,7 @@ namespace SAST.Engine.CSharp.Core
                 if (symbol == null)
                     return false;
                 string property = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
-                return GetInjectableProperties(scannerType).Any(obj => obj == property);
+                return _Injectables.Any(obj => obj == property);
             }
             return false;
         }
@@ -151,7 +150,7 @@ namespace SAST.Engine.CSharp.Core
         /// <param name="model"></param>
         /// <param name="scannerType"></param>
         /// <returns></returns>
-        internal static bool IsSanitized(InvocationExpressionSyntax node, SemanticModel model, ScannerType scannerType)
+        internal static bool IsSanitized(InvocationExpressionSyntax node, SemanticModel model)
         {
             if (node is null)
                 return false;
@@ -159,21 +158,7 @@ namespace SAST.Engine.CSharp.Core
             if (symbol == null)
                 return false;
             string method = symbol.ContainingType.ToString() + "." + symbol.Name.ToString();
-            return GetSanitizedMethods(scannerType).Any(obj => obj == method);
+            return _SanitizedMethods.Any(obj => obj == method);
         }
-
-        /// <summary>
-        /// Get the Injectable Properties.
-        /// </summary>
-        /// <param name="scannerType"></param>
-        /// <returns></returns>
-        internal static IEnumerable<string> GetInjectableProperties(ScannerType scannerType) => _Injectables.Where(obj => obj.Item1 == scannerType).Select(obj => obj.Item2).ToList();
-
-        /// <summary>
-        /// Get Sanitized Methods
-        /// </summary>
-        /// <param name="scannerType"></param>
-        /// <returns></returns>
-        internal static IEnumerable<string> GetSanitizedMethods(ScannerType scannerType) => _SanitizedMethods.Where(obj => obj.Item1 == scannerType).Select(obj => obj.Item2).ToList();
     }
 }

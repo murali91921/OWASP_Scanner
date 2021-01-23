@@ -15,7 +15,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var objectCreations = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreations)
             {
@@ -28,8 +28,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!model.Compilation.SyntaxTrees.Any(obj => obj == typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree))
                     continue;
                 var semanticModel = model.Compilation.GetSemanticModel(typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree);
-                var declaration = typeSymbol.DeclaringSyntaxReferences[0].GetSyntaxAsync().Result as ClassDeclarationSyntax;
-                if (declaration == null)
+                if (!(typeSymbol.DeclaringSyntaxReferences[0].GetSyntaxAsync().Result is ClassDeclarationSyntax declaration))
                     continue;
 
                 if (declaration.AttributeLists.Count > 0)
@@ -41,14 +40,15 @@ namespace SAST.Engine.CSharp.Scanners
                             ITypeSymbol attributeSymbol = semanticModel.GetTypeSymbol(attribute.Name);
                             if (attributeSymbol == null || attributeSymbol.ToString() != PartCreationPolicy_Attribute || attribute.ArgumentList?.Arguments.Count == 0)
                                 continue;
+
                             var optional = semanticModel.GetConstantValue(attribute.ArgumentList?.Arguments.First().Expression);
                             if (optional.HasValue && optional.Value is int value && value == 1)
-                                syntaxNodes.Add(objectCreation);
+                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, objectCreation, Enums.ScannerType.SharedInstance));
                         }
                     }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SharedInstance);
+            return vulnerabilities;
         }
     }
 }

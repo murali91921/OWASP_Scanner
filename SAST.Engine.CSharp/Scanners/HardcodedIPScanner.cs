@@ -21,7 +21,7 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var literalExpressions = syntaxNode.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>();
             foreach (var item in literalExpressions)
             {
@@ -43,11 +43,11 @@ namespace SAST.Engine.CSharp.Scanners
 
                     if (HasAttributes(item))
                         continue;
-                    syntaxNodes.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.HardcodedIpAddress));
                 }
                 catch { }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.HardcodedIpAddress);
+            return vulnerabilities;
         }
 
         private static string GetAssignedVariableName(LiteralExpressionSyntax stringLiteral) =>

@@ -60,7 +60,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var syntaxNodes = syntaxNode.DescendantNodes().Where(obj => obj.IsKind(SyntaxKind.InvocationExpression)
                                                     || obj.IsKind(SyntaxKind.ObjectCreationExpression));
             foreach (var item in syntaxNodes)
@@ -71,13 +71,13 @@ namespace SAST.Engine.CSharp.Scanners
                     if (Utils.DerivesFromAny(typeSymbol, WeakTypes))
                     {
                         if (objectCreation.ArgumentList == null)
-                            lstVulnerableStatements.Add(objectCreation);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, objectCreation, ScannerType.WeakHashingConfig));
                         else
                             foreach (var argument in objectCreation.ArgumentList.Arguments)
                             {
                                 var argSymbol = model.GetSymbol(argument.Expression);
                                 if (argSymbol != null && QualifiedPropertyNames.Contains(argSymbol.ToString()))
-                                    lstVulnerableStatements.Add(objectCreation);
+                                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, objectCreation, ScannerType.WeakHashingConfig));
                             }
                     }
                 }
@@ -85,10 +85,10 @@ namespace SAST.Engine.CSharp.Scanners
                 {
                     if (model.GetSymbol(invocation) is IMethodSymbol methodSymbol)
                         if (Utils.DerivesFromAny(methodSymbol.ReturnType, WeakTypes) || CheckWeakHashingCreation(methodSymbol, invocation.ArgumentList))
-                            lstVulnerableStatements.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, ScannerType.WeakHashingConfig));
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakHashingConfig);
+            return vulnerabilities;
         }
 
         /// <summary>

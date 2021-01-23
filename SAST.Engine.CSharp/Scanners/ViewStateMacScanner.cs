@@ -37,16 +37,8 @@ namespace SAST.Engine.CSharp.Scanners
                 while (element.MoveToNextAttribute());
 
                 if (vulnerable)
-                    vulnerabilities.Add(
-                    new VulnerabilityDetail()
-                    {
-                        FilePath = filePath,
-                        CodeSnippet = element.OuterXml.Trim(),
-                        LineNumber = (IXmlLineInfo)element == null ? string.Empty :
-                                     ((IXmlLineInfo)element).LineNumber.ToString() + "," + ((IXmlLineInfo)element).LinePosition.ToString(),
-                        Type = Enums.ScannerType.ViewStateMac,
-                        SubType = Enums.ScannerSubType.None
-                    });
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, element, Enums.ScannerType.ViewStateMac));
+
             }
             return vulnerabilities;
         }

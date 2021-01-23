@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
 
             foreach (var invocation in invocationExpressions)
@@ -24,11 +24,10 @@ namespace SAST.Engine.CSharp.Scanners
                     IsDisposeMethodCalled(invocation, model) &&
                     IsDisposableClassOrStruct(invocationTarget.ContainingType) &&
                     !IsCalledInsideDispose(invocation, model))
-
-                    syntaxNodes.Add(invocation);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation, Enums.ScannerType.None));
             }
 
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.DisposeFromDispose);
+            return vulnerabilities;
         }
 
         private static bool IsDisposeMethodCalled(InvocationExpressionSyntax invocation, SemanticModel model)

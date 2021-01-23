@@ -34,20 +34,19 @@ namespace SAST.Engine.CSharp.Scanners
             this.model = model;
             this.solution = solution;
             this.syntaxNode = syntaxNode;
-            List<SyntaxNode> vulnerableNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var methodDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
             foreach (var methodDeclaration in methodDeclarations)
             {
                 var invocations = methodDeclaration.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
                 foreach (var invocation in invocations)
                 {
-                    IMethodSymbol invocationSymbol = model.GetSymbol(invocation) as IMethodSymbol;
-                    if (invocationSymbol == null)
+                    if (!(model.GetSymbol(invocation) is IMethodSymbol invocationSymbol))
                         continue;
                     if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == KnownMethod.System_Xml_XmlTextReader_Read)
                     {
                         if (IsVulnerableXmlTextReader(invocation))
-                            vulnerableNodes.Add(invocation);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation, Enums.ScannerType.XXE));
                         continue;
                     }
                     if (invocationSymbol.ReceiverType.ToString() + "." + invocationSymbol.Name.ToString() == KnownMethod.System_Xml_XmlReader_Create)
@@ -55,11 +54,11 @@ namespace SAST.Engine.CSharp.Scanners
                         if (invocation.ArgumentList.Arguments.Count() < 1)
                             continue;
                         if (IsVulnerableXmlReader(invocation))
-                            vulnerableNodes.Add(invocation);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, invocation, Enums.ScannerType.XXE));
                     }
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, vulnerableNodes, Enums.ScannerType.XXE);
+            return vulnerabilities;
         }
 
         /// <summary>

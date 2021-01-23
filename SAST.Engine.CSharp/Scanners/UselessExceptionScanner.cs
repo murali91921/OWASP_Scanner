@@ -13,19 +13,18 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var objectCreations = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreations)
             {
-                var createdObjectType = model.GetSymbol(objectCreation.Type) as INamedTypeSymbol;
-                if (createdObjectType == null || !Utils.DerivesFrom(createdObjectType, Constants.KnownType.System_Exception))
+                if (model.GetSymbol(objectCreation.Type) as INamedTypeSymbol == null || !Utils.DerivesFrom(model.GetSymbol(objectCreation.Type) as INamedTypeSymbol, Constants.KnownType.System_Exception))
                     continue;
 
                 var parent = objectCreation.GetFirstNonParenthesizedParent();
                 if (parent.IsKind(SyntaxKind.ExpressionStatement))
-                    syntaxNodes.Add(objectCreation);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, objectCreation, Enums.ScannerType.UselessException));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.UselessException);
+            return vulnerabilities;
         }
     }
 }

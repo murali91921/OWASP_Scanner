@@ -18,7 +18,7 @@ namespace SAST.Engine.CSharp.Scanners
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var nullLiteralExpressions = syntaxNode.DescendantNodesAndSelf().Where(obj => obj.IsKind(SyntaxKind.NullLiteralExpression)).OfType<LiteralExpressionSyntax>();
             foreach (var nullLiteral in nullLiteralExpressions)
             {
@@ -27,14 +27,12 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 var enclosingMember = GetEnclosingMember(nullLiteral);
-                if (enclosingMember == null)
-                    continue;
-                if (enclosingMember.IsKind(SyntaxKind.VariableDeclaration))
+                if (enclosingMember == null || enclosingMember.IsKind(SyntaxKind.VariableDeclaration))
                     continue;
                 if (IsInvalidEnclosingSymbolContext(enclosingMember, model))
-                    syntaxNodes.Add(nullLiteral);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, nullLiteral, Enums.ScannerType.NonAsyncTaskNull));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.NonAsyncTaskNull);
+            return vulnerabilities;
         }
 
         protected static bool IsInvalidEnclosingSymbolContext(SyntaxNode enclosingMember, SemanticModel model)

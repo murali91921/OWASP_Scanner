@@ -12,9 +12,10 @@ namespace SAST.Engine.CSharp.Scanners
     internal class RightShiftNotNumberScanner : IScanner
     {
         SemanticModel _model = null;
+        private readonly static string message = "Remove this erroneous shift, it will fail because {0} can't be implicitly converted to int.";
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var binaryExpressions = syntaxNode.DescendantNodesAndSelf()
                 .Where(expr => expr.IsKind(SyntaxKind.LeftShiftExpression) || expr.IsKind(SyntaxKind.RightShiftExpression))
                 .OfType<BinaryExpressionSyntax>();
@@ -25,13 +26,15 @@ namespace SAST.Engine.CSharp.Scanners
 
             foreach (var binary in binaryExpressions)
                 if (CheckExpression(binary.Left, binary.Right))
-                    syntaxNodes.Add(binary.Right);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, binary.Right, Enums.ScannerType.RightShiftNotNumber,
+                        string.Format(message, binary.Right)));
 
             foreach (var assignment in assignmentExpressions)
                 if (CheckExpression(assignment.Left, assignment.Right))
-                    syntaxNodes.Add(assignment.Right);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignment.Right, Enums.ScannerType.RightShiftNotNumber,
+                        string.Format(message, assignment.Right)));
 
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.RightShiftNotNumber);
+            return vulnerabilities;
         }
 
         private bool CheckExpression(ExpressionSyntax left, ExpressionSyntax right)

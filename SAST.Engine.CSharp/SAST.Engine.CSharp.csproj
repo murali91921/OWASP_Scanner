@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Remove="AssemblyResources.Designer.cs" />
     <Compile Remove="Contract\IScanSyntaxNode.cs" />
+    <Compile Remove="DescriptorFactory.cs" />
     <Compile Remove="Scanners\CredsFinder_Old.cs" />
   </ItemGroup>
   <ItemGroup>

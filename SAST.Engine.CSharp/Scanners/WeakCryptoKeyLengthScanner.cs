@@ -12,6 +12,8 @@ namespace SAST.Engine.CSharp.Scanners
     internal class WeakCryptoKeyLengthScanner : IScanner
     {
         private SemanticModel _model = null;
+        private static readonly string message = "Use a key length of at least {0} bits for cipher algorithm.";
+        private static readonly string uselessAssignmentInfo = "This assignment does not update the underlying key size.";
 
         private static readonly int MinimumKeyLength = 2048;
         private static readonly int MinimumECKeyLength = 224;
@@ -32,8 +34,8 @@ namespace SAST.Engine.CSharp.Scanners
             KnownType.System_Security_Cryptography_RSA
         };
         private static readonly string[] SystemSecurityCryptographyCurveClasses = {
-                KnownType.System_Security_Cryptography_ECDiffieHellman,
-                KnownType.System_Security_Cryptography_ECDsa
+            KnownType.System_Security_Cryptography_ECDiffieHellman,
+            KnownType.System_Security_Cryptography_ECDsa
         };
 
         /// <summary>
@@ -44,10 +46,11 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="model"></param>
         /// <param name="solution"></param>
         /// <returns></returns>
+        int messageKeyLength = 0;
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
             _model = model;
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
 
             //Invocation Expressions
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
@@ -57,6 +60,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (symbol == null)
                     continue;
                 SyntaxNode vulnerableNode = null;
+
                 switch (symbol.Name)
                 {
                     case "Create":
@@ -75,7 +79,7 @@ namespace SAST.Engine.CSharp.Scanners
                         break;
                 }
                 if (vulnerableNode != null)
-                    syntaxNodes.Add(vulnerableNode);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, Enums.ScannerType.WeakCryptoKeyLength, string.Format(message, messageKeyLength)));
             }
 
             //Object Creations
@@ -85,18 +89,17 @@ namespace SAST.Engine.CSharp.Scanners
                 ITypeSymbol containingType = model.GetTypeSymbol(objectCreation);
                 if (containingType == null)
                     continue;
-                SyntaxNode vulnerableNode = null;
+                SyntaxNode vulnerableNode;
                 if (CheckSystemSecurityCryptographyAlgorithms(containingType, objectCreation.ArgumentList))
                     vulnerableNode = objectCreation;
                 else
                 {
                     vulnerableNode = CheckSystemSecurityEllipticCurve(containingType, objectCreation.ArgumentList?.Arguments.FirstOrDefault());
-
                     if (vulnerableNode == null)
                         vulnerableNode = CheckBouncyCastleKeyGenerationParameters(containingType, objectCreation.ArgumentList);
                 }
                 if (vulnerableNode != null)
-                    syntaxNodes.Add(vulnerableNode);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, Enums.ScannerType.WeakCryptoKeyLength, string.Format(message, messageKeyLength)));
             }
 
             //Property Assignments
@@ -116,18 +119,13 @@ namespace SAST.Engine.CSharp.Scanners
 
                 if (typeSymbol == null)
                     continue;
-                {
-                    if (Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_DSACryptoServiceProvider) ||
-                        Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_RSACryptoServiceProvider))
-                        syntaxNodes.Add(assignment);
-                    else
-                    {
-                        if (CheckGenericDsaRsaCryptographyAlgorithms(typeSymbol, assignment.Right))
-                            syntaxNodes.Add(assignment);
-                    }
-                }
+
+                if (Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_DSACryptoServiceProvider) ||
+                    Utils.DerivesFrom(typeSymbol, KnownType.System_Security_Cryptography_RSACryptoServiceProvider) ||
+                    CheckGenericDsaRsaCryptographyAlgorithms(typeSymbol, assignment.Right))
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignment, Enums.ScannerType.WeakCryptoKeyLength, string.Format(message, MinimumKeyLength) + uselessAssignmentInfo));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.WeakCryptoKeyLength);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -291,7 +289,10 @@ namespace SAST.Engine.CSharp.Scanners
         {
             var match = NamedEllipticCurve.Match(curveName);
             if (match.Success && int.TryParse(match.Groups["KeyLength"].Value, out var keyLength) && keyLength < MinimumECKeyLength)
+            {
+                messageKeyLength = MinimumECKeyLength;
                 return true;
+            }
             return false;
         }
 
@@ -303,6 +304,7 @@ namespace SAST.Engine.CSharp.Scanners
         private bool IsInvalidCommonKeyLength(SyntaxNode keyLengthSyntax)
         {
             var optionalKeyLength = _model.GetConstantValue(keyLengthSyntax);
+            messageKeyLength = MinimumKeyLength;
             return optionalKeyLength.HasValue && optionalKeyLength.Value is int keyLength && keyLength < MinimumKeyLength;
         }
 

@@ -26,12 +26,12 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var lockStatements = syntaxNode.DescendantNodesAndSelf().OfType<LockStatementSyntax>();
 
             foreach (var item in lockStatements)
                 if (IsWeakIdentity(item.Expression, model))
-                    syntaxNodes.Add(item.Expression);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item.Expression, Enums.ScannerType.SharedObjectLock));
 
             var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocations)
@@ -40,14 +40,13 @@ namespace SAST.Engine.CSharp.Scanners
                 if ((methodName != "Enter" && methodName != "TryEnter") || item.ArgumentList.Arguments.Count == 0)
                     continue;
 
-                IMethodSymbol method = model.GetSymbol(item) as IMethodSymbol;
-                if (method == null || method.ContainingType.ToString() != KnownType.System_Threading_Monitor)
+                if (!(model.GetSymbol(item) is IMethodSymbol method) || method.ContainingType.ToString() != KnownType.System_Threading_Monitor)
                     continue;
 
                 if (IsWeakIdentity(item.ArgumentList.Arguments[0].Expression, model))
-                    syntaxNodes.Add(item.ArgumentList.Arguments[0].Expression);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item.ArgumentList.Arguments[0].Expression, Enums.ScannerType.SharedObjectLock));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SharedObjectLock);
+            return vulnerabilities;
         }
 
         private static bool IsWeakIdentity(ExpressionSyntax expression, SemanticModel model)

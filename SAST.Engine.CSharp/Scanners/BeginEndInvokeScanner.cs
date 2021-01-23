@@ -33,7 +33,8 @@ namespace SAST.Engine.CSharp.Scanners
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxToken> syntaxTokens = new List<SyntaxToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            //List<SyntaxToken> syntaxTokens = new List<SyntaxToken>();
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var invocation in invocationExpressions)
             {
@@ -47,10 +48,10 @@ namespace SAST.Engine.CSharp.Scanners
                 && (callbackArg.IsKind(SyntaxKind.NullLiteralExpression) || !CallbackMayContainEndInvoke(callbackArg))
                 && !ParentMethodContainsEndInvoke(invocation))
                 {
-                    syntaxTokens.Add((SyntaxToken)invocation.GetMethodCallIdentifier());
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, (SyntaxToken)invocation.GetMethodCallIdentifier(), Enums.ScannerType.BeginEndInvoke));
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxTokens, Enums.ScannerType.BeginEndInvoke);
+            return vulnerabilities;
         }
 
         private IMethodSymbol GetMethodSymbol(InvocationExpressionSyntax invocationExpression) =>

@@ -11,7 +11,7 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class LdapSecureConnectionScanner : IScanner
     {
-        private static int[] UnsafeAuthenticationTypes ={
+        private readonly static int[] UnsafeAuthenticationTypes ={
             0, //None
             16 //Anonymous
         };
@@ -25,7 +25,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var objectCreationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<ObjectCreationExpressionSyntax>();
             foreach (var objectCreation in objectCreationExpressions)
             {
@@ -43,12 +43,12 @@ namespace SAST.Engine.CSharp.Scanners
                     if (item.NameColon == null && index == 3)
                     {
                         if (IsVulnerable(model, item.Expression))
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.LdapSecureConnection));
                     }
                     else if (item.NameColon != null && item.NameColon.Name.ToString() == "authenticationType")
                     {
                         if (IsVulnerable(model, item.Expression))
-                            syntaxNodes.Add(item);
+                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.LdapSecureConnection));
                     }
                 }
             }
@@ -60,10 +60,9 @@ namespace SAST.Engine.CSharp.Scanners
                 if (symbol == null || symbol.ToString() != KnownType.System_DirectoryServices_DirectoryEntry_AuthenticationType)
                     continue;
                 if (IsVulnerable(model, assignmentExpression.Right))
-                    syntaxNodes.Add(assignmentExpression.Right);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression.Right, Enums.ScannerType.LdapSecureConnection));
             }
-
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.LdapSecureConnection);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -73,10 +72,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="expression"></param>
         /// <returns></returns>
         private bool IsVulnerable(SemanticModel model, ExpressionSyntax expression)
-        {
-            var constantValue = model.GetConstantValue(expression);
-            return constantValue.HasValue && constantValue.Value is int authType
-                && UnsafeAuthenticationTypes.Contains(authType);
-        }
+            => model.GetConstantValue(expression) is { } constantValue
+            && constantValue.HasValue && constantValue.Value is int authType
+            && UnsafeAuthenticationTypes.Contains(authType);
     }
 }

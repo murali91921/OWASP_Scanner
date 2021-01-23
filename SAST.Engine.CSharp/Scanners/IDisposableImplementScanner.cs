@@ -12,14 +12,14 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class IDisposableImplementScanner : IScanner
     {
-        private static string[] Disposable_Types =
+        private readonly static string[] Disposable_Types =
         {
             KnownType.System_IDisposable,
             KnownType.System_IAsyncDisposable
         };
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxToken> syntaxTokens = new List<SyntaxToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var typeDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
             foreach (var typeDeclaration in typeDeclarations)
             {
@@ -49,9 +49,9 @@ namespace SAST.Engine.CSharp.Scanners
                 //disposableFields = disposableFields.Where(IsOwnerSinceDeclaration).Union(fieldInitializations);
 
                 if (disposableFields.Any())
-                    syntaxTokens.Add(typeDeclaration.Identifier);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, typeDeclaration.Identifier, Enums.ScannerType.None));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxTokens, Enums.ScannerType.IDisposableImplement);
+            return vulnerabilities;
         }
 
         private static bool IsNonStaticNonPublicDisposableField(IFieldSymbol fieldSymbol) =>

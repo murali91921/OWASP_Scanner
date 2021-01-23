@@ -19,96 +19,97 @@ namespace SAST.Engine.CSharp
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".html", ".aspx", ".ascx" };
         internal static readonly string[] ProjectFileExtensions = { ".csproj" };
-        internal static readonly Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>>{
-            { Enums.ScannerType.XSS,
-                new Dictionary<Enums.ScannerSubType,string> {
-                    {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
-                    {Enums.ScannerSubType.ReflectedXSS, "Reflected XSS"},
-                    {Enums.ScannerSubType.DomXSS, "Dom based XSS"}
-                }
-            },
-            { Enums.ScannerType.FormsAuthentication,
-                new Dictionary<Enums.ScannerSubType,string> {
-                    {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
-                    {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
-                    {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
-                    {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"}
-                }
-            },
-            { Enums.ScannerType.InsecureCookie,
-                new Dictionary<Enums.ScannerSubType,string> {
-                    {Enums.ScannerSubType.SecureFlag, "Secure flag"},
-                    {Enums.ScannerSubType.HttpOnlyFlag, "HttpOnly flag"}
-                }
-            },
-        };
-        public static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
-            {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
-            {Enums.ScannerType.EmptyCatch, "Empty catch block"},
-            {Enums.ScannerType.EmptyTry, "Empty try block"},
-            {Enums.ScannerType.HardcodePassword, "Hard coded credentials"},
-            {Enums.ScannerType.InsecureCookie, "Cookie missing flag(s)"},
-            {Enums.ScannerType.InsecureRandom, "Weak random generation"},
-            {Enums.ScannerType.LdapInjection, "Ldap injection"},
-            {Enums.ScannerType.OpenRedirect, "Open redirect"},
-            {Enums.ScannerType.SqlInjection, "Sql injection"},
-            {Enums.ScannerType.WeakHashingConfig, "Weak hashing configuration"},
-            {Enums.ScannerType.WeakPasswordConfig, "Weak password configuration"},
-            {Enums.ScannerType.XPath, "Xpath injection"},
-            {Enums.ScannerType.XSS, "Cross Site Scripting attack"},
-            {Enums.ScannerType.XXE, "XML external entity injection"},
-            {Enums.ScannerType.FormsAuthentication, "Forms Authentication"},
-            {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
-            {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"},
-            {Enums.ScannerType.WeakCipherModePadding, "Weak Cipher Mode & Padding"},
-            {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"},
-            {Enums.ScannerType.CommandInjection, "Command Injection"},
-            {Enums.ScannerType.FilePathInjection, "File Path Injection"},
-            {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
-            {Enums.ScannerType.JWTValidation, "JWT Signature Validation Disabled"},
-            {Enums.ScannerType.HTTPHeaderChecking, "HTTP Header Checking Disabled"},
-            {Enums.ScannerType.EventValidation, "Event Validation Disabled"},
-            {Enums.ScannerType.ViewStateMac, "View State Mac Disabled"},
-            {Enums.ScannerType.PasswordLockout, "Password Lockout Disabled"},
-            {Enums.ScannerType.Authorize, "Authorize attribute missing"},
-            {Enums.ScannerType.CorsAllowAnyOrigin, "Cors Allow Origin Wildcard"},
-            {Enums.ScannerType.WeakCryptoKeyLength, "Cryptographic keys should be robust"},
-            {Enums.ScannerType.SerializationType, "Insecure Deserialization type"},
-            {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
-            {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
-            {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
-            {Enums.ScannerType.SerializationConstructor, "Serialization Constructor should be secured"},
-            {Enums.ScannerType.HardcodedIpAddress, "Hardcoded IP Address"},
-            {Enums.ScannerType.ExportInterface, "ExportAttribute Interfaces"},
-            {Enums.ScannerType.ThreadSuspendResume, "Thread Suspend,Resume Methods"},
-            {Enums.ScannerType.SafeHandle, "SafeHandle.DangerousGetHandle Method"},
-            {Enums.ScannerType.RecursiveTypeInheritance, "Recursive Type Inheritance"},
-            {Enums.ScannerType.IDisposableImplement, "Implement IDisposable interface"},
-            {Enums.ScannerType.DisposableMember, "Dispose IDisposable properties"},
-            {Enums.ScannerType.SqlKeywordDelimit, "SQL keywords should be delimited by whitespace"},
-            {Enums.ScannerType.CompositeFormatString, "Composite format strings should not lead to unexpected behavior at runtime."},
-            //{Enums.ScannerType.InfiniteRecursion, "Infinite Recursion"},
-            {Enums.ScannerType.DestructorThrow, "Do not throw from Desrtuctor."},
-            {Enums.ScannerType.NonAsyncTaskNull, "Do not return null from this method."},
-            {Enums.ScannerType.BeginEndInvoke, "BeginInvoke should be with an EndInvoke."},
-            {Enums.ScannerType.SharedInstance, "Shared instances should not be created with constructor."},
-            {Enums.ScannerType.PropertyAccessor, "Accessor should be refer to proper field."},
-            {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers."},
-            {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance."},
-            {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method."},
-            {Enums.ScannerType.PartCreationPolicyNonExport, "PartCreationPolicyAttribute should be used with ExportAttribute."},
-            {Enums.ScannerType.ConstructorArgumentValue, "ConstructorArgumentAttribute value to match one of the existing constructors arguments."},
-            {Enums.ScannerType.OverwriteCollectionElement, "Verify this is the index/key that was intended, a value has already been set for it."},
-            {Enums.ScannerType.UselessException, "Throw this exception or remove this useless statement."},
-            {Enums.ScannerType.CollectionSizeOrArrayLength, "Use proper condition to check size of Collection or length of Array."},
-            {Enums.ScannerType.SerializationEventImplement, "Implement Serialization Event Handlers properly"},
-        };
+        //internal static readonly Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>> ScannerSubTypeDescriptions = new Dictionary<Enums.ScannerType, Dictionary<Enums.ScannerSubType, string>>{
+        //    { Enums.ScannerType.XSS,
+        //        new Dictionary<Enums.ScannerSubType,string> {
+        //            {Enums.ScannerSubType.StoredXSS, "Stored XSS"},
+        //            {Enums.ScannerSubType.ReflectedXSS, "Reflected XSS"},
+        //            {Enums.ScannerSubType.DomXSS, "Dom based XSS"}
+        //        }
+        //    },
+        //    { Enums.ScannerType.FormsAuthentication,
+        //        new Dictionary<Enums.ScannerSubType,string> {
+        //            {Enums.ScannerSubType.FAWeakCookie, "Weak Cookie"},
+        //            {Enums.ScannerSubType.FACookielessMode, "Cookieless Mode"},
+        //            {Enums.ScannerSubType.FACrossAppRedirect, "Cross App Redirect"},
+        //            {Enums.ScannerSubType.FAInsecureCookie, "Insecure Cookie"}
+        //        }
+        //    },
+        //    { Enums.ScannerType.InsecureCookie,
+        //        new Dictionary<Enums.ScannerSubType,string> {
+        //            {Enums.ScannerSubType.SecureFlag, "Secure flag"},
+        //            {Enums.ScannerSubType.HttpOnlyFlag, "HttpOnly flag"}
+        //        }
+        //    },
+        //};
+        //public static readonly Dictionary<Enums.ScannerType, string> ScannerDescriptions = new Dictionary<Enums.ScannerType, string>{
+        //    {Enums.ScannerType.Csrf, "Cross site request forgery attack"},
+        //    {Enums.ScannerType.EmptyCatch, "Empty catch block"},
+        //    {Enums.ScannerType.EmptyTry, "Empty try block"},
+        //    {Enums.ScannerType.HardcodePassword, "Hard coded credentials"},
+        //    {Enums.ScannerType.InsecureCookie, "Cookie missing flag(s)"},
+        //    {Enums.ScannerType.InsecureRandom, "Weak random generation"},
+        //    {Enums.ScannerType.LdapInjection, "Ldap injection"},
+        //    {Enums.ScannerType.OpenRedirect, "Open redirect"},
+        //    {Enums.ScannerType.SqlInjection, "Sql injection"},
+        //    {Enums.ScannerType.WeakHashingConfig, "Weak hashing configuration"},
+        //    {Enums.ScannerType.WeakPasswordConfig, "Weak password configuration"},
+        //    {Enums.ScannerType.XPath, "Xpath injection"},
+        //    {Enums.ScannerType.XSS, "Cross Site Scripting attack"},
+        //    {Enums.ScannerType.XXE, "XML external entity injection"},
+        //    {Enums.ScannerType.FormsAuthentication, "Forms Authentication"},
+        //    {Enums.ScannerType.MachineKeyClearText, "Machine Key Cleartext"},
+        //    {Enums.ScannerType.WeakSymmetricAlgorithm, "Weak Symmetric Algorithm"},
+        //    {Enums.ScannerType.WeakCipherModePadding, "Weak Cipher Mode & Padding"},
+        //    {Enums.ScannerType.InsecureDeserialization, "Insecure Deserialization"},
+        //    {Enums.ScannerType.CommandInjection, "Command Injection"},
+        //    {Enums.ScannerType.FilePathInjection, "File Path Injection"},
+        //    {Enums.ScannerType.CertificateValidation, "Certificate Validation Disabled"},
+        //    {Enums.ScannerType.JWTValidation, "JWT Signature Validation Disabled"},
+        //    {Enums.ScannerType.HTTPHeaderChecking, "HTTP Header Checking Disabled"},
+        //    {Enums.ScannerType.EventValidation, "Event Validation Disabled"},
+        //    {Enums.ScannerType.ViewStateMac, "View State Mac Disabled"},
+        //    {Enums.ScannerType.PasswordLockout, "Password Lockout Disabled"},
+        //    {Enums.ScannerType.Authorize, "Authorize attribute missing"},
+        //    {Enums.ScannerType.CorsAllowAnyOrigin, "Cors Allow Origin Wildcard"},
+        //    {Enums.ScannerType.WeakCryptoKeyLength, "Cryptographic keys should be robust"},
+        //    {Enums.ScannerType.SerializationType, "Insecure Deserialization type"},
+        //    {Enums.ScannerType.LdapSecureConnection, "Ldap Authentication should be Secure"},
+        //    {Enums.ScannerType.RegexInjection, "Regular Expression Injection"},
+        //    {Enums.ScannerType.HttpRequestValidation, "Request Validation Disabled"},
+        //    {Enums.ScannerType.SerializationConstructor, "Serialization Constructor should be secured"},
+        //    {Enums.ScannerType.HardcodedIpAddress, "Hardcoded IP Address"},
+        //    {Enums.ScannerType.ExportInterface, "ExportAttribute Interfaces"},
+        //    {Enums.ScannerType.ThreadSuspendResume, "Thread Suspend,Resume Methods"},
+        //    {Enums.ScannerType.SafeHandle, "SafeHandle.DangerousGetHandle Method"},
+        //    {Enums.ScannerType.RecursiveTypeInheritance, "Recursive Type Inheritance"},
+        //    {Enums.ScannerType.IDisposableImplement, "Implement IDisposable interface"},
+        //    {Enums.ScannerType.DisposableMember, "Dispose IDisposable properties"},
+        //    {Enums.ScannerType.SqlKeywordDelimit, "SQL keywords should be delimited by whitespace"},
+        //    {Enums.ScannerType.CompositeFormatString, "Composite format strings should not lead to unexpected behavior at runtime."},
+        //    //{Enums.ScannerType.InfiniteRecursion, "Infinite Recursion"},
+        //    {Enums.ScannerType.DestructorThrow, "Do not throw from Desrtuctor."},
+        //    {Enums.ScannerType.NonAsyncTaskNull, "Do not return null from this method."},
+        //    {Enums.ScannerType.BeginEndInvoke, "BeginInvoke should be with an EndInvoke."},
+        //    {Enums.ScannerType.SharedInstance, "Shared instances should not be created with constructor."},
+        //    {Enums.ScannerType.PropertyAccessor, "Accessor should be refer to proper field."},
+        //    {Enums.ScannerType.RightShiftNotNumber,"Right operands of shift operators should be integers."},
+        //    {Enums.ScannerType.SharedObjectLock,"Lock on a dedicated object instance."},
+        //    {Enums.ScannerType.DisposeFromDispose,"this Dispose call should be this class own 'Dispose' method."},
+        //    {Enums.ScannerType.PartCreationPolicyNonExport, "PartCreationPolicyAttribute should be used with ExportAttribute."},
+        //    {Enums.ScannerType.ConstructorArgumentValue, "ConstructorArgumentAttribute value to match one of the existing constructors arguments."},
+        //    {Enums.ScannerType.OverwriteCollectionElement, "Verify this is the index/key that was intended, a value has already been set for it."},
+        //    {Enums.ScannerType.UselessException, "Throw this exception or remove this useless statement."},
+        //    {Enums.ScannerType.CollectionSizeOrArrayLength, "Use proper condition to check size of Collection or length of Array."},
+        //    {Enums.ScannerType.SerializationEventImplement, "Implement Serialization Event Handlers properly"},
+        //};
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
             {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
             {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
             {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
-            {Enums.ScannerType.InsecureCookie, Enums.Severity.Low},
+            {Enums.ScannerType.MissingHttpOnlyCookie, Enums.Severity.Low},
+            {Enums.ScannerType.MissingSecureCookie, Enums.Severity.Low},
             {Enums.ScannerType.InsecureRandom, Enums.Severity.Medium},
             {Enums.ScannerType.LdapInjection, Enums.Severity.High},
             {Enums.ScannerType.OpenRedirect, Enums.Severity.Medium},
@@ -137,18 +138,17 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.SerializationType, Enums.Severity.High},
             {Enums.ScannerType.LdapSecureConnection, Enums.Severity.High},
             {Enums.ScannerType.RegexInjection, Enums.Severity.High},
-            {Enums.ScannerType.HttpRequestValidation,Enums.Severity.High},
+            //{Enums.ScannerType.HttpRequestValidation,Enums.Severity.High},
             {Enums.ScannerType.SerializationConstructor,Enums.Severity.High},
             {Enums.ScannerType.HardcodedIpAddress,Enums.Severity.High},
             {Enums.ScannerType.ExportInterface,Enums.Severity.High},
             {Enums.ScannerType.ThreadSuspendResume,Enums.Severity.High},
             {Enums.ScannerType.SafeHandle,Enums.Severity.High},
             {Enums.ScannerType.RecursiveTypeInheritance,Enums.Severity.High},
-            {Enums.ScannerType.IDisposableImplement,Enums.Severity.High},
-            {Enums.ScannerType.DisposableMember,Enums.Severity.High},
+            //{Enums.ScannerType.IDisposableImplement,Enums.Severity.High},
+            //{Enums.ScannerType.DisposableMember,Enums.Severity.High},
             {Enums.ScannerType.SqlKeywordDelimit,Enums.Severity.High},
-            {Enums.ScannerType.CompositeFormatString,Enums.Severity.High},
-            //{Enums.ScannerType.InfiniteRecursion,Enums.Severity.High},
+            //{Enums.ScannerType.CompositeFormatString,Enums.Severity.High},
             {Enums.ScannerType.DestructorThrow,Enums.Severity.High},
             {Enums.ScannerType.NonAsyncTaskNull,Enums.Severity.High},
             {Enums.ScannerType.BeginEndInvoke,Enums.Severity.High},
@@ -156,28 +156,21 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.PropertyAccessor,Enums.Severity.High},
             {Enums.ScannerType.RightShiftNotNumber,Enums.Severity.High},
             {Enums.ScannerType.SharedObjectLock,Enums.Severity.High},
-            {Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
+            //{Enums.ScannerType.DisposeFromDispose,Enums.Severity.High},
             {Enums.ScannerType.PartCreationPolicyNonExport,Enums.Severity.Medium},
             {Enums.ScannerType.ConstructorArgumentValue,Enums.Severity.Medium},
             {Enums.ScannerType.OverwriteCollectionElement,Enums.Severity.Medium},
             {Enums.ScannerType.UselessException,Enums.Severity.Medium},
             {Enums.ScannerType.CollectionSizeOrArrayLength,Enums.Severity.Medium},
             {Enums.ScannerType.SerializationEventImplement,Enums.Severity.Medium},
+            {Enums.ScannerType.MissingCookieProtectionFormsAuthentication, Enums.Severity.High},
+            {Enums.ScannerType.MissingCookielessFormsAuthentication, Enums.Severity.Medium},
+            {Enums.ScannerType.MissingCrossAppRedirectsFormsAuthentication, Enums.Severity.Medium},
+            {Enums.ScannerType.MissingRequireSSLFormsAuthentication, Enums.Severity.Medium},
+            {Enums.ScannerType.ReflectedXSS, Enums.Severity.Medium},
+            {Enums.ScannerType.StoredXSS, Enums.Severity.Medium},
         };
-        internal static readonly Dictionary<Enums.ScannerSubType, Enums.Severity> ScannerSubTypeSeverity = new Dictionary<Enums.ScannerSubType, Enums.Severity>{
-            //XSS
-            {Enums.ScannerSubType.DomXSS, Enums.Severity.Medium},
-            {Enums.ScannerSubType.ReflectedXSS, Enums.Severity.Medium},
-            {Enums.ScannerSubType.StoredXSS, Enums.Severity.Medium},
-            //Forms Authentication
-            {Enums.ScannerSubType.FAWeakCookie, Enums.Severity.High},
-            {Enums.ScannerSubType.FACookielessMode, Enums.Severity.Medium},
-            {Enums.ScannerSubType.FACrossAppRedirect, Enums.Severity.Medium},
-            {Enums.ScannerSubType.FAInsecureCookie, Enums.Severity.Medium},
-            //Cookie Flag
-            {Enums.ScannerSubType.HttpOnlyFlag, Enums.Severity.Low},
-            {Enums.ScannerSubType.SecureFlag, Enums.Severity.Low}
-        };
+
 
         /// <summary>
         /// This method will give the List of MetaDataReferences using Physical Assenmbly to MetaDatReference Object
@@ -293,8 +286,7 @@ namespace SAST.Engine.CSharp
         /// <param name="callingSymbol"></param>
         /// <param name="parameterNode"></param>
         /// <returns></returns>
-        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null,
-            SyntaxNode parameterNode = null, Enums.ScannerType scannerType = Enums.ScannerType.None)
+        public static bool IsVulnerable(SyntaxNode node, SemanticModel model, Solution solution = null, ISymbol callingSymbol = null, Enums.ScannerType scannerType = Enums.ScannerType.None)
         {
             if (node is IdentifierNameSyntax)
             {
@@ -319,7 +311,7 @@ namespace SAST.Engine.CSharp
                             if (assignment == null)
                                 continue;
                             if (currentNode.SpanStart < assignment.Right.SpanStart)
-                                vulnerable = IsVulnerable(assignment.Right, refLocation.Document.GetSemanticModelAsync().Result, solution, symbol, node);
+                                vulnerable = IsVulnerable(assignment.Right, refLocation.Document.GetSemanticModelAsync().Result, solution, symbol);
                         }
                     }
                 }
@@ -357,8 +349,7 @@ namespace SAST.Engine.CSharp
             }
             else if (node is InvocationExpressionSyntax invocation)
             {
-                IMethodSymbol symbol = model.GetSymbol(invocation.Expression) as IMethodSymbol;
-                if (symbol == null)
+                if (!(model.GetSymbol(invocation.Expression) is IMethodSymbol symbol))
                     return true;
                 //Checking if sanitized for Regular Expression
                 if (scannerType == Enums.ScannerType.RegexInjection)
@@ -384,7 +375,7 @@ namespace SAST.Engine.CSharp
                                     isVulnerable = true;
                                 foreach (var item in returnStatements)
                                 {
-                                    if (!IsVulnerable(item.Expression, invocationModel, solution, null, null))
+                                    if (!IsVulnerable(item.Expression, invocationModel, solution))
                                     {
                                         //If any statement is not vulnerable, then treat the method as Safe & break the loop.
                                         isVulnerable = false;
@@ -393,7 +384,7 @@ namespace SAST.Engine.CSharp
                                 }
                             }
                             else if (methodDeclaration.ExpressionBody != null)
-                                if (!IsVulnerable(methodDeclaration.ExpressionBody.Expression, invocationModel, solution, null, null))
+                                if (!IsVulnerable(methodDeclaration.ExpressionBody.Expression, invocationModel, solution))
                                 {
                                     //If any statement is not vulnerable, then treat the method as Safe & break the loop.
                                     isVulnerable = false;
@@ -408,6 +399,11 @@ namespace SAST.Engine.CSharp
                 return true;
             else
                 return false;
+        }
+
+        public static void LoadDescriptions()
+        {
+
         }
     }
 }

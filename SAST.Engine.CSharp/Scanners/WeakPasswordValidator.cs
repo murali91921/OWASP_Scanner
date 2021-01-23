@@ -15,7 +15,7 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class WeakPasswordValidator : IScanner
     {
-        private static int MINIMUM_PASSWORD_LENGTH = 8;
+        private readonly static int MINIMUM_PASSWORD_LENGTH = 8;
 
         /// <summary>
         /// Determines the vulnerabilities in <paramref name="syntaxNode"/>
@@ -27,7 +27,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> lstVulnerableStatements = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             //Filter all property declarations
             var properties = syntaxNode.DescendantNodes().OfType<PropertyDeclarationSyntax>();
             foreach (var item in properties)
@@ -39,10 +39,12 @@ namespace SAST.Engine.CSharp.Scanners
                     foreach (var attribute in attributeList.Attributes)
                     {
                         ITypeSymbol type = model.GetTypeSymbol(attribute);
-                        if (type != null && type.ToString() == KnownType.System_ComponentModel_DataAnnotations_DataType
+                        if (type == null)
+                            continue;
+                        if (type.ToString() == KnownType.System_ComponentModel_DataAnnotations_DataType
                                 && attribute.ArgumentList != null && attribute.ArgumentList.Arguments.First().ToString() == "DataType.Password")
                             IsPassword = true;
-                        if (type != null && type.ToString() == KnownType.System_ComponentModel_DataAnnotations_StringLengthAttribute)
+                        if (type.ToString() == KnownType.System_ComponentModel_DataAnnotations_StringLengthAttribute)
                         {
                             // Console.WriteLine("Min Length");
                             if (attribute.ArgumentList != null && attribute.ArgumentList.Arguments.Any(obj => obj.ToString().Contains("MinimumLength")))
@@ -59,9 +61,9 @@ namespace SAST.Engine.CSharp.Scanners
                     }
                 }
                 if (IsPassword && IsWeak)
-                    lstVulnerableStatements.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, ScannerType.WeakPasswordConfig));
             }
-            if (lstVulnerableStatements.Count == 0)
+            if (!vulnerabilities.Any())
             {
                 // Finding the statements of Configure method calling with Lambda Expression
                 var coreLengthStatements = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>().Where(obj =>
@@ -129,15 +131,12 @@ namespace SAST.Engine.CSharp.Scanners
                             //     break;
                             // }
                         }
-                        // Console.WriteLine(item);
                     }
                     if (tempIdentity != null)
-                    {
-                        lstVulnerableStatements.Add(tempIdentity);
-                    }
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, tempIdentity, ScannerType.WeakPasswordConfig));
                 }
             }
-            if (lstVulnerableStatements.Count == 0)
+            if (!vulnerabilities.Any())
             {
                 var declarationSyntaxes = syntaxNode.DescendantNodes().OfType<VariableDeclaratorSyntax>();
                 // var passwordValidator = compilation.GetTypeByMetadataName("Microsoft.AspNet.Identity.PasswordValidator");
@@ -171,9 +170,7 @@ namespace SAST.Engine.CSharp.Scanners
                         // declarationSyntax.Initializer is ObjectCreationExpressionSyntax
                     }
                     if (referencedSymbols != null && referencedSymbols.Count() > 0)
-                    {
                         foreach (var refSymbol in referencedSymbols)
-                        {
                             foreach (var refLocation in refSymbol.Locations)
                             {
                                 var refNode = syntaxNode.FindNode(refLocation.Location.SourceSpan);
@@ -185,21 +182,17 @@ namespace SAST.Engine.CSharp.Scanners
                                             IsWeak = false;
                                         if (IsWeak)
                                         {
-                                            lstVulnerableStatements.Add(assignment);
+                                            vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignment, ScannerType.WeakPasswordConfig));
                                             IsWeak = false;
                                         }
                                     }
                                 }
                             }
-                        }
-                    }
                     if (IsWeak)
-                    {
-                        lstVulnerableStatements.Add(declarationSyntax);
-                    }
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, declarationSyntax, ScannerType.WeakPasswordConfig));
                 }
             }
-            return Map.ConvertToVulnerabilityList(filePath, lstVulnerableStatements, ScannerType.WeakPasswordConfig);
+            return vulnerabilities;
         }
     }
 }

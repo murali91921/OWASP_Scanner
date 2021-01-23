@@ -1,0 +1,653 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="OPT0001_Description" xml:space="preserve">
+    <value>Hard-coding credentials in source code allows anyone with access to the source control repository or the binary files to obtain the credential. Rotating hard-coded secrets is also difficult because the application or service must be redeployed to change the value.</value>
+  </data>
+  <data name="OPT0001_MessageFormat" xml:space="preserve">
+    <value>Expression may be attack by Hard-coded credentials.</value>
+  </data>
+  <data name="OPT0001_Title" xml:space="preserve">
+    <value>Hard-coded credentials are security-sensitive</value>
+  </data>
+  <data name="OPT0002_Description" xml:space="preserve">
+    <value>Cookies that do not have the httpOnly attribute set are accessible in the browser by scripts. This can allow attackers to inject malicious scripts into the site and extract authentication cookie values to a remote server. Setting the httpCookie element's httpOnlyCookies element to true will help prevent client-side session hijacking attempts.</value>
+  </data>
+  <data name="OPT0002_MessageFormat" xml:space="preserve">
+    <value>Cookies accessible via script.</value>
+  </data>
+  <data name="OPT0002_Title" xml:space="preserve">
+    <value>Cookie Accessible via Script</value>
+  </data>
+  <data name="OPT0003_Description" xml:space="preserve">
+    <value>Cookies containing authentication tokens, session tokens, and other state management credentials must be protected in transit across a network. Set the httpCookie element's requireSSL attribute to true to prevent the browser from transmitting cookies over HTTP.</value>
+  </data>
+  <data name="OPT0003_MessageFormat" xml:space="preserve">
+    <value>Insecure HTTP cookies.</value>
+  </data>
+  <data name="OPT0003_Title" xml:space="preserve">
+    <value>Insecure HTTP Cookie Transport</value>
+  </data>
+  <data name="OPT0004_Description" xml:space="preserve">
+    <value>Passing unvalidated redirect locations to the Redirect method can allow attackers to send users to malicious web sites. This can allow attackers to perform phishing attacks and distribute malware to victims.</value>
+  </data>
+  <data name="OPT0004_MessageFormat" xml:space="preserve">
+    <value>Unvalidated redirect location is passed to the Redirect method</value>
+  </data>
+  <data name="OPT0004_Title" xml:space="preserve">
+    <value>Unvalidated Redirect</value>
+  </data>
+  <data name="OPT0005_Description" xml:space="preserve">
+    <value>Empty try blocks are either dead code or indicate the presence of debug code.</value>
+  </data>
+  <data name="OPT0005_MessageFormat" xml:space="preserve">
+    <value>Empty try block is found</value>
+  </data>
+  <data name="OPT0005_Title" xml:space="preserve">
+    <value>Empty try block(s)</value>
+  </data>
+  <data name="OPT0006_Description" xml:space="preserve">
+    <value>Ignoring an exception can cause the program to overlook unexpected states and conditions.</value>
+  </data>
+  <data name="OPT0006_MessageFormat" xml:space="preserve">
+    <value>Empty catch block is found</value>
+  </data>
+  <data name="OPT0006_Title" xml:space="preserve">
+    <value>Empty catch block</value>
+  </data>
+  <data name="OPT0007_Description" xml:space="preserve">
+    <value>Weak passwords can be easily guessed and are an easy target for brute force attacks. This can lead to an authentication system failure and compromise system security.</value>
+  </data>
+  <data name="OPT0007_MessageFormat" xml:space="preserve">
+    <value>Password validator settings do not meet the requirements - Minimum Length ({0}), Numeric Character ({1}), Lowercase Character ({2}), Uppercase Character ({3}), Special Character ({4})</value>
+  </data>
+  <data name="OPT0007_Title" xml:space="preserve">
+    <value>Weak Password Policy</value>
+  </data>
+  <data name="OPT0008_Description" xml:space="preserve">
+    <value>Weak cryptographic hashes cannot guarantee data integrity and should not be used in security-critical contexts.</value>
+  </data>
+  <data name="OPT0008_MessageFormat" xml:space="preserve">
+    <value>Weak hashing policy</value>
+  </data>
+  <data name="OPT0008_Title" xml:space="preserve">
+    <value>Weak Hashing Policy</value>
+  </data>
+  <data name="OPT0009_Description" xml:space="preserve">
+    <value>The AntiForgeryToken attribute protects applications using authentication cookies from CSRF attacks. Without the AntiForgeryToken attribute, attackers can submit forged requests on behalf of another authenticated user.</value>
+  </data>
+  <data name="OPT0009_MessageFormat" xml:space="preserve">
+    <value>The Action is missing the AntiForgeryToken attribute. If this action modifies data on the backend, it could be vulnerable to Cross-Site Request Forgery attacks.</value>
+  </data>
+  <data name="OPT0009_Title" xml:space="preserve">
+    <value>Missing AntiForgeryToken Attribute</value>
+  </data>
+  <data name="OPT0010_Description" xml:space="preserve">
+    <value>LDAP Injection vulnerabilities occur when untrusted data is concatenated into a LDAP Filter expression without properly escaping control characters. This can allow attackers to change the meaning of an LDAP query and gain access to resources for which they are not authorized. Fixing the vulnerability requires untrusted data to be encoded using the Web Protection Library (aka AntiXSS) LDAP filter encoding method Encoder.LdapFilterEncode().</value>
+  </data>
+  <data name="OPT0010_MessageFormat" xml:space="preserve">
+    <value>Untrusted data is passed to the LDAP DirectorySearcher filter expression.</value>
+  </data>
+  <data name="OPT0010_Title" xml:space="preserve">
+    <value>LDAP Injection Directory Searcher</value>
+  </data>
+  <data name="OPT0011_Description" xml:space="preserve">
+    <value>System.Random is a statistical random number generator that does not generate sufficiently random values for use in a security context. Generate values used in a security context (e.g., encryption keys, initialization vectors, random passwords, authentication tokens) using the System.Security.Cryptography.RNGCryptoServiceProvider.</value>
+  </data>
+  <data name="OPT0011_MessageFormat" xml:space="preserve">
+    <value>System.Random does not provide cryptographically random numbers. Consider using the System.Security.Cryptography.RNGCryptoServiceProvider for random values used in a security context.</value>
+  </data>
+  <data name="OPT0011_Title" xml:space="preserve">
+    <value>Insecure Random Number Generator</value>
+  </data>
+  <data name="OPT0012_Description" xml:space="preserve">
+    <value>The SQL Command communicates directly with the backend database without using an Object Relational Mapping (ORM) framework. There are several vulnerable methods (ExecuteReader, ExecuteNonQuery, ExecuteScalar) that allow dynamic SQL statements to be constructed and executed against the database. Ensure that calls to these methods do not concatenate untrusted data into dynamic SQL statements. Use parameter placeholders or stored procedures to prevent SQL Injection attacks.</value>
+  </data>
+  <data name="OPT0012_MessageFormat" xml:space="preserve">
+    <value>SQL Injection - Method is passed a dynamic SQL statement.</value>
+  </data>
+  <data name="OPT0012_Title" xml:space="preserve">
+    <value>SQL Injection</value>
+  </data>
+  <data name="OPT0013_Description" xml:space="preserve">
+    <value>Constructing a dynamic XPath query with user input may allow an attacker to modify the statement's meaning.</value>
+  </data>
+  <data name="OPT0013_MessageFormat" xml:space="preserve">
+    <value>Data is passed from an untrusted source.</value>
+  </data>
+  <data name="OPT0013_Title" xml:space="preserve">
+    <value>XPath Injection</value>
+  </data>
+  <data name="OPT0014_Description" xml:space="preserve">
+    <value>Sending unvalidated data to a web browser can result in the browser executing malicious code.</value>
+  </data>
+  <data name="OPT0014_MessageFormat" xml:space="preserve">
+    <value>Data is passed from an untrusted source,the untrusted source is typically a web request,Consider using the AntiXssEncoder library to neutralize dangerous data before writing it the browser.</value>
+  </data>
+  <data name="OPT0014_Title" xml:space="preserve">
+    <value>Cross site scripting(XSS):Reflected</value>
+  </data>
+  <data name="OPT0015_Description" xml:space="preserve">
+    <value>Sending unvalidated data to a web browser can result in the browser executing malicious code.</value>
+  </data>
+  <data name="OPT0015_MessageFormat" xml:space="preserve">
+    <value>Data is passed from an untrusted source,the untrusted source is typically a database or other back-end data store,Consider using the AntiXssEncoder library to neutralize dangerous data before writing it the browser.</value>
+  </data>
+  <data name="OPT0015_Title" xml:space="preserve">
+    <value>Cross site scripting(XSS):Stored</value>
+  </data>
+
+  <data name="OPT0016_Description" xml:space="preserve">
+    <value>Using XML parsers configured to not prevent nor limit external entities resolution can expose the parser to an XML External Entities attack.</value>
+  </data>
+  <data name="OPT0016_MessageFormat" xml:space="preserve">
+    <value>Disable access to external entities in XML parsing.</value>
+  </data>
+  <data name="OPT0016_Title" xml:space="preserve">
+    <value>XML External Entity (XXE)</value>
+  </data>
+  <data name="OPT0017_Description" xml:space="preserve">
+    <value>The DESCryptoServiceProvider class uses the weak DES algorithm and is not an approved encryption algorithm. Use the AesManaged or AesCryptoServiceProvider algorithm for symmetric encryption.</value>
+  </data>
+  <data name="OPT0017_MessageFormat" xml:space="preserve">
+    <value>The DES algorithm is a weak encryption algorithm and not considered secure for protecting sensitive information.</value>
+  </data>
+  <data name="OPT0017_Title" xml:space="preserve">
+    <value>Weak Cryptography Algorithm (DES)</value>
+  </data>
+  <data name="OPT0101_Description" xml:space="preserve">
+    <value>Authentication cookies sent over HTTP connections can be stolen by attackers monitoring the network traffic, which can lead to session hijacking attacks. Configure "secure" cookies by setting the requireSSL attribute to true.</value>
+  </data>
+  <data name="OPT0101_MessageFormat" xml:space="preserve">
+    <value>Forms authentication does not set requireSSL to true.</value>
+  </data>
+  <data name="OPT0101_Title" xml:space="preserve">
+    <value>Forms Authentication Secure Cookie Disabled</value>
+  </data>
+  <data name="OPT0102_Description" xml:space="preserve">
+    <value>Authentication cookies should not be sent in the URL. Doing so allows attackers to gain unauthorized access to authentication tokens (web server logs, referrer headers, and browser history) and more easily perform session fixation / hijacking attacks. Configure cookie-base authentication by setting the cookieless attribute to UseCookies.</value>
+  </data>
+  <data name="OPT0102_MessageFormat" xml:space="preserve">
+    <value>Forms authentication does not set the cookieless attribute to UseCookies.</value>
+  </data>
+  <data name="OPT0102_Title" xml:space="preserve">
+    <value>Forms Authentication Cookieless Session Enabled</value>
+  </data>
+  <data name="OPT0103_Description" xml:space="preserve">
+    <value>Enabling cross-application redirects can allow unvalidated redirect attacks via the returnUrl parameter during the login process. Disable cross-application redirects to by setting the enableCrossAppRedirects attribute to false.</value>
+  </data>
+  <data name="OPT0103_MessageFormat" xml:space="preserve">
+    <value>Forms authentication does not set the enableCrossAppRedirects attribute to false.</value>
+  </data>
+  <data name="OPT0103_Title" xml:space="preserve">
+    <value>Forms Authentication CrossAppRedirects Enabled</value>
+  </data>
+  <data name="OPT0104_Description" xml:space="preserve">
+    <value>Forms Authentication cookies must use strong encryption and message authentication code (MAC) validation to protect the cookie value from inspection and tampering. Configure the forms protection attribute to “All” to enable cookie data validation and encryption.</value>
+  </data>
+  <data name="OPT0104_MessageFormat" xml:space="preserve">
+    <value>Forms authentication cookie protection attribute is not set to All.</value>
+  </data>
+  <data name="OPT0104_Title" xml:space="preserve">
+    <value>Forms Authentication Weak Cookie Protection</value>
+  </data>
+  <data name="OPT0018_Description" xml:space="preserve">
+    <value>The Electronic Codebook (ECB) mode encrypts blocks individually without using an initialization vector. Encrypting data in ECB mode fails to provide entropy for identical plaintext blocks being encrypted with the same encryption key. This can allow attackers to identify patterns and repetition in ciphertext, and may lead to the discovery of the original encryption key. Use the CipherMode.CBC option for symmetric block cipher operations..</value>
+  </data>
+  <data name="OPT0018_MessageFormat" xml:space="preserve">
+    <value>Encryption algorithms should be used with secure mode and padding scheme.</value>
+  </data>
+  <data name="OPT0018_Title" xml:space="preserve">
+    <value>Wead Cipher Mode &amp; Padding Scheme</value>
+  </data>
+  <data name="OPT0019_Description" xml:space="preserve">
+    <value>Deserializing untrusted data using a vulnerable library can allow attackers to execute arbitrary code and perform denial of service attacks against the server.Avoid deserializing untrusted data (e.g. request parameters, web service parameters, data from external services) using the above dangerous methods. In cases where deserialization is required, ensure that the application performs signature validation (e.g. HMAC) before deserializing the data.</value>
+  </data>
+  <data name="OPT0019_MessageFormat" xml:space="preserve">
+    <value>Deserializing untrusted data with a vulnerable library can result in remote code execution and denial of service vulnerabilities.</value>
+  </data>
+  <data name="OPT0019_Title" xml:space="preserve">
+    <value>Insecure Deserialization</value>
+  </data>
+  <data name="OPT0020_Description" xml:space="preserve">
+    <value>Concatenating untrusted data into operating system commands can allow attackers to execute arbitrary commands against the server's operating system. Defending against command injection in the .NET ecosystem is more difficult than other injection categories because no special encoding method exists to whitelist safe characters and escape evil characters.</value>
+  </data>
+  <data name="OPT0020_MessageFormat" xml:space="preserve">
+    <value>Untrusted data is passed to the Process.Start or ProcessStartInfo fileName or arguments parameter.</value>
+  </data>
+  <data name="OPT0020_Title" xml:space="preserve">
+    <value>Command Injection</value>
+  </data>
+  <data name="OPT0021_Description" xml:space="preserve">
+    <value>Path traversal vulnerabilities occur when an application does not properly validate file paths for directory traversal (../) and other malicious characters. This can allow attackers to download, overwrite, or delete unauthorized files from the server. Ensure file paths are read from a trusted location, such as a static resource or configuration file. Do not send file paths in request parameters, which can be modified by an attacker.</value>
+  </data>
+  <data name="OPT0021_MessageFormat" xml:space="preserve">
+    <value>Unvalidated file paths are passed to method, which can allow unauthorized file system operations (e.g. read, write, delete) to be performed on unintended server files.</value>
+  </data>
+  <data name="OPT0021_Title" xml:space="preserve">
+    <value>File Path Injection</value>
+  </data>
+  <data name="OPT0022_Description" xml:space="preserve">
+    <value>Overriding the default framework certificate validation method can allow man-in-the middle attacks against user’s running the application on insecure network connections.</value>
+  </data>
+  <data name="OPT0022_MessageFormat" xml:space="preserve">
+    <value>The ServerCertificateValidationCallback method fails to properly validate the server's certificate.</value>
+  </data>
+  <data name="OPT0022_Title" xml:space="preserve">
+    <value>Certificate Validation Disabled</value>
+  </data>
+  <data name="OPT0023_Description" xml:space="preserve">
+    <value>The JSON Web Tokens (JWT) header and payload values are base64 encoded, which can be decoded, tampered, and replayed to gain access to protected resources. Web service APIs relying on JSON Web Tokens (JWT) for authentication and authorization must sign each JWT with a private key or secret. Each web service endpoint must require JWT signature validation prior to decoding and using the token to access protected resources.
+    In ASP.NET Core, configure the Authentication service’s JwtBearer options to require signed tokens:
+    - RequireSignedTokens: Rejects JWTs that do not have a signature.</value>
+  </data>
+  <data name="OPT0023_MessageFormat" xml:space="preserve">
+    <value>Configure the JwtBearer options to require signed tokens.</value>
+  </data>
+  <data name="OPT0023_Title" xml:space="preserve">
+    <value>JWT Signature Validation Disabled</value>
+  </data>
+  <data name="OPT0105_Description" xml:space="preserve">
+    <value>Disabling the HTTP Runtime header checking protection opens the application up to HTTP Header Injection (aka Response Splitting) attacks. Enable the header checking protection by setting the httpRuntime element's enableHeaderChecking attribute to true, which is the default value.</value>
+  </data>
+  <data name="OPT0105_MessageFormat" xml:space="preserve">
+    <value>HTTP header checking is disabled.</value>
+  </data>
+  <data name="OPT0105_Title" xml:space="preserve">
+    <value>HTTP Header Checking Disabled</value>
+  </data>
+  <data name="OPT0106_Description" xml:space="preserve">
+    <value>The machine key element defines keys to use for encryption and decryption of authentication cookies, view state, and verification of session state identification. The validation and decryption key values should not be stored in configuration files in cleartext. Encrypt the machineKey section of the configuration file using aspnet_regiis.exe.</value>
+  </data>
+  <data name="OPT0106_MessageFormat" xml:space="preserve">
+    <value>Machine key element is not encrypted.</value>
+  </data>
+  <data name="OPT0106_Title" xml:space="preserve">
+    <value>Cleartext Machine Key</value>
+  </data>
+  <data name="OPT0107_Description" xml:space="preserve">
+    <value>Event validation prevents unauthorized post backs in web form applications. Disabling this feature can allow attackers to forge requests from controls not visible or enabled on a given web form. Enable event validation by setting the page element's eventValidation attribute to true.</value>
+  </data>
+  <data name="OPT0107_MessageFormat" xml:space="preserve">
+    <value>Event validation is disabled.</value>
+  </data>
+  <data name="OPT0107_Title" xml:space="preserve">
+    <value>Pages EventValidation Disabled</value>
+  </data>
+  <data name="OPT0108_Description" xml:space="preserve">
+    <value>The ViewStateMac protection prevents tampering with the web forms view state and event validation hidden fields. Disabing this feature can allow attackers to manipluate these fields in the browser and bypass several security features in the .NET framework. Enable the view state mac protection by setting the page element's viewStateMac attribute to true.</value>
+  </data>
+  <data name="OPT0108_MessageFormat" xml:space="preserve">
+    <value>ViewStateMac is disabled.</value>
+  </data>
+  <data name="OPT0108_Title" xml:space="preserve">
+    <value>Pages ViewStateMac Disabled</value>
+  </data>
+  <data name="OPT0024_Description" xml:space="preserve">
+    <value>The Identity password lockout feature is disabled. This can allow brute force and dictionary attacks against user accounts. To enable the password lockout feature, set the shouldLockout parameter to true.</value>
+  </data>
+  <data name="OPT0024_MessageFormat" xml:space="preserve">
+    <value>Password lockout is disabled. To protect accounts from brute force attacks, set the shouldLockout parameter to true.</value>
+  </data>
+  <data name="OPT0024_Title" xml:space="preserve">
+    <value>Identity Password Lockout Disabled</value>
+  </data>
+  <data name="OPT0025_Description" xml:space="preserve">
+    <value>Missing Authorization occurs when an application does not properly verify an authenticated user’s access to functionality, data, or resources. In many cases, applications do not check  policy, claim, or role-based access control rules during a request. This can allow attackers to invoke privileged functionality, such as changing their role or directly browsing to an administrative interface in the application.
+    Restricting access to ASP.NET MVC, Web API, and .NET Core Controllers and Actions is achieved using the Authorize attribute. Actions missing the Authorize attribute can be invoked by anonymous users.</value>
+  </data>
+  <data name="OPT0025_MessageFormat" xml:space="preserve">
+    <value>The Action is missing the Authorization attribute and can be invoked by anonymous users.</value>
+  </data>
+  <data name="OPT0025_Title" xml:space="preserve">
+    <value>Missing Authorization Attribute</value>
+  </data>
+  <data name="OPT0026_Description" xml:space="preserve">
+    <value>Cross-Origin Resource Sharing (CORS) allows a service to disable the browser’s Same-origin policy, which prevents scripts on an attacker-controlled domain from accessing resources and data hosted on a different domain. The CORS Access-Control-Allow-Origin HTTP header specifies the domain with permission to invoke a cross-origin service and view the response data. Configuring the Access-Control-Allow-Origin header with a wildcard (*) can allow code running on an attacker-controlled domain to view responses containing sensitive data.
+    Avoid setting the Access-Control-Allow-Origin header to a wildcard (*). Instead, configure the service to validate the incoming Origin header value against a trusted list of domains. Return the incoming accepted domain in the Access-Control-Allow-Origin header value, otherwise default the Access-Control-Allow-Origin value to a known safe origin.</value>
+  </data>
+  <data name="OPT0026_MessageFormat" xml:space="preserve">
+    <value>Do not set the CORS Access-Control-Allow-Origin header to a wildcard (*).</value>
+  </data>
+  <data name="OPT0026_Title" xml:space="preserve">
+    <value>CORS Allow Origin Wildcard</value>
+  </data>
+  <data name="OPT0027_Description" xml:space="preserve">
+    <value>Proper encryption requires both the encryption algorithm and the key to be strong. Obviously the private key needs to remain secret and be renewed regularly. However these are not the only means to defeat or weaken an encryption. Encyption algorithm can be significantly more vulnerable to brute-force attacks if an insufficient key size is used.</value>
+  </data>
+  <data name="OPT0027_MessageFormat" xml:space="preserve">
+    <value>Insufficient key size causes weaken the encryption.</value>
+  </data>
+  <data name="OPT0027_Title" xml:space="preserve">
+    <value>Insufficient Cryptographic Key Size</value>
+  </data>
+
+
+  <data name="OPT0028_Description" xml:space="preserve">
+    <value>Deserializing untrusted data using a vulnerable library can allow attackers to execute arbitrary code and perform denial of service attacks against the server.Avoid deserializing untrusted data (e.g. request parameters, web service parameters, data from external services) using the above dangerous methods. In cases where deserialization is required, ensure that the application performs signature validation (e.g. HMAC) before deserializing the data.</value>
+  </data>
+  <data name="OPT0028_MessageFormat" xml:space="preserve">
+    <value>Deserializing untrusted type can result in loss of data, remote code execution and denial of service vulnerabilities.</value>
+  </data>
+  <data name="OPT0028_Title" xml:space="preserve">
+    <value>Insecure Deserialization - Untrusted Type</value>
+  </data>
+  <data name="OPT0029_Description" xml:space="preserve">
+    <value>An LDAP client authenticates to an LDAP server with a "bind request" which provides, among other. Anonymous binds and unauthenticated binds allow access to information in the LDAP directory without providing a password, their use is therefore strongly discouraged.</value>
+  </data>
+  <data name="OPT0029_MessageFormat" xml:space="preserve">
+    <value>Set the AuthenticationType property of this DirectoryEntry to AuthenticationTypes.Secure</value>
+  </data>
+  <data name="OPT0029_Title" xml:space="preserve">
+    <value>Insecure LDAP Connections</value>
+  </data>
+  <data name="OPT0030_Description" xml:space="preserve">
+    <value>There is a vulnerability in implementations of regular expression evaluators and related methods that can cause the thread to hang when evaluating regular expressions that contain a grouping expression that is itself repeated. Additionally, any regular expression that contains alternate subexpressions that overlap one another can also be exploited. This defect can be used to execute a Denial of Service (DoS) attack.</value>
+  </data>
+  <data name="OPT0030_MessageFormat" xml:space="preserve">
+    <value>Make sure that using a regular expression is safe here.</value>
+  </data>
+  <data name="OPT0030_Title" xml:space="preserve">
+    <value>Regular Expression Injection</value>
+  </data>
+  <data name="OPT0031_Description" xml:space="preserve">
+    <value>Serialization constructors allocate and initialize objects, security checks that are present on regular constructors must also be present on a serialization constructor. Failure to do so would allow callers that could not otherwise create an instance to use the serialization constructor to do this.</value>
+  </data>
+  <data name="OPT0031_MessageFormat" xml:space="preserve">
+    <value>Secure this serialization constructor.</value>
+  </data>
+  <data name="OPT0031_Title" xml:space="preserve">
+    <value>Serialization constructors should be secured</value>
+  </data>
+  <data name="OPT0032_Description" xml:space="preserve">
+    <value>Disclosing the IP addressing scheme of the internal network can allow attackers to discover internal systems and expand the attack surface.</value>
+  </data>
+  <data name="OPT0032_MessageFormat" xml:space="preserve">
+    <value>Don't hard-code the IP address in the source code, instead make it configurable.</value>
+  </data>
+  <data name="OPT0032_Title" xml:space="preserve">
+    <value>Hardcode IP Address</value>
+  </data>
+  <data name="OPT0033_Description" xml:space="preserve">
+    <value>In the Attributed Programming Model, the ExportAttribute declares that a part "exports", or provides to the composition container, an object that fulfills a particular contract. During composition, parts with imports that have matching contracts will have those dependencies filled by the exported object.
+    If the type doesn't implement the interface it is exporting there will be an issue at runtime (either a cast exception or just a container not filled with the exported type) leading to unexpected behaviors/crashes.</value>
+  </data>
+  <data name="OPT0033_MessageFormat" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="OPT0038_Title" xml:space="preserve">
+    <value>Classes should implement their "ExportAttribute" interfaces.</value>
+  </data>
+  <data name="OPT0039_Description" xml:space="preserve">
+    <value>Thread.Suspend and Thread.Resume can give unpredictable results, and both methods have been deprecated. Indeed, if Thread.Suspend is not used very carefully, a thread can be suspended while holding a lock, thus leading to a deadlock. Other safer synchronization mechanisms should be used, such as Monitor, Mutex, and Semaphore.</value>
+  </data>
+  <data name="OPT0039_MessageFormat" xml:space="preserve">
+    <value>Refactor the code to remove this use of this statement.</value>
+  </data>
+  <data name="OPT0039_Title" xml:space="preserve">
+    <value>Thread.Resume or Thread.Suspend should not be used</value>
+  </data>
+  <data name="OPT0040_Description" xml:space="preserve">
+    <value>Not surprisingly, the SafeHandle.DangerousGetHandle method is dangerous. That's because it may not return a valid handle. Using it can lead to leaks and vulnerabilities. While it is possible to use the method successfully, it's extremely difficult to do correctly, so the method should simply be avoided altogether.</value>
+  </data>
+  <data name="OPT0040_MessageFormat" xml:space="preserve">
+    <value>Refactor the code to remove this use of this expression.</value>
+  </data>
+  <data name="OPT0040_Title" xml:space="preserve">
+    <value>SafeHandle.DangerousGetHandle should not be called.</value>
+  </data>
+  <data name="OPT0041_Description" xml:space="preserve">
+    <value>Recursion is acceptable in methods, where you can break out of it. But with class types, you end up with code that will compile but not run if you try to instantiate the class.</value>
+  </data>
+  <data name="OPT0041_MessageFormat" xml:space="preserve">
+    <value>Refactor this statement so that the generic inheritance chain is not recursive.</value>
+  </data>
+  <data name="OPT0041_Title" xml:space="preserve">
+    <value>Type inheritance should not be recursive</value>
+  </data>
+  <data name="OPT0042_Description" xml:space="preserve">
+    <value>Badly formed SQL is likely to cause errors at runtime.</value>
+  </data>
+  <data name="OPT0042_MessageFormat" xml:space="preserve">
+    <value>Add a space in this string.</value>
+  </data>
+  <data name="OPT0042_Title" xml:space="preserve">
+    <value>SQL keywords should be delimited by whitespace</value>
+  </data>
+
+  <data name="OPT0043_Description" xml:space="preserve">
+    <value>If Finalize or an override of Finalize throws an exception, and the runtime is not hosted by an application that overrides the default policy, the runtime terminates the process immediately without graceful cleanup (finally blocks and finalizers are not executed). This behavior ensures process integrity if the finalizer cannot free or destroy resources.</value>
+  </data>
+  <data name="OPT0043_MessageFormat" xml:space="preserve">
+    <value>Remove this 'throw' statement.</value>
+  </data>
+  <data name="OPT0043_Title" xml:space="preserve">
+    <value>Destructors should not throw exceptions</value>
+  </data>
+  <data name="OPT0044_Description" xml:space="preserve">
+    <value>Returning null from a non-async Task method will cause a NullReferenceException at runtime. This problem can be avoided by returning Task.FromResult&lt;T&gt;(null) instead.</value>
+  </data>
+  <data name="OPT0044_MessageFormat" xml:space="preserve">
+    <value>Do not return null from this method, instead return 'Task.FromResult&lt;T&lt;(null)', 'Task.CompletedTask' or 'Task.Delay(0)'.</value>
+  </data>
+  <data name="OPT0044_Title" xml:space="preserve">
+    <value>Non-async Task methods should not return null</value>
+  </data>
+  <data name="OPT0045_Description" xml:space="preserve">
+    <value>Calling the BeginInvoke method of a delegate will allocate some resources that are only freed-up when EndInvoke is called. This is why you should always pair BeginInvoke with an EndInvoke to complete your asynchronous call.</value>
+  </data>
+  <data name="OPT0045_MessageFormat" xml:space="preserve">
+    <value>Pair this BeginInvoke with an EndInvoke.</value>
+  </data>
+  <data name="OPT0045_Title" xml:space="preserve">
+    <value>Calls to delegate's method "BeginInvoke" should be paired with calls to "EndInvoke"</value>
+  </data>
+  <data name="OPT0046_Description" xml:space="preserve">
+    <value>Marking a class with PartCreationPolicy(CreationPolicy.Shared), which is part of Managed Extensibility Framework (MEF), means that a single, shared instance of the exported object will be created. Therefore it doesn't make sense to create new instances using the constructor and it will most likely result in unexpected behaviours.</value>
+  </data>
+  <data name="OPT0046_MessageFormat" xml:space="preserve">
+    <value>Refactor this code so that it doesn't invoke the constructor of this class.</value>
+  </data>
+  <data name="OPT0046_Title" xml:space="preserve">
+    <value>Shared parts should not be created with new</value>
+  </data>
+  <data name="OPT0047_Description" xml:space="preserve">
+    <value>Properties provide a way to enforce encapsulation by providing public, protected or internal methods that give controlled access to private fields. However in classes with multiple fields it is not unusual that cut and paste is used to quickly create the needed properties, which can result in the wrong field being accessed by a getter or setter.</value>
+  </data>
+  <data name="OPT0047_MessageFormat" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="OPT0047_Title" xml:space="preserve">
+    <value>Getters and setters should access the expected fields</value>
+  </data>
+  <data name="OPT0048_Description" xml:space="preserve">
+    <value>Numbers can be shifted with the &lt;&lt; and &gt;&gt; operators, but the right operand of the operation needs to be an int or a type that has an implicit conversion to int. However, with dynamic, the compiler's type checking is turned off, so you can pass anything to a shift operator and have it compile. And if the argument can't be converted to int at runtime, then a RuntimeBinderException will be raised.</value>
+  </data>
+  <data name="OPT0048_MessageFormat" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="OPT0048_Title" xml:space="preserve">
+    <value>Right operands of shift operators should be integers</value>
+  </data>
+  <data name="OPT0049_Description" xml:space="preserve">
+    <value>Shared resources should not be used for locking as it increases the chance of deadlocks. Any other thread could acquire (or attempt to acquire) the same lock for another unrelated purpose.
+    Instead, a dedicated object instance should be used for each shared resource, to avoid deadlocks or lock contention.</value>
+  </data>
+  <data name="OPT0049_MessageFormat" xml:space="preserve">
+    <value>Lock on a dedicated object instance instead.</value>
+  </data>
+  <data name="OPT0049_Title" xml:space="preserve">
+    <value>Shared resources should not be used for locking.</value>
+  </data>
+
+  <data name="OPT0050_Description" xml:space="preserve">
+    <value>The PartCreationPolicyAttribute attribute, which is part of the Managed Extensibility Framework (MEF), is used to specify how the exported object will be created. Therefore it doesn't make sense not to export this a class with this attribute using the ExportAttribute attribute.</value>
+  </data>
+  <data name="OPT0050_MessageFormat" xml:space="preserve">
+    <value>PartCreationPolicyAttribute should be used with ExportAttribute</value>
+  </data>
+  <data name="OPT0050_Title" xml:space="preserve">
+    <value>PartCreationPolicyAttribute should be used with ExportAttribute</value>
+  </data>
+  <data name="OPT0038_Description" xml:space="preserve">
+    <value>When creating a custom Markup Extension that accepts parameters in WPF, the ConstructorArgument markup must be used to identify the discrete properties that match these parameters. However since this is done via a string, the compiler will not notice if there are typos.</value>
+  </data>
+  <data name="OPT0038_MessageFormat" xml:space="preserve">
+    <value>Change this 'ConstructorArgumentAttribute' value to match one of the existing constructors arguments.</value>
+  </data>
+  <data name="OPT0038_Title" xml:space="preserve">
+    <value>ConstructorArgument parameters should exist in constructors</value>
+  </data>
+  <data name="OPT0037_Description" xml:space="preserve">
+    <value>It is highly suspicious when a value is saved for a key or index and then unconditionally overwritten. Such replacements are likely errors.</value>
+  </data>
+  <data name="OPT0037_MessageFormat" xml:space="preserve">
+    <value>Verify this is the index/key that was intended.</value>
+  </data>
+  <data name="OPT0037_Title" xml:space="preserve">
+    <value>Collection elements should not be replaced unconditionally</value>
+  </data>
+  <data name="OPT0036_Description" xml:space="preserve">
+    <value>Creating a new Exception without actually throwing it is useless and is probably due to a mistake.</value>
+  </data>
+  <data name="OPT0036_MessageFormat" xml:space="preserve">
+    <value>Throw this exception or remove this useless statement.</value>
+  </data>
+  <data name="OPT0036_Title" xml:space="preserve">
+    <value>Exceptions should not be created without being thrown</value>
+  </data>
+  <data name="OPT0035_Description" xml:space="preserve">
+    <value>The size of a collection and the length of an array are always greater than or equal to zero. So testing that a size or length is greater than or equal to zero doesn't make sense, since the result is always true. Similarly testing that it is less than zero will always return false. Perhaps the intent was to check the non-emptiness of the collection or array instead.</value>
+  </data>
+  <data name="OPT0035_MessageFormat" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="OPT0035_Title" xml:space="preserve">
+    <value>Collection sizes and array length comparisons should make sense</value>
+  </data>
+  <data name="OPT0034_Description" xml:space="preserve">
+    <value>Serialization event handlers that don't have the correct signature will simply not be called, thus bypassing any attempts to augment the automated de/serialization.</value>
+  </data>
+  <data name="OPT0034_MessageFormat" xml:space="preserve">
+    <value>Serialization event handlers should be implemented correctly</value>
+  </data>
+  <data name="OPT0034_Title" xml:space="preserve">
+    <value>Serialization event handlers should be implemented correctly</value>
+  </data>
+</root>

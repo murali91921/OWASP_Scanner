@@ -27,7 +27,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="syntaxNode"></param>
         /// <param name="model"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindTokenParameters(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities)
+        private void FindTokenParameters(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
         {
             var assignments = syntaxNode.DescendantNodes().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignments)
@@ -36,13 +36,13 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 var leftSymbol = model.GetSymbol(assignment.Left);
-                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() ==KnownType.Microsoft_IdentityModel_Tokens))
+                if (leftSymbol == null || !(leftSymbol.ContainingNamespace.ToString() == KnownType.Microsoft_IdentityModel_Tokens))
                     continue;
 
                 var constant = model.GetConstantValue(assignment.Right);
                 //If right side if assignment is false or constant value as false
                 if (constant.HasValue && constant.Value is bool value && !value)
-                    vulnerabilities.Add(assignment);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, assignment, Enums.ScannerType.JWTValidation));
             }
         }
 
@@ -52,7 +52,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="syntaxNode"></param>
         /// <param name="model"></param>
         /// <param name="vulnerabilities"></param>
-        private void FindDecoders(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities)
+        private void FindDecoders(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities)
         {
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocations)
@@ -68,7 +68,7 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
                 if (item.ArgumentList.Arguments.Count == 1)
                 {
-                    vulnerabilities.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, Enums.ScannerType.JWTValidation));
                     continue;
                 }
 
@@ -89,7 +89,7 @@ namespace SAST.Engine.CSharp.Scanners
                         vulnerable = true;
                 }
                 if (vulnerable)
-                    vulnerabilities.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, Enums.ScannerType.JWTValidation));
             }
         }
 
@@ -100,7 +100,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <param name="model"></param>
         /// <param name="vulnerabilities"></param>
         /// <param name="solution"></param>
-        private void FindBuilders(SyntaxNode syntaxNode, SemanticModel model, ref List<SyntaxNode> vulnerabilities, Solution solution)
+        private void FindBuilders(SyntaxNode syntaxNode, SemanticModel model, ref List<VulnerabilityDetail> vulnerabilities, Solution solution)
         {
             var invocations = syntaxNode.DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocations)
@@ -110,9 +110,9 @@ namespace SAST.Engine.CSharp.Scanners
                 ISymbol symbol = model.GetSymbol(item);
                 if (symbol == null || symbol.ContainingType.ToString() + "." + symbol.Name.ToString() != KnownMethod.JWT_Builder_JwtBuilder_Decode)
                     continue;
-                //bool vulnerable = true;
+
                 if (IsVulnerable((item.Expression as MemberAccessExpressionSyntax).Expression, model, solution))
-                    vulnerabilities.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(_filePath, item, Enums.ScannerType.JWTValidation));
             }
         }
 
@@ -215,6 +215,7 @@ namespace SAST.Engine.CSharp.Scanners
                     return vulnerable;
             }
         }
+        private string _filePath;
 
         /// <summary>
         /// This method will find the JWT Signature Vulnerabilities 
@@ -226,7 +227,8 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            _filePath = filePath;
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
 
             //Microsoft.IdentityModel.Tokens
             FindTokenParameters(syntaxNode, model, ref vulnerabilities);
@@ -236,7 +238,7 @@ namespace SAST.Engine.CSharp.Scanners
 
             //JWT.Net JwtBuilder
             FindBuilders(syntaxNode, model, ref vulnerabilities, solution);
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.JWTValidation);
+            return vulnerabilities;
         }
     }
 }

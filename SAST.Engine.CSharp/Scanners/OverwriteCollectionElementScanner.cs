@@ -22,14 +22,14 @@ namespace SAST.Engine.CSharp.Scanners
             SyntaxKind.FalseLiteralExpression,
         };
 
-        private static string[] GenericCollection_Types = {
+        private readonly static string[] GenericCollection_Types = {
             KnownType.System_Collections_Generic_IDictionary_TKey_TValue,
             KnownType.System_Collections_Generic_ICollection_T
         };
 
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var expressionStatements = syntaxNode.DescendantNodesAndSelf().OfType<ExpressionStatementSyntax>();
             foreach (var statement in expressionStatements)
             {
@@ -45,9 +45,9 @@ namespace SAST.Engine.CSharp.Scanners
                     .FirstOrDefault(IsSameIndexOrKey(indexOrKey));
 
                 if (previousSet != null)
-                    syntaxNodes.Add(statement);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, statement, Enums.ScannerType.OverwriteCollectionElement));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.OverwriteCollectionElement);
+            return vulnerabilities;
         }
 
         private SyntaxNode GetCollectionIdentifier(ExpressionStatementSyntax statement)

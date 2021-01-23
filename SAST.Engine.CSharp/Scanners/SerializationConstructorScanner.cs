@@ -13,7 +13,7 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var classDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>();
             foreach (var classDeclaration in classDeclarations)
             {
@@ -37,7 +37,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!hasSerializableAttribute)
                 {
                     if (classDeclaration.Modifiers.Any(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PublicKeyword)))
-                        syntaxNodes.Add(classDeclaration);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, classDeclaration, Enums.ScannerType.SerializationConstructor));
                     continue;
                 }
                 //Constructor should exists with 2 Parameters
@@ -64,7 +64,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (constructorDeclaration == null)
                 {
                     if (!classDeclaration.Modifiers.Any(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InternalKeyword)))
-                        syntaxNodes.Add(classDeclaration);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, classDeclaration, Enums.ScannerType.SerializationConstructor));
                     continue;
                 }
 
@@ -73,17 +73,17 @@ namespace SAST.Engine.CSharp.Scanners
                 if (classSymbol.IsSealed)
                 {
                     if (!constructorDeclaration.Modifiers.Any(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PrivateKeyword)))
-                        syntaxNodes.Add(constructorDeclaration);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, constructorDeclaration, Enums.ScannerType.SerializationConstructor));
                 }
                 //If class is notsealed, protected constuctor is safe.
                 //If constructor have more modifiers like protected internal, constructor is unsafe. 
                 else
                 {
                     if (!constructorDeclaration.Modifiers.Any(obj => obj.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.ProtectedKeyword)) || constructorDeclaration.Modifiers.Count > 1)
-                        syntaxNodes.Add(constructorDeclaration);
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, constructorDeclaration, Enums.ScannerType.SerializationConstructor));
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SerializationConstructor);
+            return vulnerabilities;
         }
     }
 }

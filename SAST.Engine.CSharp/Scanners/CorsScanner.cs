@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SAST.Engine.CSharp.Contract;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace SAST.Engine.CSharp.Scanners
 {
@@ -19,7 +20,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             //System.Console.WriteLine(filePath);
             foreach (var item in invocations)
@@ -33,9 +34,9 @@ namespace SAST.Engine.CSharp.Scanners
 
                 if (symbol.ContainingType.ToString() == Constants.KnownType.Microsoft_AspNetCore_Cors_Infrastructure_CorsPolicyBuilder
                     && symbol.Name.ToString() == "AllowAnyOrigin")
-                    syntaxNodes.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.CorsAllowAnyOrigin));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.CorsAllowAnyOrigin);
+            return vulnerabilities;
         }
     }
 }

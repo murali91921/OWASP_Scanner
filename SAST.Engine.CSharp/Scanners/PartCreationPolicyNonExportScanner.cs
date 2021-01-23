@@ -14,7 +14,7 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNodeOrToken> syntaxTokens = new List<SyntaxNodeOrToken>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var classDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>();
             foreach (var classDeclaration in classDeclarations)
             {
@@ -22,18 +22,15 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 var classSymbol = model.GetDeclaredSymbol(classDeclaration);
-                if (classSymbol == null)
-                    continue;
-
-                if (!HasPartCreationPolicyAttribute(classSymbol))
+                if (classSymbol == null || !HasPartCreationPolicyAttribute(classSymbol))
                     continue;
 
                 if (classSymbol.GetAttributes().Any(attr => Utils.DerivesFrom(attr.AttributeClass,KnownType.System_ComponentModel_Composition_ExportAttribute)) || HasInheritExportAttribute(classSymbol))
                     continue;
 
-                syntaxTokens.Add(classDeclaration.Identifier);
+                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, classDeclaration.Identifier, Enums.ScannerType.PartCreationPolicyNonExport));
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxTokens, Enums.ScannerType.PartCreationPolicyNonExport);
+            return vulnerabilities;
         }
 
         private static bool HasPartCreationPolicyAttribute(ITypeSymbol classSymbol) =>

@@ -35,7 +35,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
             foreach (var assignment in assignmentExpressions)
             {
@@ -51,9 +51,9 @@ namespace SAST.Engine.CSharp.Scanners
                     continue;
 
                 if (IsVulnerable(assignment.Right, model))
-                    vulnerabilities.Add(assignment);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignment, Enums.ScannerType.CertificateValidation));
             }
-            return Map.ConvertToVulnerabilityList(filePath, vulnerabilities, Enums.ScannerType.CertificateValidation);
+            return vulnerabilities;
         }
 
         /// <summary>
@@ -190,10 +190,7 @@ namespace SAST.Engine.CSharp.Scanners
                     return trueResult && falseResult;
                 }
                 else
-                {
                     return trueResult;
-                }
-
             }
             var returnValue = model.GetConstantValue(expression);
             // If expression is have boolean value as true;

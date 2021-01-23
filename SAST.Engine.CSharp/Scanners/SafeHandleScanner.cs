@@ -11,7 +11,7 @@ namespace SAST.Engine.CSharp.Scanners
     {
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
-            List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             var invocationExpressions = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
             foreach (var item in invocationExpressions)
             {
@@ -23,7 +23,7 @@ namespace SAST.Engine.CSharp.Scanners
                     if (typeSymbol == null)
                         continue;
                     if (typeSymbol.ToString() == KnownType.System_Runtime_InteropServices_SafeHandle)
-                        syntaxNodes.Add(item);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, item, Enums.ScannerType.SafeHandle));
                 }
                 else if (item.Expression is MemberBindingExpressionSyntax memberBinding)
                 {
@@ -35,11 +35,11 @@ namespace SAST.Engine.CSharp.Scanners
                         if (typeSymbol == null)
                             continue;
                         if (typeSymbol.ToString() == KnownType.System_Runtime_InteropServices_SafeHandle)
-                            syntaxNodes.Add(conditionalAccess);
+                    vulnerabilities.Add(VulnerabilityDetail.Create(filePath, conditionalAccess, Enums.ScannerType.SafeHandle));
                     }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.SafeHandle);
+            return vulnerabilities;
         }
     }
 }

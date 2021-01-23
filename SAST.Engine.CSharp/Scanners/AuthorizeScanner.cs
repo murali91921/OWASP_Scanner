@@ -10,19 +10,19 @@ namespace SAST.Engine.CSharp.Scanners
 {
     internal class AuthorizeScanner : IScanner
     {
-        private static string[] Controller_Classes =
+        private readonly static string[] Controller_Classes =
         {
             KnownType.System_Web_Mvc_Controller,
             KnownType.System_Web_Mvc_ControllerBase,
             KnownType.Microsoft_AspNetCore_Mvc_Controller,
             KnownType.Microsoft_AspNetCore_Mvc_ControllerBase
         };
-        private static string[] Authorize_Attribute =
+        private readonly static string[] Authorize_Attribute =
         {
             KnownType.Microsoft_AspNetCore_Authorization_AuthorizeAttribute ,
             KnownType.System_Web_Mvc_AuthorizeAttribute,
         };
-        private static string[] Anonymous_Attibute =
+        private readonly static string[] Anonymous_Attibute =
         {
             KnownType.Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
             KnownType.System_Web_Mvc_AllowAnonymousAttribute,
@@ -38,6 +38,7 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model = null, Solution solution = null)
         {
+            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
             List<SyntaxNode> syntaxNodes = new List<SyntaxNode>();
 
             var classDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>();
@@ -57,10 +58,14 @@ namespace SAST.Engine.CSharp.Scanners
                 foreach (var method in methodDeclarations)
                 {
                     if (IsVulnerable(model, method))
-                        syntaxNodes.Add(method.ReturnType);
+                    {
+                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, method.ReturnType, Enums.ScannerType.Authorize));
+                        //syntaxNodes.Add(method.ReturnType);
+                    }
                 }
             }
-            return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.Authorize);
+            return vulnerabilities;
+            //return Mapper.Map.ConvertToVulnerabilityList(filePath, syntaxNodes, Enums.ScannerType.Authorize);
         }
 
         /// <summary>
