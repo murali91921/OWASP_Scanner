@@ -362,6 +362,8 @@ namespace SAST.Engine.CSharp
                     {
                         if (location.IsInSource)
                         {
+                            if (!model.Compilation.ContainsSyntaxTree(location.SourceTree))
+                                continue;
                             SemanticModel invocationModel = model.Compilation.GetSemanticModel(location.SourceTree, true);
                             if (invocationModel == null)
                                 continue;

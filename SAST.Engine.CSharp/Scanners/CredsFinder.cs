@@ -68,7 +68,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!IsStringType(declarator, model))
                     continue;
                 string variableValue = declarator.Initializer?.Value.GetStringValue(); ;
-                if (string.IsNullOrWhiteSpace(variableValue))
+                if (string.IsNullOrWhiteSpace(variableValue) || variableValue.Contains(" "))
                     continue;
                 var bannedWords = FindCredentialWords(declarator.Identifier.ValueText, variableValue);
                 if (bannedWords.Any())
@@ -86,7 +86,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!IsStringType(assignment, model))
                     continue;
                 string variableValue = assignment.Right.GetStringValue();
-                if (string.IsNullOrWhiteSpace(variableValue))
+                if (string.IsNullOrWhiteSpace(variableValue) || variableValue.Contains(" "))
                     continue;
                 var bannedWords = FindCredentialWords((assignment.Left as IdentifierNameSyntax)?.Identifier.ValueText, variableValue);
                 if (bannedWords.Any())
@@ -104,7 +104,7 @@ namespace SAST.Engine.CSharp.Scanners
                 if (!ShouldConsider(literal, model))
                     continue;
                 string variableValue = literal.GetStringValue();
-                if (string.IsNullOrWhiteSpace(variableValue))
+                if (string.IsNullOrWhiteSpace(variableValue) || variableValue.Contains(" "))
                     continue;
                 var bannedWords = FindCredentialWords(null, variableValue);
                 if (bannedWords.Any())
@@ -130,7 +130,7 @@ namespace SAST.Engine.CSharp.Scanners
 
                 string variableValue = leftValue + rightValue;
 
-                if (string.IsNullOrWhiteSpace(variableValue))
+                if (string.IsNullOrWhiteSpace(variableValue) || variableValue.Contains(" "))
                     continue;
 
                 var bannedWords = FindCredentialWords(null, variableValue);
@@ -155,7 +155,7 @@ namespace SAST.Engine.CSharp.Scanners
                     _ => null
                 } ?? CredentialSeparator.ToString());
 
-                if (string.IsNullOrWhiteSpace(variableValue))
+                if (string.IsNullOrWhiteSpace(variableValue) || variableValue.Contains(" "))
                     continue;
 
                 var bannedWords = FindCredentialWords(null, variableValue);
