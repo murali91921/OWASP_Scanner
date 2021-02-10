@@ -14,7 +14,7 @@ namespace SAST.Engine.CSharp
     /// </summary>
     public static class Utils
     {
-        internal static readonly string[] AvailableExtensions = { ".cs", ".cshtml", ".html", ".aspx", ".ascx", ".config", ".sln", ".csproj" };
+        internal static readonly string[] AvailableExtensions = { ".cs", /*".cshtml", ".html", ".aspx", ".ascx",*/ ".config", ".sln", ".csproj" };
         internal static readonly string[] SourceCodeFileExtensions = { ".cs" };
         internal static readonly string[] ConfigurationFileExtensions = { ".config" };
         internal static readonly string[] MarkupFileExtensions = { ".cshtml", ".html", ".aspx", ".ascx" };
@@ -169,6 +169,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.MissingRequireSSLFormsAuthentication, Enums.Severity.Medium},
             {Enums.ScannerType.ReflectedXSS, Enums.Severity.Medium},
             {Enums.ScannerType.StoredXSS, Enums.Severity.Medium},
+            {Enums.ScannerType.EnableDebugMode, Enums.Severity.Medium},
         };
 
 

@@ -26,6 +26,7 @@ namespace SAST.Engine.CSharp.Enums
         ReflectedXSS = 14,
         StoredXSS = 15,
         XXE = 16,
+        WeakSymmetricAlgorithm = 17,
         MissingRequireSSLFormsAuthentication = 101,
         MissingCookielessFormsAuthentication = 102,
         MissingCrossAppRedirectsFormsAuthentication = 103,
@@ -34,7 +35,6 @@ namespace SAST.Engine.CSharp.Enums
         MachineKeyClearText = 106,
         EventValidation = 107,
         ViewStateMac = 108,
-        WeakSymmetricAlgorithm = 17,
         WeakCipherModePadding = 18,
         InsecureDeserialization = 19,
         CommandInjection = 20,
@@ -68,6 +68,7 @@ namespace SAST.Engine.CSharp.Enums
         RightShiftNotNumber = 48,
         SharedObjectLock = 49,
         PartCreationPolicyNonExport = 50,
+        EnableDebugMode = 51,
     }
 
     /// <summary>

@@ -156,7 +156,7 @@ namespace SAST.Engine.CSharp.Constants
             System_Security_Cryptography_TripleDESCryptoServiceProvider = "System.Security.Cryptography.TripleDESCryptoServiceProvider",
             System_SerializableAttribute = "System.SerializableAttribute",
             System_StackOverflowException = "System.StackOverflowException",
-            System_String= "System.String",
+            System_String = "System.String",
             System_Threading_Monitor = "System.Threading.Monitor",
             System_Threading_Tasks_Task = "System.Threading.Tasks.Task",
             System_Threading_Tasks_Task_TResult = "System.Threading.Tasks.Task<TResult>",
@@ -368,6 +368,10 @@ namespace SAST.Engine.CSharp.Constants
             System_Xml_XmlTextReader_Read = "System.Xml.XmlTextReader.Read",
             fastJSON_JSON_ToObject = "fastJSON.JSON.ToObject",
             object_ToString = "object.ToString",
-            string_Format = "string.Format";
+            string_Format = "string.Format",
+            Microsoft_AspNetCore_Builder_DeveloperExceptionPageExtensions_UseDeveloperExceptionPage = "Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions.UseDeveloperExceptionPage",
+            Microsoft_AspNetCore_Builder_DatabaseErrorPageExtensions_UseDatabaseErrorPage = "Microsoft.AspNetCore.Builder.DatabaseErrorPageExtensions.UseDatabaseErrorPage",
+            Microsoft_AspNetCore_Hosting_HostingEnvironmentExtensions_IsDevelopment = "Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsDevelopment",
+            Microsoft_Extensions_Hosting_HostEnvironmentEnvExtensions_IsDevelopment = "Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment";
     }
 }

@@ -100,15 +100,17 @@ namespace SAST.Engine.CSharp.Scanners
         /// <returns></returns>
         public IEnumerable<VulnerabilityDetail> FindVulnerabilties(SyntaxNode syntaxNode, string filePath, SemanticModel model, Solution solution = null)
         {
-            List<VulnerabilityDetail> vulnerabilities = new List<VulnerabilityDetail>();
+            List<SyntaxNode> vulnerabilities = new List<SyntaxNode>();
             var methodDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<MethodDeclarationSyntax>();
             foreach (var method in methodDeclarations)
             {
+                if (!filePath.EndsWith("ForgotPassword.aspx.cs"))
+                    continue;
                 //Set the propertyName based on scannerSubType parameter, this value will be usedful for Property check.
                 string propertyName = scannerType == ScannerType.MissingHttpOnlyCookie ? "HttpOnly" : "Secure";
 
                 // Checking Variable Declarations
-                var variableDeclarations = syntaxNode.DescendantNodesAndSelf().OfType<VariableDeclarationSyntax>();
+                var variableDeclarations = method.DescendantNodesAndSelf().OfType<VariableDeclarationSyntax>();
                 foreach (var item in variableDeclarations)
                 {
                     ITypeSymbol typeSymbol = model.GetTypeSymbol(item.Type);
@@ -137,7 +139,8 @@ namespace SAST.Engine.CSharp.Scanners
                                         isVulnerable = false;
                                     // If constant value is false or no constant value, consider as not safe.
                                     else
-                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
+                                        vulnerabilities.Add(assignmentExpression);
+                                    //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
                                 }
                         }
                         var referencedSymbols = SymbolFinder.FindReferencesAsync(symbol, solution).Result;
@@ -170,7 +173,8 @@ namespace SAST.Engine.CSharp.Scanners
                                     // If constant value is false or Othe expression then consider as unsafe
                                     else
                                     {
-                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
+                                        vulnerabilities.Add(assignmentExpression);
+                                        //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, assignmentExpression, scannerType));
                                         isVulnerable = true;
                                     }
                                 }
@@ -183,7 +187,8 @@ namespace SAST.Engine.CSharp.Scanners
                                     && assignmentExpression.Right is ObjectCreationExpressionSyntax objectCreationExpression)
                                 {
                                     if (isVulnerable && !propertyChange)
-                                        vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
+                                        vulnerabilities.Add(vulnerableNode);
+                                    //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
                                     isVulnerable = true;
                                     propertyChange = false;
                                     vulnerableNode = objectCreationExpression;
@@ -204,7 +209,8 @@ namespace SAST.Engine.CSharp.Scanners
                                             else
                                             {
                                                 propertyChange = true;
-                                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, propertyAssignmentExpression, scannerType));
+                                                vulnerabilities.Add(propertyAssignmentExpression);
+                                                //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, propertyAssignmentExpression, scannerType));
                                             }
                                         }
                                     }
@@ -212,13 +218,14 @@ namespace SAST.Engine.CSharp.Scanners
                                 #endregion
                             }
                             if (isVulnerable && !propertyChange && vulnerableNode != null)
-                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
+                                vulnerabilities.Add(vulnerableNode);
+                            //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
                         }
                     }
                 }
 
                 // Invocations
-                var invocations = syntaxNode.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
+                var invocations = method.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>();
                 foreach (var item in invocations)
                 {
                     foreach (var argument in item.ArgumentList.Arguments)
@@ -245,35 +252,35 @@ namespace SAST.Engine.CSharp.Scanners
                                         vulnerableNode = assignmentExpression;
                                 }
                             if (vulnerable)
-                                vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
+                                vulnerabilities.Add(vulnerableNode);
+                            //vulnerabilities.Add(VulnerabilityDetail.Create(filePath, vulnerableNode, scannerType));
                         }
                     }
                 }
 
                 //Checking property assignments other than Cookie variable property assignments.
                 //Ex: Response.Cookies[0].Secure = false;
-                //var assignmentExpressions = syntaxNode.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
-                //foreach (var item in assignmentExpressions)
-                //{
-                //    if (item.Parent.Kind() == SyntaxKind.ObjectInitializerExpression)
-                //        continue;
-                //    ISymbol symbol = model.GetSymbol(item.Left);
-                //    if (symbol == null || !Cookie_Classes.Any(obj => obj + "." + propertyName == symbol.ToString()))
-                //        continue;
-                //    {
-                //        var rightConstant = model.GetConstantValue(item.Right.RemoveParenthesis());
-                //        // If constant value is false or no constant value, consider as not safe.
-                //        if (rightConstant.HasValue && rightConstant.Value is bool value && !value)
-                //        {
-                //            if (!vulnerabilities.Contains(item))
-                //                vulnerabilities.Add(item);
-                //        }
-                //    }
-                //}
+                var assignmentExpressions = method.DescendantNodesAndSelf().OfType<AssignmentExpressionSyntax>();
+                foreach (var item in assignmentExpressions)
+                {
+                    if (item.Parent.Kind() == SyntaxKind.ObjectInitializerExpression)
+                        continue;
+                    ISymbol symbol = model.GetSymbol(item.Left);
+                    if (symbol == null || !Cookie_Classes.Any(obj => obj + "." + propertyName == symbol.ToString()))
+                        continue;
+                    {
+                        var rightConstant = model.GetConstantValue(item.Right.RemoveParenthesis());
+                        // If constant value is false or no constant value, consider as not safe.
+                        if (rightConstant.HasValue && rightConstant.Value is bool value && !value)
+                        {
+                            if (!vulnerabilities.Contains(item))
+                                vulnerabilities.Add(item);
+                        }
+                    }
+                }
             }
-            return vulnerabilities;
+            return vulnerabilities.Any() ? vulnerabilities.Select(obj => VulnerabilityDetail.Create(filePath, obj, scannerType)) : Enumerable.Empty<VulnerabilityDetail>();
         }
-
         #endregion
     }
 }

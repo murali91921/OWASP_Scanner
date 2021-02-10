@@ -76,9 +76,9 @@ namespace SAST.Engine.CSharp.Core
                 {
                     foreach (var project in workspace.CurrentSolution.Projects)
                     {
-                        var documentPaths = project.Documents.Select(obj => obj.FilePath);
+                        var aadedFilePaths = project.Documents.Select(obj => obj.FilePath).Union(project.AdditionalDocuments.Select(obj => obj.FilePath));
                         var tempPaths = filePaths.ToList();
-                        tempPaths.RemoveAll(obj => documentPaths.Contains(obj));
+                        tempPaths.RemoveAll(obj => aadedFilePaths.Contains(obj));
                         tempPaths.Remove(project.FilePath);
                         filePaths = tempPaths.ToArray();
                         solutionLoaded = true;
@@ -200,7 +200,9 @@ namespace SAST.Engine.CSharp.Core
                 {
                     if (Utils.SourceCodeFileExtensions.Any(ext => ext == Path.GetExtension(source).ToLower()))
                         solution = solution.AddDocument(DocumentId.CreateNewId(projectId), Path.GetFileName(source), File.ReadAllText(source), filePath: source);
-                    else if (Utils.ConfigurationFileExtensions.Concat(Utils.MarkupFileExtensions).Any(ext => ext == Path.GetExtension(source).ToLower()))
+                    else if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(source).ToLower()))
+                        solution = solution.AddAdditionalDocument(DocumentId.CreateNewId(projectId), Path.GetFileName(source), File.ReadAllText(source), filePath: source);
+                    else if (Utils.MarkupFileExtensions.Any(ext => ext == Path.GetExtension(source).ToLower()))
                         solution = solution.AddAdditionalDocument(DocumentId.CreateNewId(projectId), Path.GetFileName(source), File.ReadAllText(source), filePath: source);
                 }
                 catch
@@ -307,8 +309,7 @@ namespace SAST.Engine.CSharp.Core
             {
                 foreach (Project project in workspace.CurrentSolution.Projects)
                 {
-                    if (project.AdditionalDocuments.Count() > 0)
-                    {
+                    if (project.AdditionalDocuments.Any())
                         foreach (var item in project.AdditionalDocuments)
                         {
                             if (Utils.ConfigurationFileExtensions.Any(ext => ext == Path.GetExtension(item.FilePath).ToLower()))
@@ -326,8 +327,8 @@ namespace SAST.Engine.CSharp.Core
                                 vulnerabilities.AddRange(cSHtmlScanner.FindVulnerabilities(item.FilePath));
                             }
                         }
-                    }
-                    if (project.Documents != null)
+
+                    if (project.Documents.Any())
                         foreach (var document in project.Documents)
                         {
                             IScanner scanner = GetScanner(scannerType);
@@ -335,8 +336,9 @@ namespace SAST.Engine.CSharp.Core
                                 continue;
                             var syntaxNode = document.GetSyntaxRootAsync().Result;
                             var model = document.GetSemanticModelAsync().Result;
-                            vulnerabilities.AddRange(scanner.FindVulnerabilties(syntaxNode, document.FilePath, model, workspace.CurrentSolution));
-                            //Console.WriteLine(scannerType);
+                            var list = scanner.FindVulnerabilties(syntaxNode, document.FilePath, model, workspace.CurrentSolution);
+                            //Console.WriteLine($"{list.Count()} {document.Project.Id}{document.Name}");
+                            vulnerabilities.AddRange(list);
                         }
                     else
                         break;
@@ -404,6 +406,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.UselessException => new UselessExceptionScanner(),
                 ScannerType.CollectionSizeOrArrayLength => new CollectionSizeOrArrayLengthScanner(),
                 ScannerType.SerializationEventImplement => new SerializationEventImplementScanner(),
+                ScannerType.EnableDebugMode => new EnableDebugModeScanner(),
                 _ => null,
             };
         }

@@ -307,6 +307,42 @@
   <data name="OPT0104_Title" xml:space="preserve">
     <value>Forms Authentication Weak Cookie Protection</value>
   </data>
+  <data name="OPT0105_Description" xml:space="preserve">
+    <value>Disabling the HTTP Runtime header checking protection opens the application up to HTTP Header Injection (aka Response Splitting) attacks. Enable the header checking protection by setting the httpRuntime element's enableHeaderChecking attribute to true, which is the default value.</value>
+  </data>
+  <data name="OPT0105_MessageFormat" xml:space="preserve">
+    <value>HTTP header checking is disabled.</value>
+  </data>
+  <data name="OPT0105_Title" xml:space="preserve">
+    <value>HTTP Header Checking Disabled</value>
+  </data>
+  <data name="OPT0106_Description" xml:space="preserve">
+    <value>The machine key element defines keys to use for encryption and decryption of authentication cookies, view state, and verification of session state identification. The validation and decryption key values should not be stored in configuration files in cleartext. Encrypt the machineKey section of the configuration file using aspnet_regiis.exe.</value>
+  </data>
+  <data name="OPT0106_MessageFormat" xml:space="preserve">
+    <value>Machine key element is not encrypted.</value>
+  </data>
+  <data name="OPT0106_Title" xml:space="preserve">
+    <value>Cleartext Machine Key</value>
+  </data>
+  <data name="OPT0107_Description" xml:space="preserve">
+    <value>Event validation prevents unauthorized post backs in web form applications. Disabling this feature can allow attackers to forge requests from controls not visible or enabled on a given web form. Enable event validation by setting the page element's eventValidation attribute to true.</value>
+  </data>
+  <data name="OPT0107_MessageFormat" xml:space="preserve">
+    <value>Event validation is disabled.</value>
+  </data>
+  <data name="OPT0107_Title" xml:space="preserve">
+    <value>Pages EventValidation Disabled</value>
+  </data>
+  <data name="OPT0108_Description" xml:space="preserve">
+    <value>The ViewStateMac protection prevents tampering with the web forms view state and event validation hidden fields. Disabing this feature can allow attackers to manipluate these fields in the browser and bypass several security features in the .NET framework. Enable the view state mac protection by setting the page element's viewStateMac attribute to true.</value>
+  </data>
+  <data name="OPT0108_MessageFormat" xml:space="preserve">
+    <value>ViewStateMac is disabled.</value>
+  </data>
+  <data name="OPT0108_Title" xml:space="preserve">
+    <value>Pages ViewStateMac Disabled</value>
+  </data>
   <data name="OPT0018_Description" xml:space="preserve">
     <value>The Electronic Codebook (ECB) mode encrypts blocks individually without using an initialization vector. Encrypting data in ECB mode fails to provide entropy for identical plaintext blocks being encrypted with the same encryption key. This can allow attackers to identify patterns and repetition in ciphertext, and may lead to the discovery of the original encryption key. Use the CipherMode.CBC option for symmetric block cipher operations..</value>
   </data>
@@ -362,42 +398,6 @@
   </data>
   <data name="OPT0023_Title" xml:space="preserve">
     <value>JWT Signature Validation Disabled</value>
-  </data>
-  <data name="OPT0105_Description" xml:space="preserve">
-    <value>Disabling the HTTP Runtime header checking protection opens the application up to HTTP Header Injection (aka Response Splitting) attacks. Enable the header checking protection by setting the httpRuntime element's enableHeaderChecking attribute to true, which is the default value.</value>
-  </data>
-  <data name="OPT0105_MessageFormat" xml:space="preserve">
-    <value>HTTP header checking is disabled.</value>
-  </data>
-  <data name="OPT0105_Title" xml:space="preserve">
-    <value>HTTP Header Checking Disabled</value>
-  </data>
-  <data name="OPT0106_Description" xml:space="preserve">
-    <value>The machine key element defines keys to use for encryption and decryption of authentication cookies, view state, and verification of session state identification. The validation and decryption key values should not be stored in configuration files in cleartext. Encrypt the machineKey section of the configuration file using aspnet_regiis.exe.</value>
-  </data>
-  <data name="OPT0106_MessageFormat" xml:space="preserve">
-    <value>Machine key element is not encrypted.</value>
-  </data>
-  <data name="OPT0106_Title" xml:space="preserve">
-    <value>Cleartext Machine Key</value>
-  </data>
-  <data name="OPT0107_Description" xml:space="preserve">
-    <value>Event validation prevents unauthorized post backs in web form applications. Disabling this feature can allow attackers to forge requests from controls not visible or enabled on a given web form. Enable event validation by setting the page element's eventValidation attribute to true.</value>
-  </data>
-  <data name="OPT0107_MessageFormat" xml:space="preserve">
-    <value>Event validation is disabled.</value>
-  </data>
-  <data name="OPT0107_Title" xml:space="preserve">
-    <value>Pages EventValidation Disabled</value>
-  </data>
-  <data name="OPT0108_Description" xml:space="preserve">
-    <value>The ViewStateMac protection prevents tampering with the web forms view state and event validation hidden fields. Disabing this feature can allow attackers to manipluate these fields in the browser and bypass several security features in the .NET framework. Enable the view state mac protection by setting the page element's viewStateMac attribute to true.</value>
-  </data>
-  <data name="OPT0108_MessageFormat" xml:space="preserve">
-    <value>ViewStateMac is disabled.</value>
-  </data>
-  <data name="OPT0108_Title" xml:space="preserve">
-    <value>Pages ViewStateMac Disabled</value>
   </data>
   <data name="OPT0024_Description" xml:space="preserve">
     <value>The Identity password lockout feature is disabled. This can allow brute force and dictionary attacks against user accounts. To enable the password lockout feature, set the shouldLockout parameter to true.</value>
@@ -491,8 +491,53 @@
   <data name="OPT0033_MessageFormat" xml:space="preserve">
     <value></value>
   </data>
+  <data name="OPT0033_Title" xml:space="preserve">
+    <value>Classes should implement their "ExportAttribute" interfaces</value>
+  </data>
+  <data name="OPT0034_Description" xml:space="preserve">
+    <value>Serialization event handlers that don't have the correct signature will simply not be called, thus bypassing any attempts to augment the automated de/serialization.</value>
+  </data>
+  <data name="OPT0034_MessageFormat" xml:space="preserve">
+    <value>Serialization event handlers should be implemented correctly</value>
+  </data>
+  <data name="OPT0034_Title" xml:space="preserve">
+    <value>Serialization event handlers should be implemented correctly</value>
+  </data>
+  <data name="OPT0035_Description" xml:space="preserve">
+    <value>The size of a collection and the length of an array are always greater than or equal to zero. So testing that a size or length is greater than or equal to zero doesn't make sense, since the result is always true. Similarly testing that it is less than zero will always return false. Perhaps the intent was to check the non-emptiness of the collection or array instead.</value>
+  </data>
+  <data name="OPT0035_MessageFormat" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="OPT0035_Title" xml:space="preserve">
+    <value>Collection sizes and array length comparisons should make sense</value>
+  </data>
+  <data name="OPT0036_Description" xml:space="preserve">
+    <value>Creating a new Exception without actually throwing it is useless and is probably due to a mistake.</value>
+  </data>
+  <data name="OPT0036_MessageFormat" xml:space="preserve">
+    <value>Throw this exception or remove this useless statement.</value>
+  </data>
+  <data name="OPT0036_Title" xml:space="preserve">
+    <value>Exceptions should not be created without being thrown</value>
+  </data>
+  <data name="OPT0037_Description" xml:space="preserve">
+    <value>It is highly suspicious when a value is saved for a key or index and then unconditionally overwritten. Such replacements are likely errors.</value>
+  </data>
+  <data name="OPT0037_MessageFormat" xml:space="preserve">
+    <value>Verify this is the index/key that was intended.</value>
+  </data>
+  <data name="OPT0037_Title" xml:space="preserve">
+    <value>Collection elements should not be replaced unconditionally</value>
+  </data>
+  <data name="OPT0038_Description" xml:space="preserve">
+    <value>When creating a custom Markup Extension that accepts parameters in WPF, the ConstructorArgument markup must be used to identify the discrete properties that match these parameters. However since this is done via a string, the compiler will not notice if there are typos.</value>
+  </data>
+  <data name="OPT0038_MessageFormat" xml:space="preserve">
+    <value>Change this 'ConstructorArgumentAttribute' value to match one of the existing constructors arguments.</value>
+  </data>
   <data name="OPT0038_Title" xml:space="preserve">
-    <value>Classes should implement their "ExportAttribute" interfaces.</value>
+    <value>ConstructorArgument parameters should exist in constructors</value>
   </data>
   <data name="OPT0039_Description" xml:space="preserve">
     <value>Thread.Suspend and Thread.Resume can give unpredictable results, and both methods have been deprecated. Indeed, if Thread.Suspend is not used very carefully, a thread can be suspended while holding a lock, thus leading to a deadlock. Other safer synchronization mechanisms should be used, such as Monitor, Mutex, and Semaphore.</value>
@@ -595,7 +640,6 @@
   <data name="OPT0049_Title" xml:space="preserve">
     <value>Shared resources should not be used for locking.</value>
   </data>
-
   <data name="OPT0050_Description" xml:space="preserve">
     <value>The PartCreationPolicyAttribute attribute, which is part of the Managed Extensibility Framework (MEF), is used to specify how the exported object will be created. Therefore it doesn't make sense not to export this a class with this attribute using the ExportAttribute attribute.</value>
   </data>
@@ -605,49 +649,13 @@
   <data name="OPT0050_Title" xml:space="preserve">
     <value>PartCreationPolicyAttribute should be used with ExportAttribute</value>
   </data>
-  <data name="OPT0038_Description" xml:space="preserve">
-    <value>When creating a custom Markup Extension that accepts parameters in WPF, the ConstructorArgument markup must be used to identify the discrete properties that match these parameters. However since this is done via a string, the compiler will not notice if there are typos.</value>
+  <data name="OPT0051_Description" xml:space="preserve">
+    <value>An application's debug features enable developers to find bugs more easily and thus facilitate also the work of attackers. It often gives access to detailed information on both the system running the application and users.</value>
   </data>
-  <data name="OPT0038_MessageFormat" xml:space="preserve">
-    <value>Change this 'ConstructorArgumentAttribute' value to match one of the existing constructors arguments.</value>
+  <data name="OPT0051_MessageFormat" xml:space="preserve">
+    <value>Make sure this debug feature is deactivated before delivering the code in production</value>
   </data>
-  <data name="OPT0038_Title" xml:space="preserve">
-    <value>ConstructorArgument parameters should exist in constructors</value>
-  </data>
-  <data name="OPT0037_Description" xml:space="preserve">
-    <value>It is highly suspicious when a value is saved for a key or index and then unconditionally overwritten. Such replacements are likely errors.</value>
-  </data>
-  <data name="OPT0037_MessageFormat" xml:space="preserve">
-    <value>Verify this is the index/key that was intended.</value>
-  </data>
-  <data name="OPT0037_Title" xml:space="preserve">
-    <value>Collection elements should not be replaced unconditionally</value>
-  </data>
-  <data name="OPT0036_Description" xml:space="preserve">
-    <value>Creating a new Exception without actually throwing it is useless and is probably due to a mistake.</value>
-  </data>
-  <data name="OPT0036_MessageFormat" xml:space="preserve">
-    <value>Throw this exception or remove this useless statement.</value>
-  </data>
-  <data name="OPT0036_Title" xml:space="preserve">
-    <value>Exceptions should not be created without being thrown</value>
-  </data>
-  <data name="OPT0035_Description" xml:space="preserve">
-    <value>The size of a collection and the length of an array are always greater than or equal to zero. So testing that a size or length is greater than or equal to zero doesn't make sense, since the result is always true. Similarly testing that it is less than zero will always return false. Perhaps the intent was to check the non-emptiness of the collection or array instead.</value>
-  </data>
-  <data name="OPT0035_MessageFormat" xml:space="preserve">
-    <value></value>
-  </data>
-  <data name="OPT0035_Title" xml:space="preserve">
-    <value>Collection sizes and array length comparisons should make sense</value>
-  </data>
-  <data name="OPT0034_Description" xml:space="preserve">
-    <value>Serialization event handlers that don't have the correct signature will simply not be called, thus bypassing any attempts to augment the automated de/serialization.</value>
-  </data>
-  <data name="OPT0034_MessageFormat" xml:space="preserve">
-    <value>Serialization event handlers should be implemented correctly</value>
-  </data>
-  <data name="OPT0034_Title" xml:space="preserve">
-    <value>Serialization event handlers should be implemented correctly</value>
+  <data name="OPT0051_Title" xml:space="preserve">
+    <value>Delivering code in production with debug features</value>
   </data>
 </root>

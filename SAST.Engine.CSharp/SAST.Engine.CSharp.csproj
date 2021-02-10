@@ -71,6 +71,15 @@
     <None Update="Resources\Microsoft.AspNetCore.Cors.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Microsoft.AspNetCore.Diagnostics.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Microsoft.AspNetCore.Hosting.Abstractions.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Microsoft.AspNetCore.Http.Abstractions.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -78,7 +87,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Microsoft.AspNetCore.Http.Internal.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Microsoft.AspNetCore.Identity.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -111,6 +120,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Microsoft.Extensions.DependencyInjection.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Microsoft.Extensions.Hosting.Abstractions.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Microsoft.Extensions.Identity.Core.dll">

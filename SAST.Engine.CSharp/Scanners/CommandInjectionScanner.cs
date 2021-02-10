@@ -35,9 +35,9 @@ namespace SAST.Engine.CSharp.Scanners
             _syntaxNode = syntaxNode;
             _model = model;
             _solution = solution;
-            vulnerabilities.AddRange(FindProcessExpressions());
-            vulnerabilities.AddRange(FindProcessInfoExpressions());
-            vulnerabilities.AddRange(FindStartInfoAssignments());
+            FindProcessExpressions();
+            FindProcessInfoExpressions();
+            FindStartInfoAssignments();
             return vulnerabilities;
         }
 
