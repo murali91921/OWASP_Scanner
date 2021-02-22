@@ -69,6 +69,7 @@ namespace SAST.Engine.CSharp.Enums
         SharedObjectLock = 49,
         PartCreationPolicyNonExport = 50,
         EnableDebugMode = 51,
+        HeaderInjection = 52,
     }
 
     /// <summary>

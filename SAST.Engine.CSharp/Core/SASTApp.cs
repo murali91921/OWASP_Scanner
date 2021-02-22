@@ -407,6 +407,7 @@ namespace SAST.Engine.CSharp.Core
                 ScannerType.CollectionSizeOrArrayLength => new CollectionSizeOrArrayLengthScanner(),
                 ScannerType.SerializationEventImplement => new SerializationEventImplementScanner(),
                 ScannerType.EnableDebugMode => new EnableDebugModeScanner(),
+                ScannerType.HeaderInjection => new HeaderInjectionScanner(),
                 _ => null,
             };
         }

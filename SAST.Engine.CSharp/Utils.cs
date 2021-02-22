@@ -170,6 +170,7 @@ namespace SAST.Engine.CSharp
             {Enums.ScannerType.ReflectedXSS, Enums.Severity.Medium},
             {Enums.ScannerType.StoredXSS, Enums.Severity.Medium},
             {Enums.ScannerType.EnableDebugMode, Enums.Severity.Medium},
+            {Enums.ScannerType.HeaderInjection, Enums.Severity.Low},
         };
 
 
@@ -400,6 +401,17 @@ namespace SAST.Engine.CSharp
             }
             else if (node is ParameterSyntax)
                 return true;
+            else if (scannerType == Enums.ScannerType.HeaderInjection && node is ElementAccessExpressionSyntax elementAccess)
+            {
+                ISymbol symbol = model.GetSymbol(elementAccess.Expression);
+                if (symbol == null)
+                    return false;
+                if (model.GetTypeSymbol(elementAccess) is { } typeSymbol && typeSymbol.SpecialType != SpecialType.System_String)
+                    return false;
+                if (symbol.ContainingType.ToString() + "." + symbol.Name.ToString() == Constants.KnownType.System_Web_HttpRequest_QueryString)
+                    return true;
+                return false;
+            }
             else
                 return false;
         }

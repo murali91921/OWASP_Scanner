@@ -218,7 +218,8 @@ namespace SAST.Engine.CSharp.Constants
             System_Xml_Serialization_XmlSerializer = "System.Xml.Serialization.XmlSerializer",
             System_Xml_XmlReaderSettings = "System.Xml.XmlReaderSettings",
             System_Xml_XmlReaderSettings_DtdProcessing = "System.Xml.XmlReaderSettings.DtdProcessing",
-            System_Xml_XmlReaderSettings_ProhibitDtd = "System.Xml.XmlReaderSettings.ProhibitDtd";
+            System_Xml_XmlReaderSettings_ProhibitDtd = "System.Xml.XmlReaderSettings.ProhibitDtd",
+            System_Web_HttpResponse_Headers = "System.Web.HttpResponse.Headers";
     }
 
     public static class KnownMethod
@@ -372,6 +373,8 @@ namespace SAST.Engine.CSharp.Constants
             Microsoft_AspNetCore_Builder_DeveloperExceptionPageExtensions_UseDeveloperExceptionPage = "Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions.UseDeveloperExceptionPage",
             Microsoft_AspNetCore_Builder_DatabaseErrorPageExtensions_UseDatabaseErrorPage = "Microsoft.AspNetCore.Builder.DatabaseErrorPageExtensions.UseDatabaseErrorPage",
             Microsoft_AspNetCore_Hosting_HostingEnvironmentExtensions_IsDevelopment = "Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsDevelopment",
-            Microsoft_Extensions_Hosting_HostEnvironmentEnvExtensions_IsDevelopment = "Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment";
+            Microsoft_Extensions_Hosting_HostEnvironmentEnvExtensions_IsDevelopment = "Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment",
+            System_Web_HttpResponse_AppendHeader = "System.Web.HttpResponse.AppendHeader",
+            System_Web_HttpResponse_AddHeader = "System.Web.HttpResponse.AddHeader";
     }
 }

@@ -658,4 +658,13 @@
   <data name="OPT0051_Title" xml:space="preserve">
     <value>Delivering code in production with debug features</value>
   </data>
+  <data name="OPT0052_Description" xml:space="preserve">
+    <value>Sending unvalidated data to a web browser can result in the browser executing malicious code.</value>
+  </data>
+  <data name="OPT0052_MessageFormat" xml:space="preserve">
+    <value>Data is passed from an untrusted source,the untrusted source is typically a web request, make sure data has been validate to neutralize dangerous data before writing it the browser.</value>
+  </data>
+  <data name="OPT0052_Title" xml:space="preserve">
+    <value>Header injection</value>
+  </data>
 </root>
