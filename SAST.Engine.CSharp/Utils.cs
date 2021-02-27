@@ -306,7 +306,7 @@ namespace SAST.Engine.CSharp
                     vulnerable = IsVulnerable(currentNode, model, solution, callingSymbol);
                     foreach (var refLocation in reference.Locations)
                     {
-                        currentNode = reference.Definition.Locations.First().SourceTree.GetRoot().FindNode(refLocation.Location.SourceSpan);
+                        currentNode = refLocation.Location.SourceTree.GetRoot().FindNode(refLocation.Location.SourceSpan);
                         if (currentNode.SpanStart < node.SpanStart && CheckSameMethod(currentNode, node))
                         {
                             var assignment = currentNode.Ancestors().OfType<AssignmentExpressionSyntax>().FirstOrDefault();
