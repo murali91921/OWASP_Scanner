@@ -219,7 +219,8 @@ namespace SAST.Engine.CSharp.Constants
             System_Xml_XmlReaderSettings = "System.Xml.XmlReaderSettings",
             System_Xml_XmlReaderSettings_DtdProcessing = "System.Xml.XmlReaderSettings.DtdProcessing",
             System_Xml_XmlReaderSettings_ProhibitDtd = "System.Xml.XmlReaderSettings.ProhibitDtd",
-            System_Web_HttpResponse_Headers = "System.Web.HttpResponse.Headers";
+            System_Web_HttpResponse_Headers = "System.Web.HttpResponse.Headers",
+            System_Net_FtpWebRequest = "System.Net.FtpWebRequest";
     }
 
     public static class KnownMethod

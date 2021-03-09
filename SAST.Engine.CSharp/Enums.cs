@@ -46,7 +46,7 @@ namespace SAST.Engine.CSharp.Enums
         CorsAllowAnyOrigin = 26,
         WeakCryptoKeyLength = 27,
         SerializationType = 28,
-        LdapSecureConnection = 29,        
+        LdapSecureConnection = 29,
         RegexInjection = 30,
         SerializationConstructor = 31,
         HardcodedIpAddress = 32,
@@ -70,6 +70,7 @@ namespace SAST.Engine.CSharp.Enums
         PartCreationPolicyNonExport = 50,
         EnableDebugMode = 51,
         HeaderInjection = 52,
+        ClearTextProtocol = 53
     }
 
     /// <summary>

@@ -667,4 +667,10 @@
   <data name="OPT0052_Title" xml:space="preserve">
     <value>Header injection</value>
   </data>
+  <data name="OPT0053_Description" xml:space="preserve">
+    <value>Clear-text protocols as ftp, telnet or non secure http are lacking encryption of transported data. They are also missing the capability to build an authenticated connection. This mean that any attacker who can sniff traffic from the network can read, modify or corrupt the transported content</value>
+  </data>
+  <data name="OPT0053_Title" xml:space="preserve">
+    <value>Cleartext Protocol</value>
+  </data>
 </root>
