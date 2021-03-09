@@ -107,8 +107,5 @@ namespace SAST.Engine.CSharp.Enums
 
         [EnumMember(Value = "Low")]
         Low = 4,
-
-        [EnumMember(Value = "Information")]
-        Information = 0,
     }
 }

@@ -105,8 +105,8 @@ namespace SAST.Engine.CSharp
         //};
         internal static readonly Dictionary<Enums.ScannerType, Enums.Severity> ScannerTypeSeverity = new Dictionary<Enums.ScannerType, Enums.Severity>{
             {Enums.ScannerType.Csrf, Enums.Severity.Medium},
-            {Enums.ScannerType.EmptyCatch, Enums.Severity.Information},
-            {Enums.ScannerType.EmptyTry, Enums.Severity.Information},
+            {Enums.ScannerType.EmptyCatch, Enums.Severity.Low},
+            {Enums.ScannerType.EmptyTry, Enums.Severity.Low},
             {Enums.ScannerType.HardcodePassword, Enums.Severity.High},
             {Enums.ScannerType.MissingHttpOnlyCookie, Enums.Severity.Low},
             {Enums.ScannerType.MissingSecureCookie, Enums.Severity.Low},
