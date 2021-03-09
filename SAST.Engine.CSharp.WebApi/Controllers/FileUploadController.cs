@@ -73,10 +73,7 @@ namespace SAST.Engine.CSharp.WebApi.Controllers
                     {
                         Response.StatusCode = 200;
                         IEnumerable<VulnerabilityDetail> vulnerabilities = sASTApp.ScanAll();
-                        if (vulnerabilities == null || !vulnerabilities.Any())
-                            result = "No Vulnerabilities found";
-                        else
-                            result = Newtonsoft.Json.JsonConvert.SerializeObject(vulnerabilities);
+                        result = Newtonsoft.Json.JsonConvert.SerializeObject(vulnerabilities);
                     }
                 }
                 catch (PathTooLongException _)
