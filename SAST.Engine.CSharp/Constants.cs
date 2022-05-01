@@ -9,6 +9,8 @@ namespace SAST.Engine.CSharp.Constants
     {
         internal const string
             JWT_IJwtDecoder = "JWT.IJwtDecoder",
+                    Interface = "Interface",
+
             Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute = "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
             Microsoft_AspNetCore_Authorization_AuthorizeAttribute = "Microsoft.AspNetCore.Authorization.AuthorizeAttribute",
             Microsoft_AspNetCore_Cors_Infrastructure_CorsPolicyBuilder = "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder",
